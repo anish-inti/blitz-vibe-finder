@@ -22,10 +22,10 @@ const PromptInput: React.FC<PromptInputProps> = ({ onSubmit }) => {
       <form onSubmit={handleSubmit} className="relative">
         <div 
           className={`relative glassmorphism rounded-full transition-all duration-300 ${
-            isFocused ? 'neon-glow ring-2 ring-blitz-pink shadow-lg' : 'shadow border border-blitz-pink/30'
+            isFocused ? 'neon-red-glow ring-2 ring-blitz-neonred shadow-lg shadow-blitz-neonred/30' : 'shadow border border-blitz-neonred/40'
           }`}
         >
-          <div className="absolute inset-0 bg-gradient-to-r from-blitz-purple/10 to-blitz-pink/10 rounded-full"></div>
+          <div className="absolute inset-0 bg-gradient-to-r from-blitz-neonred/10 to-blitz-pink/10 rounded-full"></div>
           
           <input
             type="text"
@@ -39,7 +39,7 @@ const PromptInput: React.FC<PromptInputProps> = ({ onSubmit }) => {
           
           <button
             type="submit"
-            className="absolute right-1 top-1/2 -translate-y-1/2 bg-blitz-pink text-white p-3 rounded-full hover:bg-blitz-pink/80 transition-all hover:shadow-lg hover:shadow-blitz-pink/30"
+            className="absolute right-1 top-1/2 -translate-y-1/2 bg-blitz-neonred text-white p-3 rounded-full hover:bg-blitz-neonred/80 transition-all hover:shadow-lg hover:shadow-blitz-neonred/30"
           >
             {isFocused ? (
               <Sparkles className="w-5 h-5 animate-pulse-glow" />
