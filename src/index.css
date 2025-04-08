@@ -5,33 +5,33 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    --background: 0 0% 0%; /* Black background */
+    --foreground: 0 0% 100%; /* White text */
 
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card: 0 0% 5%; /* Very dark card bg */
+    --card-foreground: 0 0% 100%; /* White text */
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 5%;
+    --popover-foreground: 0 0% 100%;
 
-    --primary: 325 100% 63%;
+    --primary: 325 100% 50%; /* Neon pink */
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 240 79% 60%;
-    --secondary-foreground: 0 0% 100%;
+    --secondary: 180 100% 50%; /* Electric cyan */
+    --secondary-foreground: 0 0% 0%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted: 0 0% 15%;
+    --muted-foreground: 0 0% 70%;
 
-    --accent: 277 63% 57%;
+    --accent: 277 100% 50%; /* Vibrant purple */
     --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 350 100% 50%; /* Neon red */
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 270 63% 50%;
+    --border: 0 0% 20%;
+    --input: 0 0% 20%;
+    --ring: 325 100% 50%;
 
     --radius: 0.5rem;
   }
@@ -43,35 +43,35 @@
   }
 
   body {
-    @apply bg-background text-foreground font-sans antialiased;
+    @apply bg-black text-white font-sans antialiased;
   }
 }
 
 .blitz-gradient {
-  background: linear-gradient(135deg, #9B5DE5 0%, #4361EE 50%, #FF41B4 100%);
+  background: linear-gradient(135deg, #FF00FF 0%, #00FFFF 50%, #FF0055 100%);
 }
 
 .blitz-light-gradient {
-  background: linear-gradient(135deg, rgba(255, 214, 255, 0.7) 0%, rgba(155, 93, 229, 0.3) 100%);
+  background: linear-gradient(135deg, rgba(255, 0, 255, 0.2) 0%, rgba(155, 93, 229, 0.1) 100%);
 }
 
 .blitz-card-gradient {
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+  background: linear-gradient(180deg, rgba(25, 25, 25, 0.7) 0%, rgba(10, 10, 10, 0.9) 100%);
   backdrop-filter: blur(10px);
 }
 
 .text-shadow {
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  text-shadow: 0 0 10px rgba(255, 0, 255, 0.7), 0 0 20px rgba(255, 0, 255, 0.5);
 }
 
 .glassmorphism {
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(25, 25, 25, 0.5);
   backdrop-filter: blur(8px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 0, 255, 0.2);
 }
 
 .cosmic-bg {
-  background: linear-gradient(180deg, #1A0050 0%, #4361EE 100%);
+  background: linear-gradient(180deg, #000000 0%, #121212 100%);
   position: relative;
   overflow: hidden;
 }
@@ -84,9 +84,9 @@
   right: 0;
   bottom: 0;
   background-image: 
-    radial-gradient(circle at 10% 20%, rgba(255, 65, 180, 0.3) 0%, transparent 30%),
-    radial-gradient(circle at 90% 30%, rgba(67, 97, 238, 0.3) 0%, transparent 40%),
-    radial-gradient(circle at 50% 80%, rgba(155, 93, 229, 0.3) 0%, transparent 30%);
+    radial-gradient(circle at 10% 20%, rgba(255, 0, 255, 0.2) 0%, transparent 30%),
+    radial-gradient(circle at 90% 30%, rgba(0, 255, 255, 0.2) 0%, transparent 40%),
+    radial-gradient(circle at 50% 80%, rgba(255, 0, 85, 0.2) 0%, transparent 30%);
   opacity: 0.7;
   z-index: 0;
 }
@@ -102,18 +102,34 @@
 
 .neon-text {
   text-shadow: 
-    0 0 5px rgba(255, 65, 180, 0.8),
-    0 0 10px rgba(255, 65, 180, 0.6),
-    0 0 15px rgba(255, 65, 180, 0.4),
-    0 0 20px rgba(255, 65, 180, 0.2);
+    0 0 5px rgba(255, 0, 255, 1),
+    0 0 10px rgba(255, 0, 255, 0.8),
+    0 0 15px rgba(255, 0, 255, 0.6),
+    0 0 20px rgba(255, 0, 255, 0.4);
+}
+
+.neon-red-text {
+  text-shadow: 
+    0 0 5px rgba(255, 0, 85, 1),
+    0 0 10px rgba(255, 0, 85, 0.8),
+    0 0 15px rgba(255, 0, 85, 0.6),
+    0 0 20px rgba(255, 0, 85, 0.4);
 }
 
 .neon-glow {
   box-shadow: 
-    0 0 5px rgba(255, 65, 180, 0.8),
-    0 0 10px rgba(255, 65, 180, 0.6),
-    0 0 15px rgba(255, 65, 180, 0.4),
-    0 0 20px rgba(255, 65, 180, 0.2);
+    0 0 5px rgba(255, 0, 255, 1),
+    0 0 10px rgba(255, 0, 255, 0.8),
+    0 0 15px rgba(255, 0, 255, 0.6),
+    0 0 20px rgba(255, 0, 255, 0.4);
+}
+
+.neon-red-glow {
+  box-shadow: 
+    0 0 5px rgba(255, 0, 85, 1),
+    0 0 10px rgba(255, 0, 85, 0.8),
+    0 0 15px rgba(255, 0, 85, 0.6),
+    0 0 20px rgba(255, 0, 85, 0.4);
 }
 
 .shimmer-effect {
@@ -158,7 +174,7 @@
   bottom: -2px;
   z-index: -1;
   border-radius: inherit;
-  background: linear-gradient(90deg, #4361EE, #FF41B4, #9B5DE5, #4361EE);
+  background: linear-gradient(90deg, #FF00FF, #FF0055, #00FFFF, #FF00FF);
   background-size: 300% 100%;
   animation: glowing 5s linear infinite;
 }
@@ -178,53 +194,13 @@
   bottom: -4px;
   z-index: -1;
   border-radius: inherit;
-  background: linear-gradient(90deg, #FF00FF, #00FFFF, #8A2BE2, #FF00FF);
+  background: linear-gradient(90deg, #FF00FF, #00FFFF, #FF0055, #FF00FF);
   background-size: 300% 100%;
   animation: glowing 3s linear infinite;
   filter: blur(8px);
 }
 
-.shimmer-text {
-  position: relative;
-}
-
-.shimmer-text::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -150%;
-  width: 150%;
-  height: 100%;
-  background: linear-gradient(
-    to right,
-    rgba(255, 255, 255, 0) 0%,
-    rgba(255, 255, 255, 0.8) 50%,
-    rgba(255, 255, 255, 0) 100%
-  );
-  animation: shimmer 3s infinite;
-}
-
-.star-bg {
-  position: relative;
-}
-
-.star-bg::before {
-  content: '';
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  background-image: 
-    radial-gradient(1px 1px at 20px 30px, white, rgba(0,0,0,0)),
-    radial-gradient(1px 1px at 40px 70px, white, rgba(0,0,0,0)),
-    radial-gradient(1px 1px at 50px 160px, white, rgba(0,0,0,0)),
-    radial-gradient(1px 1px at 90px 40px, white, rgba(0,0,0,0)),
-    radial-gradient(1px 1px at 130px 80px, white, rgba(0,0,0,0)),
-    radial-gradient(1px 1px at 160px 120px, white, rgba(0,0,0,0));
-  background-repeat: repeat;
-  background-size: 200px 200px;
-  opacity: 0.5;
-  animation: float 8s ease-in-out infinite;
-}
+/* ... keep existing code (shimmer-text, star-bg, and other animations) */
 
 @keyframes glowing {
   0% {

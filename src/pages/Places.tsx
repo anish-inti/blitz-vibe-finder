@@ -4,6 +4,7 @@ import Header from '@/components/Header';
 import BottomNavigation from '@/components/BottomNavigation';
 import SwipeDeck from '@/components/SwipeDeck';
 import { Place } from '@/components/SwipeCard';
+import { Sparkles } from 'lucide-react';
 
 // Mock data
 const MOCK_PLACES: Place[] = [
@@ -48,15 +49,16 @@ const Places: React.FC = () => {
   }, []);
   
   return (
-    <div className="min-h-screen flex flex-col relative">
-      <div className="blitz-gradient absolute inset-0 z-0 opacity-10"></div>
+    <div className="min-h-screen flex flex-col relative bg-blitz-black">
+      <div className="cosmic-bg absolute inset-0 z-0"></div>
       
       <Header />
       
       <main className="flex-1 flex flex-col items-center justify-center px-6 pb-20 z-10">
         <div className="w-full max-w-md mx-auto mt-4">
-          <h1 className="text-2xl font-bold mb-6 text-center text-gray-800">
+          <h1 className="text-2xl font-bold mb-6 text-center text-white neon-text relative">
             Discover Places
+            <Sparkles className="absolute -right-6 top-1 w-4 h-4 text-blitz-stardust animate-pulse-glow" />
           </h1>
           
           <div className="relative">

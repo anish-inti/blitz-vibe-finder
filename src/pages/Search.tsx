@@ -4,6 +4,7 @@ import Header from '@/components/Header';
 import BottomNavigation from '@/components/BottomNavigation';
 import PromptInput from '@/components/PromptInput';
 import GlowButton from '@/components/GlowButton';
+import { Sparkles } from 'lucide-react';
 
 const Search: React.FC = () => {
   const [prompt, setPrompt] = useState('');
@@ -20,32 +21,33 @@ const Search: React.FC = () => {
   };
   
   return (
-    <div className="min-h-screen flex flex-col relative">
-      <div className="blitz-gradient absolute inset-0 z-0 opacity-10"></div>
+    <div className="min-h-screen flex flex-col relative bg-blitz-black">
+      <div className="cosmic-bg absolute inset-0 z-0"></div>
       
       <Header />
       
       <main className="flex-1 flex flex-col px-6 pb-20 z-10">
         <div className="w-full max-w-md mx-auto mt-8">
-          <h1 className="text-2xl font-bold mb-6 text-center text-gray-800">
+          <h1 className="text-2xl font-bold mb-6 text-center text-white neon-text relative">
             Find Your Vibe
+            <Sparkles className="absolute -right-6 top-1 w-4 h-4 text-blitz-stardust animate-pulse-glow" />
           </h1>
           
           <PromptInput onSubmit={handleSearch} />
           
           <div className="mt-6">
-            <div className="text-sm text-gray-500 mb-2">Try asking for:</div>
+            <div className="text-sm text-gray-300 mb-2">Try asking for:</div>
             <div className="flex flex-wrap gap-2">
-              <button className="px-3 py-1 bg-blitz-purple/10 text-blitz-purple rounded-full text-sm hover:bg-blitz-purple/20 transition-colors">
+              <button className="px-3 py-1 bg-blitz-purple/20 text-blitz-purple rounded-full text-sm hover:bg-blitz-purple/30 transition-colors border border-blitz-purple/30">
                 Rooftop bars
               </button>
-              <button className="px-3 py-1 bg-blitz-blue/10 text-blitz-blue rounded-full text-sm hover:bg-blitz-blue/20 transition-colors">
+              <button className="px-3 py-1 bg-blitz-blue/20 text-blitz-blue rounded-full text-sm hover:bg-blitz-blue/30 transition-colors border border-blitz-blue/30">
                 Late night food
               </button>
-              <button className="px-3 py-1 bg-blitz-pink/10 text-blitz-pink rounded-full text-sm hover:bg-blitz-pink/20 transition-colors">
+              <button className="px-3 py-1 bg-blitz-pink/20 text-blitz-pink rounded-full text-sm hover:bg-blitz-pink/30 transition-colors border border-blitz-pink/30">
                 Live music venues
               </button>
-              <button className="px-3 py-1 bg-gray-100 text-gray-800 rounded-full text-sm hover:bg-gray-200 transition-colors">
+              <button className="px-3 py-1 bg-blitz-neonred/20 text-blitz-neonred rounded-full text-sm hover:bg-blitz-neonred/30 transition-colors border border-blitz-neonred/30">
                 Outdoor cafés
               </button>
             </div>
@@ -53,11 +55,13 @@ const Search: React.FC = () => {
           
           {isSearching ? (
             <div className="mt-12 flex justify-center">
-              <div className="w-12 h-12 rounded-full border-4 border-blitz-purple/30 border-t-blitz-purple animate-spin"></div>
+              <div className="w-12 h-12 rounded-full border-4 border-blitz-pink/30 border-t-blitz-pink animate-spin"></div>
             </div>
           ) : prompt ? (
             <div className="mt-12">
-              <GlowButton className="w-full">View Matches</GlowButton>
+              <GlowButton className="w-full" color="red" showSparkle>
+                View Matches
+              </GlowButton>
             </div>
           ) : null}
         </div>

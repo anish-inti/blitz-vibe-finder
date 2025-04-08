@@ -11,7 +11,7 @@ const BottomNavigation: React.FC = () => {
   };
   
   return (
-    <nav className="fixed bottom-4 left-1/2 transform -translate-x-1/2 glassmorphism backdrop-blur-lg rounded-full px-6 py-3 flex justify-around items-center z-20 shadow-xl shadow-blitz-purple/20 w-11/12 max-w-sm border border-white/10">
+    <nav className="fixed bottom-4 left-1/2 transform -translate-x-1/2 glassmorphism backdrop-blur-lg rounded-full px-6 py-3 flex justify-around items-center z-20 shadow-xl shadow-blitz-pink/20 w-11/12 max-w-sm border border-blitz-pink/20">
       <Link 
         to="/profile" 
         className={`p-2 flex flex-col items-center transition-all duration-300 ${
@@ -38,8 +38,8 @@ const BottomNavigation: React.FC = () => {
         to="/places" 
         className={`p-2 flex flex-col items-center transition-all duration-300 ${
           isActive('/places') 
-            ? 'text-blitz-purple scale-110 neon-text' 
-            : 'text-gray-300 hover:text-blitz-purple/70'
+            ? 'text-blitz-neonred scale-110 neon-red-text' 
+            : 'text-gray-300 hover:text-blitz-neonred/70'
         }`}
       >
         <MapPin className={`w-6 h-6 ${isActive('/places') ? 'animate-pulse-glow' : ''}`} />

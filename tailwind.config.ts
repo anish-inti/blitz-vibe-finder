@@ -1,4 +1,3 @@
-
 import type { Config } from "tailwindcss";
 
 export default {
@@ -53,28 +52,22 @@ export default {
 					DEFAULT: 'hsl(var(--card))',
 					foreground: 'hsl(var(--card-foreground))'
 				},
-				sidebar: {
-					DEFAULT: 'hsl(var(--sidebar-background))',
-					foreground: 'hsl(var(--sidebar-foreground))',
-					primary: 'hsl(var(--sidebar-primary))',
-					'primary-foreground': 'hsl(var(--sidebar-primary-foreground))',
-					accent: 'hsl(var(--sidebar-accent))',
-					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
-					border: 'hsl(var(--sidebar-border))',
-					ring: 'hsl(var(--sidebar-ring))'
-				},
-				// Enhanced Blitz color scheme
+				// Updated Blitz color scheme - more contrast with black and neon accents
 				blitz: {
-					pink: "#FF41B4",
-					blue: "#4361EE",
-					purple: "#9B5DE5",
-					darkblue: "#1A0050",
-					lightpink: "#FFD6FF",
-                    neonpink: "#FF00FF",
-                    electricblue: "#00FFFF",
-                    vibrantpurple: "#8A2BE2",
-                    cosmicindigo: "#4B0082",
-                    stardust: "#FFD700"
+					pink: "#FF00FF",         // Neon pink
+					blue: "#00FFFF",         // Electric cyan blue
+					purple: "#9B5DE5",       // Vibrant purple
+					darkblue: "#000000",     // Black (renamed for compatibility)
+					lightpink: "#FFD6FF",    // Soft pink
+                    neonpink: "#FF00FF",     // Neon pink (same as pink for consistency)
+                    electricblue: "#00FFFF", // Electric blue (same as blue for consistency)
+                    vibrantpurple: "#8A2BE2", // Deep purple
+                    cosmicindigo: "#4B0082",  // Deep indigo
+                    stardust: "#FFD700",     // Gold/yellow
+                    neonred: "#FF0055",      // New neon red
+                    black: "#000000",        // Pure black
+                    darkgray: "#121212",     // Very dark gray
+                    offblack: "#0A0A0A"      // Slightly off-black for layering
 				}
 			},
 			borderRadius: {
