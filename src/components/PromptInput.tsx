@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Search } from 'lucide-react';
+import { Search, Sparkles } from 'lucide-react';
 
 interface PromptInputProps {
   onSubmit: (prompt: string) => void;
@@ -22,9 +22,11 @@ const PromptInput: React.FC<PromptInputProps> = ({ onSubmit }) => {
       <form onSubmit={handleSubmit} className="relative">
         <div 
           className={`relative glassmorphism rounded-full transition-all duration-300 ${
-            isFocused ? 'ring-2 ring-blitz-purple shadow-lg' : 'shadow'
+            isFocused ? 'neon-glow ring-2 ring-blitz-pink shadow-lg' : 'shadow'
           }`}
         >
+          <div className="absolute inset-0 bg-gradient-to-r from-blitz-purple/10 to-blitz-pink/10 rounded-full"></div>
+          
           <input
             type="text"
             value={prompt}
@@ -32,13 +34,18 @@ const PromptInput: React.FC<PromptInputProps> = ({ onSubmit }) => {
             onFocus={() => setIsFocused(true)}
             onBlur={() => setIsFocused(false)}
             placeholder="Describe your ideal outing..."
-            className="w-full py-4 pl-5 pr-12 text-base bg-transparent rounded-full focus:outline-none text-gray-800"
+            className="w-full py-4 pl-5 pr-12 text-base bg-transparent rounded-full focus:outline-none text-white placeholder-gray-400"
           />
+          
           <button
             type="submit"
-            className="absolute right-1 top-1/2 -translate-y-1/2 bg-blitz-purple text-white p-3 rounded-full hover:bg-opacity-90 transition-all"
+            className="absolute right-1 top-1/2 -translate-y-1/2 bg-blitz-purple text-white p-3 rounded-full hover:bg-blitz-purple/80 transition-all hover:shadow-lg hover:shadow-blitz-purple/30"
           >
-            <Search className="w-5 h-5" />
+            {isFocused ? (
+              <Sparkles className="w-5 h-5 animate-pulse-glow" />
+            ) : (
+              <Search className="w-5 h-5" />
+            )}
           </button>
         </div>
       </form>

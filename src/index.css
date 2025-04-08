@@ -70,6 +70,65 @@
   border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
+.cosmic-bg {
+  background: linear-gradient(180deg, #1A0050 0%, #4361EE 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.cosmic-bg::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: 
+    radial-gradient(circle at 10% 20%, rgba(255, 65, 180, 0.3) 0%, transparent 30%),
+    radial-gradient(circle at 90% 30%, rgba(67, 97, 238, 0.3) 0%, transparent 40%),
+    radial-gradient(circle at 50% 80%, rgba(155, 93, 229, 0.3) 0%, transparent 30%);
+  opacity: 0.7;
+  z-index: 0;
+}
+
+.cosmic-star {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  background-color: white;
+  border-radius: 50%;
+  animation: sparkle 2s ease-in-out infinite;
+}
+
+.neon-text {
+  text-shadow: 
+    0 0 5px rgba(255, 65, 180, 0.8),
+    0 0 10px rgba(255, 65, 180, 0.6),
+    0 0 15px rgba(255, 65, 180, 0.4),
+    0 0 20px rgba(255, 65, 180, 0.2);
+}
+
+.neon-glow {
+  box-shadow: 
+    0 0 5px rgba(255, 65, 180, 0.8),
+    0 0 10px rgba(255, 65, 180, 0.6),
+    0 0 15px rgba(255, 65, 180, 0.4),
+    0 0 20px rgba(255, 65, 180, 0.2);
+}
+
+.shimmer-effect {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.05) 20%,
+    rgba(255, 255, 255, 0.2) 60%,
+    rgba(255, 255, 255, 0.05) 80%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
 .swipe-card {
   transition: transform 0.3s ease-out, opacity 0.3s ease-out;
 }
@@ -104,6 +163,69 @@
   animation: glowing 5s linear infinite;
 }
 
+.glow-button-intense {
+  position: relative;
+  z-index: 1;
+  overflow: hidden;
+}
+
+.glow-button-intense::before {
+  content: '';
+  position: absolute;
+  top: -4px;
+  left: -4px;
+  right: -4px;
+  bottom: -4px;
+  z-index: -1;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #FF00FF, #00FFFF, #8A2BE2, #FF00FF);
+  background-size: 300% 100%;
+  animation: glowing 3s linear infinite;
+  filter: blur(8px);
+}
+
+.shimmer-text {
+  position: relative;
+}
+
+.shimmer-text::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -150%;
+  width: 150%;
+  height: 100%;
+  background: linear-gradient(
+    to right,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.8) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  animation: shimmer 3s infinite;
+}
+
+.star-bg {
+  position: relative;
+}
+
+.star-bg::before {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background-image: 
+    radial-gradient(1px 1px at 20px 30px, white, rgba(0,0,0,0)),
+    radial-gradient(1px 1px at 40px 70px, white, rgba(0,0,0,0)),
+    radial-gradient(1px 1px at 50px 160px, white, rgba(0,0,0,0)),
+    radial-gradient(1px 1px at 90px 40px, white, rgba(0,0,0,0)),
+    radial-gradient(1px 1px at 130px 80px, white, rgba(0,0,0,0)),
+    radial-gradient(1px 1px at 160px 120px, white, rgba(0,0,0,0));
+  background-repeat: repeat;
+  background-size: 200px 200px;
+  opacity: 0.5;
+  animation: float 8s ease-in-out infinite;
+}
+
 @keyframes glowing {
   0% {
     background-position: 0% 50%;
@@ -113,5 +235,32 @@
   }
   100% {
     background-position: 0% 50%;
+  }
+}
+
+@keyframes float-stars {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    left: -150%;
+  }
+  100% {
+    left: 100%;
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
   }
 }

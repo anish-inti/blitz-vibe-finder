@@ -63,13 +63,18 @@ export default {
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
 				},
-				// Blitz color scheme
+				// Enhanced Blitz color scheme
 				blitz: {
 					pink: "#FF41B4",
 					blue: "#4361EE",
 					purple: "#9B5DE5",
 					darkblue: "#1A0050",
-					lightpink: "#FFD6FF"
+					lightpink: "#FFD6FF",
+                    neonpink: "#FF00FF",
+                    electricblue: "#00FFFF",
+                    vibrantpurple: "#8A2BE2",
+                    cosmicindigo: "#4B0082",
+                    stardust: "#FFD700"
 				}
 			},
 			borderRadius: {
@@ -135,7 +140,47 @@ export default {
 					'50%': {
 						boxShadow: '0 0 20px rgba(255, 65, 180, 0.8)'
 					}
-				}
+				},
+                'float': {
+                    '0%, 100%': {
+                        transform: 'translateY(0)'
+                    },
+                    '50%': {
+                        transform: 'translateY(-10px)'
+                    }
+                },
+                'pulse-glow': {
+                    '0%, 100%': {
+                        opacity: '1',
+                        filter: 'brightness(1)'
+                    },
+                    '50%': {
+                        opacity: '0.8',
+                        filter: 'brightness(1.3)'
+                    }
+                },
+                'sparkle': {
+                    '0%': {
+                        transform: 'scale(0)',
+                        opacity: '0'
+                    },
+                    '50%': {
+                        transform: 'scale(1)',
+                        opacity: '0.8'
+                    },
+                    '100%': {
+                        transform: 'scale(0)',
+                        opacity: '0'
+                    }
+                },
+                'shimmer': {
+                    '0%': {
+                        backgroundPosition: '-468px 0'
+                    },
+                    '100%': {
+                        backgroundPosition: '468px 0'
+                    }
+                }
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
@@ -143,7 +188,11 @@ export default {
 				'fade-in': 'fade-in 0.3s ease-out',
 				'scale-in': 'scale-in 0.3s ease-out',
 				'slide-up': 'slide-up 0.4s ease-out',
-				'glow': 'glow 2s ease-in-out infinite'
+				'glow': 'glow 2s ease-in-out infinite',
+                'float': 'float 4s ease-in-out infinite',
+                'pulse-glow': 'pulse-glow 2s ease-in-out infinite',
+                'sparkle': 'sparkle 1.5s ease-in-out infinite',
+                'shimmer': 'shimmer 1.5s linear infinite'
 			}
 		}
 	},
