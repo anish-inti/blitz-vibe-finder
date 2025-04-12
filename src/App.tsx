@@ -12,6 +12,8 @@ import Search from "./pages/Search";
 import Favorites from "./pages/Favorites";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
+import Planner from "./pages/Planner";
+import SwipePage from "./pages/SwipePage";
 
 const queryClient = new QueryClient();
 
@@ -27,6 +29,8 @@ const App = () => (
           <Route path="/search" element={<Search />} />
           <Route path="/favorites" element={<Favorites />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/planner" element={<Planner />} />
+          <Route path="/swipe" element={<SwipePage />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

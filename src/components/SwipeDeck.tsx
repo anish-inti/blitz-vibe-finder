@@ -5,9 +5,10 @@ import SwipeCard, { Place } from './SwipeCard';
 interface SwipeDeckProps {
   places: Place[];
   onEmpty?: () => void;
+  onSwipe?: (direction: 'left' | 'right' | 'up') => void;
 }
 
-const SwipeDeck: React.FC<SwipeDeckProps> = ({ places, onEmpty }) => {
+const SwipeDeck: React.FC<SwipeDeckProps> = ({ places, onEmpty, onSwipe }) => {
   const [currentPlaces, setCurrentPlaces] = useState<Place[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   
@@ -15,7 +16,14 @@ const SwipeDeck: React.FC<SwipeDeckProps> = ({ places, onEmpty }) => {
     setCurrentPlaces(places);
   }, [places]);
   
-  const handleSwipe = (direction: 'left' | 'right') => {
+  const handleSwipe = (direction: 'left' | 'right' | 'up') => {
+    // If parent provided onSwipe handler, use it
+    if (onSwipe) {
+      onSwipe(direction);
+      return;
+    }
+    
+    // Otherwise use default behavior
     setTimeout(() => {
       const newPlaces = [...currentPlaces];
       newPlaces.shift();

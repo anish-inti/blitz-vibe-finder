@@ -12,28 +12,41 @@ export interface Place {
 
 interface SwipeCardProps {
   place: Place;
-  onSwipe: (direction: 'left' | 'right') => void;
+  onSwipe: (direction: 'left' | 'right' | 'up') => void;
 }
 
 const SwipeCard: React.FC<SwipeCardProps> = ({ place, onSwipe }) => {
-  const [swipeDirection, setSwipeDirection] = useState<'left' | 'right' | null>(null);
+  const [swipeDirection, setSwipeDirection] = useState<'left' | 'right' | 'up' | null>(null);
   const [startX, setStartX] = useState(0);
+  const [startY, setStartY] = useState(0);
   const [offsetX, setOffsetX] = useState(0);
+  const [offsetY, setOffsetY] = useState(0);
   const [liked, setLiked] = useState(false);
   const [saved, setSaved] = useState(false);
   
   const handleTouchStart = (e: React.TouchEvent) => {
     setStartX(e.touches[0].clientX);
+    setStartY(e.touches[0].clientY);
   };
   
   const handleTouchMove = (e: React.TouchEvent) => {
     const currentX = e.touches[0].clientX;
-    const diff = currentX - startX;
-    setOffsetX(diff);
+    const currentY = e.touches[0].clientY;
+    const diffX = currentX - startX;
+    const diffY = startY - currentY; // Inverted to make upward positive
     
-    if (diff > 50) {
+    setOffsetX(diffX);
+    setOffsetY(diffY > 0 ? diffY : 0); // Only allow upward movement
+    
+    // Determine swipe direction
+    if (diffY > 100) {
+      // Upward swipe (book)
+      setSwipeDirection('up');
+    } else if (diffX > 50) {
+      // Right swipe (like)
       setSwipeDirection('right');
-    } else if (diff < -50) {
+    } else if (diffX < -50) {
+      // Left swipe (dislike)
       setSwipeDirection('left');
     } else {
       setSwipeDirection(null);
@@ -45,6 +58,7 @@ const SwipeCard: React.FC<SwipeCardProps> = ({ place, onSwipe }) => {
       onSwipe(swipeDirection);
     }
     setOffsetX(0);
+    setOffsetY(0);
     setSwipeDirection(null);
   };
   
@@ -61,11 +75,15 @@ const SwipeCard: React.FC<SwipeCardProps> = ({ place, onSwipe }) => {
   return (
     <div 
       className={`swipe-card w-full rounded-2xl overflow-hidden shadow-lg relative max-w-md mx-auto
-        ${swipeDirection === 'left' ? 'swiping-left' : ''}
-        ${swipeDirection === 'right' ? 'swiping-right' : ''}
+        ${swipeDirection === 'left' ? 'swiping-left bg-black/80' : ''}
+        ${swipeDirection === 'right' ? 'swiping-right bg-black/80' : ''}
+        ${swipeDirection === 'up' ? 'swiping-up bg-black/80' : ''}
         border border-blitz-pink/20 shadow-blitz-pink/10
       `}
-      style={{ transform: `translateX(${offsetX}px) rotate(${offsetX * 0.05}deg)` }}
+      style={{ 
+        transform: `translateX(${offsetX}px) translateY(-${offsetY}px) rotate(${offsetX * 0.05}deg) scale(${1 - offsetY * 0.001})`,
+        opacity: offsetY > 0 ? 1 - offsetY * 0.005 : 1
+      }}
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}

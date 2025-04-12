@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -52,19 +53,25 @@ export default {
 					DEFAULT: 'hsl(var(--card))',
 					foreground: 'hsl(var(--card-foreground))'
 				},
-				// Updated Blitz color scheme - more contrast with black and neon accents
+				// Updated Blitz color scheme - black and neon accents
+				"blitz-black": "#000000",
+                "blitz-neonred": "#ea384c",
+                "blitz-pink": "#D946EF",
+                "blitz-purple": "#9b87f5",
+                "blitz-blue": "#33C3F0",
+                "blitz-stardust": "#FFDEE2",
 				blitz: {
-					pink: "#FF00FF",         // Neon pink
-					blue: "#00FFFF",         // Electric cyan blue
-					purple: "#9B5DE5",       // Vibrant purple
+					pink: "#D946EF",         // Neon pink
+					blue: "#33C3F0",         // Electric cyan blue
+					purple: "#9b87f5",       // Vibrant purple
 					darkblue: "#000000",     // Black (renamed for compatibility)
-					lightpink: "#FFD6FF",    // Soft pink
-                    neonpink: "#FF00FF",     // Neon pink (same as pink for consistency)
-                    electricblue: "#00FFFF", // Electric blue (same as blue for consistency)
-                    vibrantpurple: "#8A2BE2", // Deep purple
+					lightpink: "#FFDEE2",    // Soft pink
+                    neonpink: "#D946EF",     // Neon pink (same as pink for consistency)
+                    electricblue: "#33C3F0", // Electric blue (same as blue for consistency)
+                    vibrantpurple: "#9b87f5", // Deep purple
                     cosmicindigo: "#4B0082",  // Deep indigo
-                    stardust: "#FFD700",     // Gold/yellow
-                    neonred: "#FF0055",      // New neon red
+                    stardust: "#FFDEE2",     // Stardust
+                    neonred: "#ea384c",      // Neon red
                     black: "#000000",        // Pure black
                     darkgray: "#121212",     // Very dark gray
                     offblack: "#0A0A0A"      // Slightly off-black for layering
@@ -128,10 +135,10 @@ export default {
 				},
 				'glow': {
 					'0%, 100%': {
-						boxShadow: '0 0 5px rgba(255, 65, 180, 0.5)'
+						boxShadow: '0 0 5px rgba(234, 56, 76, 0.5)'
 					},
 					'50%': {
-						boxShadow: '0 0 20px rgba(255, 65, 180, 0.8)'
+						boxShadow: '0 0 20px rgba(234, 56, 76, 0.8)'
 					}
 				},
                 'float': {
@@ -149,21 +156,17 @@ export default {
                     },
                     '50%': {
                         opacity: '0.8',
-                        filter: 'brightness(1.3)'
+                        filter: 'brightness(1.5)'
                     }
                 },
                 'sparkle': {
-                    '0%': {
-                        transform: 'scale(0)',
-                        opacity: '0'
+                    '0%, 100%': {
+                        opacity: '0.8',
+                        transform: 'scale(1)'
                     },
                     '50%': {
-                        transform: 'scale(1)',
-                        opacity: '0.8'
-                    },
-                    '100%': {
-                        transform: 'scale(0)',
-                        opacity: '0'
+                        opacity: '0.4',
+                        transform: 'scale(0.8)'
                     }
                 },
                 'shimmer': {
@@ -184,7 +187,7 @@ export default {
 				'glow': 'glow 2s ease-in-out infinite',
                 'float': 'float 4s ease-in-out infinite',
                 'pulse-glow': 'pulse-glow 2s ease-in-out infinite',
-                'sparkle': 'sparkle 1.5s ease-in-out infinite',
+                'sparkle': 'sparkle 3s ease-in-out infinite',
                 'shimmer': 'shimmer 1.5s linear infinite'
 			}
 		}
