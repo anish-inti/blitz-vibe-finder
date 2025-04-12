@@ -175,26 +175,26 @@ const SwipePage: React.FC = () => {
   
   // Render swipe actions indicators
   const renderSwipeActions = () => (
-    <div className="flex justify-between items-center mt-4 px-4 py-2 glassmorphism rounded-full">
+    <div className="flex justify-between items-center mt-6 px-6 py-3 glassmorphism rounded-full w-64 mx-auto">
       <div className="flex flex-col items-center">
-        <div className="w-10 h-10 flex items-center justify-center bg-blitz-black/70 rounded-full border border-blitz-pink/50">
-          <X className="w-5 h-5 text-blitz-pink" />
+        <div className="w-10 h-10 flex items-center justify-center bg-blitz-gray/60 rounded-full">
+          <X className="w-4.5 h-4.5 text-white" />
         </div>
-        <span className="text-xs text-gray-400 mt-1">Dislike</span>
+        <span className="text-xs text-blitz-lightgray mt-1.5">Skip</span>
       </div>
       
       <div className="flex flex-col items-center">
-        <div className="w-10 h-10 flex items-center justify-center bg-blitz-black/70 rounded-full border border-blitz-purple/50">
-          <ArrowUp className="w-5 h-5 text-blitz-purple" />
+        <div className="w-10 h-10 flex items-center justify-center bg-blitz-gray/60 rounded-full">
+          <ArrowUp className="w-4.5 h-4.5 text-white" />
         </div>
-        <span className="text-xs text-gray-400 mt-1">Book</span>
+        <span className="text-xs text-blitz-lightgray mt-1.5">Book</span>
       </div>
       
       <div className="flex flex-col items-center">
-        <div className="w-10 h-10 flex items-center justify-center bg-blitz-black/70 rounded-full border border-blitz-neonred/50">
-          <Check className="w-5 h-5 text-blitz-neonred" />
+        <div className="w-10 h-10 flex items-center justify-center bg-blitz-pink rounded-full">
+          <Check className="w-4.5 h-4.5 text-white" />
         </div>
-        <span className="text-xs text-gray-400 mt-1">Like</span>
+        <span className="text-xs text-blitz-lightgray mt-1.5">Like</span>
       </div>
     </div>
   );
@@ -202,15 +202,15 @@ const SwipePage: React.FC = () => {
   // Render results screen
   const renderResults = () => (
     <div className="animate-fade-in text-center">
-      <div className="glassmorphism rounded-2xl p-6 border border-blitz-pink/20 backdrop-blur-lg">
-        <h2 className="text-2xl font-bold mb-4 text-white neon-text">
+      <div className="glassmorphism rounded-2xl p-7">
+        <h2 className="text-xl font-semibold mb-4 text-white">
           Your Blitz Plan
         </h2>
         
-        <p className="text-gray-300 mb-6">
+        <p className="text-blitz-lightgray mb-6 text-sm">
           You've liked {likedPlaces.length} {likedPlaces.length === 1 ? 'place' : 'places'}!
           <br />
-          <span className="text-sm text-blitz-pink">All your likes are saved to your profile</span>
+          <span className="text-xs text-blitz-pink mt-1 inline-block">Saved to your profile</span>
         </p>
         
         {likedPlaces.length > 0 ? (
@@ -218,22 +218,22 @@ const SwipePage: React.FC = () => {
             {likedPlaces.map(place => (
               <div 
                 key={place.id} 
-                className="flex items-center p-3 mb-2 bg-black/40 rounded-lg border border-blitz-pink/20"
+                className="flex items-center p-3 mb-2 bg-blitz-gray/50 rounded-xl"
               >
                 <img 
                   src={place.image} 
                   alt={place.name} 
-                  className="w-12 h-12 rounded-lg object-cover mr-3" 
+                  className="w-12 h-12 rounded-xl object-cover mr-3" 
                 />
                 <div className="text-left">
-                  <h3 className="text-white font-medium">{place.name}</h3>
-                  <p className="text-xs text-gray-400">{place.location}, {place.country}</p>
+                  <h3 className="text-white text-sm font-medium">{place.name}</h3>
+                  <p className="text-xs text-blitz-lightgray">{place.location}, {place.country}</p>
                 </div>
               </div>
             ))}
           </div>
         ) : (
-          <p className="text-blitz-pink mb-6">
+          <p className="text-blitz-pink mb-6 text-sm">
             You didn't like any places. Let's try again!
           </p>
         )}
@@ -241,14 +241,14 @@ const SwipePage: React.FC = () => {
         <div className="flex justify-center gap-4">
           <button
             onClick={handleContinuePlanning}
-            className="px-6 py-3 border-2 border-blitz-neonred text-blitz-neonred rounded-full hover:bg-blitz-neonred/10 transition-all"
+            className="px-6 py-2.5 text-sm border border-white/10 text-white rounded-full bg-blitz-gray/50 hover:bg-blitz-gray/70 transition-all active:scale-[0.98]"
           >
             Continue
           </button>
           
           <button
             onClick={handleFinishPlanning}
-            className="px-6 py-3 bg-blitz-neonred text-white rounded-full shadow-lg shadow-blitz-neonred/30 hover:shadow-blitz-neonred/50 transition-all hover:scale-105"
+            className="px-6 py-2.5 text-sm bg-blitz-pink text-white rounded-full shadow-sm hover:shadow-md transition-all active:scale-[0.98]"
           >
             Finish
           </button>
@@ -264,31 +264,31 @@ const SwipePage: React.FC = () => {
       <Header />
       
       <main className="flex-1 flex flex-col items-center justify-center px-6 pb-20 z-10">
-        <div className="w-full max-w-md mx-auto mt-4">
-          <h1 className="text-2xl font-bold mb-2 text-center text-white neon-text relative">
-            Find Your Vibe
-            <Sparkles className="absolute -right-6 top-1 w-4 h-4 text-blitz-stardust animate-pulse-glow" />
+        <div className="w-full max-w-md mx-auto mt-6">
+          <h1 className="text-xl font-semibold mb-3 text-center text-white relative tracking-tight">
+            Find Your Experience
+            <Sparkles className="absolute -right-5 top-1 w-3.5 h-3.5 text-blitz-pink opacity-70" />
           </h1>
           
-          <p className="text-center text-gray-400 mb-6">
+          <p className="text-center text-blitz-lightgray mb-6 text-sm">
             <span className="text-blitz-pink">{planData.occasion}</span> • 
-            <span className="text-blitz-purple ml-1">{planData.outingType}</span> • 
-            <span className="text-blitz-neonred ml-1">{planData.locality}km</span>
+            <span className="text-white ml-1">{planData.outingType}</span> • 
+            <span className="text-blitz-lightgray ml-1">{planData.locality}km</span>
           </p>
           
           {showResults ? (
             renderResults()
           ) : isLoading ? (
-            <div className="w-full h-64 flex flex-col items-center justify-center animate-pulse">
-              <div className="w-12 h-12 rounded-full border-2 border-t-transparent border-blitz-pink animate-spin mb-4"></div>
-              <p className="text-gray-400">Finding your vibe...</p>
+            <div className="w-full h-64 flex flex-col items-center justify-center">
+              <div className="w-8 h-8 rounded-full border border-blitz-pink/20 border-t-blitz-pink animate-spin mb-4"></div>
+              <p className="text-blitz-lightgray text-sm">Finding experiences...</p>
             </div>
           ) : error ? (
             <div className="w-full p-6 text-center glassmorphism rounded-xl">
-              <p className="text-blitz-pink mb-4">{error}</p>
+              <p className="text-white mb-4 text-sm">{error}</p>
               <button 
                 onClick={handleContinuePlanning}
-                className="px-6 py-3 bg-blitz-neonred text-white rounded-full hover:bg-blitz-neonred/80"
+                className="px-6 py-2.5 text-sm bg-blitz-pink text-white rounded-full active:scale-[0.98] transition-all"
               >
                 Try different filters
               </button>

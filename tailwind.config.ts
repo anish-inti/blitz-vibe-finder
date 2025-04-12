@@ -53,28 +53,37 @@ export default {
 					DEFAULT: 'hsl(var(--card))',
 					foreground: 'hsl(var(--card-foreground))'
 				},
-				// Updated Blitz color scheme - black and neon accents
-				"blitz-black": "#000000",
-                "blitz-neonred": "#ea384c",
-                "blitz-pink": "#D946EF",
-                "blitz-purple": "#9b87f5",
-                "blitz-blue": "#33C3F0",
-                "blitz-stardust": "#FFDEE2",
+				// Refined Apple-inspired Blitz color scheme
+				"blitz-black": "#121212",        // Soft black/charcoal
+                "blitz-pink": "#ff6ec7",         // Dusty neon pink
+                "blitz-accent": "#ff6ec7",       // Same as pink for accents
+                "blitz-gray": "#1F1F1F",         // Card background
+                "blitz-lightgray": "#8E9196",    // Text secondary
+                "blitz-offwhite": "#F1F1F1",     // Text primary
+                "blitz-stardust": "#FFDEE2",     // Soft pink highlight
+				// Keep legacy colors for backward compatibility but use more subtle variations
+				"blitz-neonred": "#e64c66",      // Toned down red
+				"blitz-purple": "#9b87c5",       // More muted purple
+				"blitz-blue": "#33a1c0",         // Toned down blue
 				blitz: {
-					pink: "#D946EF",         // Neon pink
-					blue: "#33C3F0",         // Electric cyan blue
-					purple: "#9b87f5",       // Vibrant purple
-					darkblue: "#000000",     // Black (renamed for compatibility)
-					lightpink: "#FFDEE2",    // Soft pink
-                    neonpink: "#D946EF",     // Neon pink (same as pink for consistency)
-                    electricblue: "#33C3F0", // Electric blue (same as blue for consistency)
-                    vibrantpurple: "#9b87f5", // Deep purple
-                    cosmicindigo: "#4B0082",  // Deep indigo
-                    stardust: "#FFDEE2",     // Stardust
-                    neonred: "#ea384c",      // Neon red
-                    black: "#000000",        // Pure black
-                    darkgray: "#121212",     // Very dark gray
-                    offblack: "#0A0A0A"      // Slightly off-black for layering
+					// New refined color palette
+					black: "#121212",            // Soft black/charcoal
+					charcoal: "#222222",         // Dark gray
+					gray: "#1F1F1F",             // Card background
+					lightgray: "#8E9196",        // Text secondary
+					offwhite: "#F1F1F1",         // Text primary
+					pink: "#ff6ec7",             // Main accent color
+					softpink: "#FFDEE2",         // Soft pink
+					
+					// Legacy colors with more refined values
+					neonred: "#e64c66",          // Toned down red
+					purple: "#9b87c5",           // More muted purple
+					blue: "#33a1c0",             // Toned down blue
+					
+					// UI specific colors
+					card: "#1C1C1E",             // Card background (Apple dark mode card)
+					separator: "rgba(255,255,255,0.1)", // Subtle separator
+					highlight: "rgba(255,108,199,0.15)"  // Subtle highlight
 				}
 			},
 			borderRadius: {

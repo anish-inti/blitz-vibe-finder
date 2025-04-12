@@ -74,48 +74,54 @@ const SwipeCard: React.FC<SwipeCardProps> = ({ place, onSwipe }) => {
   
   return (
     <div 
-      className={`swipe-card w-full rounded-2xl overflow-hidden shadow-lg relative max-w-md mx-auto
-        ${swipeDirection === 'left' ? 'swiping-left bg-black/80' : ''}
-        ${swipeDirection === 'right' ? 'swiping-right bg-black/80' : ''}
-        ${swipeDirection === 'up' ? 'swiping-up bg-black/80' : ''}
-        border border-blitz-pink/20 shadow-blitz-pink/10
+      className={`swipe-card w-full overflow-hidden relative max-w-md mx-auto
+        ${swipeDirection === 'left' ? 'swiping-left' : ''}
+        ${swipeDirection === 'right' ? 'swiping-right' : ''}
+        ${swipeDirection === 'up' ? 'swiping-up' : ''}
       `}
       style={{ 
-        transform: `translateX(${offsetX}px) translateY(-${offsetY}px) rotate(${offsetX * 0.05}deg) scale(${1 - offsetY * 0.001})`,
+        transform: `translateX(${offsetX}px) translateY(-${offsetY}px) rotate(${offsetX * 0.04}deg) scale(${1 - offsetY * 0.001})`,
         opacity: offsetY > 0 ? 1 - offsetY * 0.005 : 1
       }}
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
     >
-      <div className="relative aspect-[3/4] w-full overflow-hidden">
+      <div className="relative aspect-[3/4] w-full overflow-hidden rounded-2xl">
+        {/* Main Card with image */}
         <img 
           src={place.image} 
           alt={place.name} 
-          className="w-full h-full object-cover"
+          className="w-full h-full object-cover rounded-2xl"
         />
-        <div className="absolute top-0 left-0 right-0 bottom-0 bg-gradient-to-b from-transparent via-black/50 to-black opacity-80"></div>
         
-        <div className="absolute top-4 right-4 flex gap-2">
+        {/* Subtle overlay gradient */}
+        <div className="absolute top-0 left-0 right-0 bottom-0 bg-gradient-to-b from-transparent via-blitz-black/40 to-blitz-black/90 rounded-2xl"></div>
+        
+        {/* Action buttons with Apple-style design */}
+        <div className="absolute top-4 right-4 flex gap-3">
           <button 
             onClick={handleSave}
-            className="w-10 h-10 flex items-center justify-center bg-black bg-opacity-40 backdrop-blur-sm rounded-full border border-white/10 hover:border-blitz-pink/50 transition-all"
+            className="w-10 h-10 flex items-center justify-center bg-blitz-black/30 backdrop-blur-md rounded-full shadow-lg transition-all duration-200 active:scale-95"
+            style={{ WebkitTapHighlightColor: 'transparent' }}
           >
-            <Bookmark className={`w-5 h-5 ${saved ? 'fill-blitz-blue text-blitz-blue' : 'text-white'}`} />
+            <Bookmark className={`w-5 h-5 ${saved ? 'fill-blitz-pink text-blitz-pink' : 'text-white'}`} />
           </button>
           
           <button 
             onClick={handleLike}
-            className="w-10 h-10 flex items-center justify-center bg-black bg-opacity-40 backdrop-blur-sm rounded-full border border-white/10 hover:border-blitz-pink/50 transition-all"
+            className="w-10 h-10 flex items-center justify-center bg-blitz-black/30 backdrop-blur-md rounded-full shadow-lg transition-all duration-200 active:scale-95"
+            style={{ WebkitTapHighlightColor: 'transparent' }}
           >
-            <Heart className={`w-5 h-5 ${liked ? 'fill-blitz-neonred text-blitz-neonred' : 'text-white'}`} />
+            <Heart className={`w-5 h-5 ${liked ? 'fill-blitz-pink text-blitz-pink' : 'text-white'}`} />
           </button>
         </div>
         
+        {/* Apple-styled content area */}
         <div className="absolute bottom-0 left-0 right-0 p-5 text-white">
-          <h2 className="text-3xl font-bold text-shadow mb-1 neon-text">{place.name}</h2>
-          <p className="text-lg opacity-90 text-shadow">{place.location}</p>
-          <p className="text-sm opacity-80 text-shadow">{place.country}</p>
+          <h2 className="text-2xl font-semibold mb-1.5 tracking-tight">{place.name}</h2>
+          <p className="text-base text-blitz-offwhite mb-1">{place.location}</p>
+          <p className="text-sm text-blitz-lightgray">{place.country}</p>
         </div>
       </div>
     </div>
