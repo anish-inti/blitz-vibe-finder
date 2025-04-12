@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Menu, Sparkles } from 'lucide-react';
+import { Menu } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 interface HeaderProps {
@@ -9,14 +9,13 @@ interface HeaderProps {
 
 const Header: React.FC<HeaderProps> = ({ showMenu = true }) => {
   return (
-    <header className="w-full px-6 py-5 flex justify-between items-center z-10 relative bg-blitz-black/60 backdrop-blur-xl">
+    <header className="w-full px-6 py-4 flex justify-between items-center z-10 relative bg-blitz-black/60 backdrop-blur-xl">
       <Link to="/" className="flex items-center">
-        <div className="font-heading text-xl tracking-tight font-semibold relative">
-          <span className="text-white">
-            Blitz
-          </span>
-          <Sparkles className="absolute -right-5 top-0 w-3.5 h-3.5 text-blitz-pink opacity-80" />
-        </div>
+        <img 
+          src="/lovable-uploads/8c93f489-9e9c-4ba4-99c4-51175e60293f.png" 
+          alt="Blitz Logo" 
+          className="h-9 object-contain transition-all duration-200 hover:opacity-90"
+        />
       </Link>
       
       {showMenu && (
