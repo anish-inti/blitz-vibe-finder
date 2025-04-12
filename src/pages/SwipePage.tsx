@@ -6,6 +6,7 @@ import BottomNavigation from '@/components/BottomNavigation';
 import SwipeDeck from '@/components/SwipeDeck';
 import { Place } from '@/components/SwipeCard';
 import { Sparkles, ArrowRight, Check, X, ArrowUp } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 interface PlanData {
   occasion: string;
@@ -15,37 +16,7 @@ interface PlanData {
   description: string;
 }
 
-// Mock data - in a real app this would come from an API based on the planData
-const MOCK_PLACES: Place[] = [
-  {
-    id: '1',
-    name: 'VM Food Street',
-    location: 'Chennai',
-    country: 'India',
-    image: '/lovable-uploads/b752b4f7-2a81-4715-a676-9c7bd1f9c93c.png',
-  },
-  {
-    id: '2',
-    name: 'Neon Club',
-    location: 'Miami',
-    country: 'USA',
-    image: '/lovable-uploads/0d66895e-8267-4c1f-9e27-62c8bff7d8d1.png',
-  },
-  {
-    id: '3',
-    name: 'Starlight Rooftop',
-    location: 'New York',
-    country: 'USA',
-    image: '/lovable-uploads/338fb7a8-90b8-400c-a1a7-b1f2af04f5bf.png',
-  },
-  {
-    id: '4',
-    name: 'Luna Lounge',
-    location: 'Los Angeles',
-    country: 'USA',
-    image: '/lovable-uploads/02972e2d-092f-4952-88c5-fcf4ee6acc82.png',
-  },
-];
+// We'll fetch places from Supabase instead of using mock data
 
 const SwipePage: React.FC = () => {
   const location = useLocation();
@@ -53,6 +24,19 @@ const SwipePage: React.FC = () => {
   const [places, setPlaces] = useState<Place[]>([]);
   const [likedPlaces, setLikedPlaces] = useState<Place[]>([]);
   const [showResults, setShowResults] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  
+  // Helper function to handle Supabase errors
+  const handleSupabaseError = (error: any, defaultMessage: string = 'An error occurred') => {
+    console.error(error);
+    
+    if (error?.message) {
+      setError(`Error: ${error.message}`);
+    } else {
+      setError(defaultMessage);
+    }
+  };
   
   // Extract plan data from location state
   const planData = location.state as PlanData || {
@@ -64,33 +48,116 @@ const SwipePage: React.FC = () => {
   };
   
   useEffect(() => {
-    // In a real app, you would fetch places based on the planData
-    // For now, we'll use mock data
-    setTimeout(() => {
-      setPlaces(MOCK_PLACES);
-    }, 500);
-  }, []);
+    // Fetch places from Supabase based on planData filters
+    const fetchPlaces = async () => {
+      setIsLoading(true);
+      setError(null);
+      
+      console.log('Fetching places with filters:', {
+        occasion: planData.occasion,
+        outingType: planData.outingType,
+        locality: planData.locality
+      });
+      
+      try {
+        let query = supabase
+          .from('places')
+          .select('*');
+        
+        // Apply filters if they exist in planData
+        if (planData.occasion) {
+          // Handle case insensitivity by using ilike for text comparison
+          query = query.ilike('occasion', planData.occasion.toLowerCase());
+        }
+        
+        if (planData.outingType) {
+          // Handle case insensitivity by using ilike for text comparison
+          query = query.ilike('category', planData.outingType.toLowerCase());
+        }
+        
+        if (planData.locality) {
+          query = query.lte('locality', planData.locality);
+        }
+        
+        const { data, error } = await query;
+        
+        if (error) {
+          handleSupabaseError(error, 'Could not load places. Please try again later.');
+          return;
+        }
+        
+        console.log('Places retrieved from Supabase:', data);
+        
+        if (data && data.length > 0) {
+          // Transform Supabase data to match Place interface
+          const placesData: Place[] = data.map(place => ({
+            id: place.id,
+            name: place.name,
+            location: place.location,
+            country: place.country,
+            image: place.image
+          }));
+          
+          console.log('Transformed places data:', placesData);
+          setPlaces(placesData);
+        } else {
+          console.log('No places found with current filters');
+          setError('No places found with your filters. Try changing your preferences.');
+        }
+      } catch (error) {
+        console.error('Error in fetchPlaces:', error);
+        setError('An unexpected error occurred. Please try again.');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchPlaces();
+  }, [planData.occasion, planData.outingType, planData.locality]);
   
-  const handleSwipe = (direction: 'left' | 'right' | 'up') => {
+  const handleSwipe = async (direction: 'left' | 'right' | 'up') => {
     const currentPlace = places[0];
     
-    if (direction === 'right') {
+    console.log(`User swiped ${direction} on ${currentPlace.name}`);
+    
+    if (direction === 'right' || direction === 'up') {
       // User liked the place
       setLikedPlaces(prev => [...prev, currentPlace]);
-    } else if (direction === 'up') {
-      // User wants to book immediately
-      setLikedPlaces(prev => [...prev, currentPlace]);
-      // In a real app, you would redirect to booking
-      alert(`Booking ${currentPlace.name}!`);
+      console.log(`Adding ${currentPlace.name} to liked places`);
+      
+      // Save liked place to Supabase
+      try {
+        console.log(`Saving place_id ${currentPlace.id} to liked_places table`);
+        const { data, error } = await supabase
+          .from('liked_places')
+          .insert({ place_id: currentPlace.id });
+          
+        if (error) {
+          handleSupabaseError(error, 'Could not save your like. Please try again.');
+        } else {
+          console.log('Successfully saved liked place to Supabase');
+        }
+      } catch (error) {
+        console.error('Error in saving liked place:', error);
+      }
+      
+      if (direction === 'up') {
+        // User wants to book immediately
+        console.log(`User wants to book ${currentPlace.name} immediately`);
+        // In a real app, you would redirect to booking
+        alert(`Booking ${currentPlace.name}!`);
+      }
     }
     
     // Remove the swiped place
     const newPlaces = [...places];
     newPlaces.shift();
     setPlaces(newPlaces);
+    console.log(`Removed ${currentPlace.name}, ${newPlaces.length} places left`);
     
     // When no more places, show results
     if (newPlaces.length === 0) {
+      console.log('No more places, showing results');
       setShowResults(true);
     }
   };
@@ -100,8 +167,9 @@ const SwipePage: React.FC = () => {
     navigate('/planner');
   };
   
-  const handleFinishPlanning = () => {
-    // Save the plan and redirect
+  const handleFinishPlanning = async () => {
+    // Save the plan (in a real app, you might want to save the full plan to Supabase)
+    // For now, we'll just redirect to favorites with the liked places
     navigate('/favorites', { state: { likedPlaces } });
   };
   
@@ -141,6 +209,8 @@ const SwipePage: React.FC = () => {
         
         <p className="text-gray-300 mb-6">
           You've liked {likedPlaces.length} {likedPlaces.length === 1 ? 'place' : 'places'}!
+          <br />
+          <span className="text-sm text-blitz-pink">All your likes are saved to your profile</span>
         </p>
         
         {likedPlaces.length > 0 ? (
@@ -208,6 +278,21 @@ const SwipePage: React.FC = () => {
           
           {showResults ? (
             renderResults()
+          ) : isLoading ? (
+            <div className="w-full h-64 flex flex-col items-center justify-center animate-pulse">
+              <div className="w-12 h-12 rounded-full border-2 border-t-transparent border-blitz-pink animate-spin mb-4"></div>
+              <p className="text-gray-400">Finding your vibe...</p>
+            </div>
+          ) : error ? (
+            <div className="w-full p-6 text-center glassmorphism rounded-xl">
+              <p className="text-blitz-pink mb-4">{error}</p>
+              <button 
+                onClick={handleContinuePlanning}
+                className="px-6 py-3 bg-blitz-neonred text-white rounded-full hover:bg-blitz-neonred/80"
+              >
+                Try different filters
+              </button>
+            </div>
           ) : (
             <>
               <div className="relative">

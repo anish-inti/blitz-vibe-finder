@@ -21,6 +21,68 @@ export type Database = {
         }
         Relationships: []
       }
+      liked_places: {
+        Row: {
+          created_at: string
+          id: string
+          place_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          place_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          place_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "liked_places_place_id_fkey"
+            columns: ["place_id"]
+            isOneToOne: false
+            referencedRelation: "places"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      places: {
+        Row: {
+          category: string
+          country: string
+          created_at: string
+          id: string
+          image: string
+          locality: number
+          location: string
+          name: string
+          occasion: string
+        }
+        Insert: {
+          category: string
+          country: string
+          created_at?: string
+          id?: string
+          image: string
+          locality: number
+          location: string
+          name: string
+          occasion: string
+        }
+        Update: {
+          category?: string
+          country?: string
+          created_at?: string
+          id?: string
+          image?: string
+          locality?: number
+          location?: string
+          name?: string
+          occasion?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
