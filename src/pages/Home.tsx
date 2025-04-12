@@ -26,14 +26,14 @@ const Home: React.FC = () => {
   };
   
   return (
-    <div className="min-h-screen flex flex-col relative bg-blitz-black">
-      <div className="cosmic-bg absolute inset-0 z-0"></div>
+    <div className="min-h-screen flex flex-col relative bg-[#121212]">
+      <div className="bg-gradient-to-b from-[#121212] to-[#1F1F1F] absolute inset-0 z-0"></div>
       
-      {/* Animated stars */}
+      {/* Animated stars - more subtle */}
       {stars.map((star) => (
         <div
           key={star.id}
-          className="cosmic-star animate-sparkle absolute"
+          className="cosmic-star animate-sparkle absolute opacity-60"
           style={{
             top: star.top,
             left: star.left,
@@ -48,36 +48,35 @@ const Home: React.FC = () => {
       
       <main className="flex-1 flex flex-col items-center justify-center px-6 pb-20 z-10">
         <div className="w-full max-w-md mx-auto mt-4 text-center">
-          <div className="mb-8 animate-fade-in">
-            <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-blitz-neonred via-blitz-pink to-blitz-purple bg-clip-text text-transparent relative inline-block neon-text">
-              Blitz
-              <Sparkles className="absolute -right-8 top-2 w-6 h-6 text-blitz-stardust animate-pulse-glow" />
+          <div className="mb-10 animate-fade-in">
+            <h1 className="text-3xl font-semibold mb-2 text-white relative inline-block">
+              Plan Your Vibe
             </h1>
-            <p className="text-xl text-gray-300">Your perfect outing, planned in a flash</p>
+            <p className="text-lg text-gray-400">Your perfect outing, designed in a flash</p>
           </div>
           
           <div className="animate-fade-in delay-100">
-            <div className="mb-8 glassmorphism rounded-2xl overflow-hidden border border-blitz-pink/20">
-              <img 
-                src="/lovable-uploads/338fb7a8-90b8-400c-a1a7-b1f2af04f5bf.png" 
-                alt="Blitz Experience" 
-                className="w-full h-64 object-cover"
-              />
-              <div className="p-5">
-                <h2 className="text-xl font-semibold text-white mb-2">Find your next adventure</h2>
-                <p className="text-gray-300">Discover, swipe, and plan the perfect outing based on your vibe.</p>
+            <div className="mb-8 glassmorphism rounded-2xl overflow-hidden border border-white/10 hover:border-white/20 transition-all duration-300">
+              <div className="flex flex-col items-center justify-center py-16 px-8">
+                <img 
+                  src="/lovable-uploads/8c93f489-9e9c-4ba4-99c4-51175e60293f.png" 
+                  alt="Blitz Logo" 
+                  className="w-32 mb-6 animate-pulse-glow"
+                />
+                <h2 className="text-xl font-semibold text-white mb-3">Find your next adventure</h2>
+                <p className="text-gray-300 mb-8">Discover, swipe, and plan the perfect outing based on your vibe.</p>
+                
+                <button 
+                  onClick={handleStartBlitz}
+                  className="w-full max-w-xs px-10 py-3.5 bg-[#1F1F1F] text-white text-base font-medium rounded-full shadow-sm hover:bg-[#2A2A2A] active:scale-[0.98] transition-all duration-200 group"
+                >
+                  <span className="flex items-center justify-center">
+                    Start Blitzing
+                    <Zap className="ml-2 w-4 h-4 text-[#ff6ec7] opacity-90" />
+                  </span>
+                </button>
               </div>
             </div>
-            
-            <button 
-              onClick={handleStartBlitz}
-              className="px-10 py-4 bg-gradient-to-r from-blitz-neonred to-blitz-pink text-white text-lg font-semibold rounded-full shadow-lg shadow-blitz-neonred/30 hover:shadow-blitz-neonred/50 transition-all hover:scale-105 animate-pulse-glow"
-            >
-              <span className="flex items-center justify-center">
-                Start Blitzing
-                <Zap className="ml-2 w-5 h-5" />
-              </span>
-            </button>
           </div>
         </div>
       </main>
