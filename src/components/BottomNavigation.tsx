@@ -1,13 +1,32 @@
 
 import React from 'react';
-import { User, Search, MapPin, Heart, Zap } from 'lucide-react';
+import { User, Search, MapPin, Heart, Zap, Navigation } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
+import { useLocationContext } from '@/contexts/LocationContext';
 
 const BottomNavigation: React.FC = () => {
   const location = useLocation();
+  const locationContext = useLocationContext();
   
   const isActive = (path: string) => {
     return location.pathname === path;
+  };
+  
+  // Get location status indicator color
+  const getLocationStatusColor = () => {
+    switch (locationContext.status) {
+      case 'granted':
+        return 'bg-green-400';
+      case 'requesting':
+        return 'bg-yellow-400 animate-pulse';
+      case 'denied':
+        return 'bg-orange-400';
+      case 'error':
+      case 'unavailable':
+        return 'bg-red-400';
+      default:
+        return 'bg-gray-400';
+    }
   };
   
   return (
@@ -31,7 +50,12 @@ const BottomNavigation: React.FC = () => {
             : 'text-blitz-lightgray hover:text-white'
         }`}
       >
-        <MapPin className={`w-5 h-5 ${isActive('/planner') ? 'scale-105' : ''}`} />
+        <div className="relative">
+          <MapPin className={`w-5 h-5 ${isActive('/planner') ? 'scale-105' : ''}`} />
+          <div 
+            className={`absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full ${getLocationStatusColor()}`}
+          />
+        </div>
       </Link>
       
       <Link 

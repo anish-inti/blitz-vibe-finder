@@ -1,12 +1,15 @@
 
 import React, { useState, useEffect } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation as useRouterLocation, useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
 import BottomNavigation from '@/components/BottomNavigation';
 import SwipeDeck from '@/components/SwipeDeck';
 import { Place } from '@/components/SwipeCard';
-import { Sparkles, ArrowRight, Check, X, ArrowUp } from 'lucide-react';
+import { Sparkles, ArrowRight, Check, X, ArrowUp, MapPin } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { useLocationContext } from '@/contexts/LocationContext';
+import { LocationInfo } from '@/components/LocationInfo';
+import { calculateDistance } from '@/utils/locationUtils';
 
 interface PlanData {
   occasion: string;
@@ -19,13 +22,16 @@ interface PlanData {
 // We'll fetch places from Supabase instead of using mock data
 
 const SwipePage: React.FC = () => {
-  const location = useLocation();
+  const location = useRouterLocation();
   const navigate = useNavigate();
   const [places, setPlaces] = useState<Place[]>([]);
   const [likedPlaces, setLikedPlaces] = useState<Place[]>([]);
   const [showResults, setShowResults] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  
+  // Get location information from context
+  const locationContext = useLocationContext();
   
   // Helper function to handle Supabase errors
   const handleSupabaseError = (error: any, defaultMessage: string = 'An error occurred') => {
@@ -90,13 +96,40 @@ const SwipePage: React.FC = () => {
         
         if (data && data.length > 0) {
           // Transform Supabase data to match Place interface
-          const placesData: Place[] = data.map(place => ({
+          let placesData: Place[] = data.map(place => ({
             id: place.id,
             name: place.name,
             location: place.location,
             country: place.country,
             image: place.image
           }));
+          
+          // If user location is available, calculate and add distance to each place
+          // This assumes places have latitude and longitude in the database
+          // For now, we're just demonstrating the integration without using actual coordinates
+          if (locationContext.status === 'granted' && locationContext.data?.latitude && locationContext.data?.longitude) {
+            console.log('Using user location for sorting places');
+            
+            // In a real implementation, you would get latitude/longitude from your places
+            // and calculate actual distances. For this demo, we're just showing the capability.
+            
+            // Sort places by distance if we had coordinates
+            // placesData = placesData.sort((a, b) => {
+            //   const distanceA = calculateDistance(
+            //     locationContext.data!.latitude!, 
+            //     locationContext.data!.longitude!,
+            //     a.latitude, 
+            //     a.longitude
+            //   );
+            //   const distanceB = calculateDistance(
+            //     locationContext.data!.latitude!, 
+            //     locationContext.data!.longitude!,
+            //     b.latitude, 
+            //     b.longitude
+            //   );
+            //   return distanceA - distanceB;
+            // });
+          }
           
           console.log('Transformed places data:', placesData);
           setPlaces(placesData);
@@ -261,7 +294,7 @@ const SwipePage: React.FC = () => {
     <div className="min-h-screen flex flex-col relative bg-blitz-black">
       <div className="cosmic-bg absolute inset-0 z-0"></div>
       
-      <Header />
+      <Header showLocationDebug={true} />
       
       <main className="flex-1 flex flex-col items-center justify-center px-6 pb-20 z-10">
         <div className="w-full max-w-md mx-auto mt-6">
@@ -270,11 +303,16 @@ const SwipePage: React.FC = () => {
             <Sparkles className="absolute -right-5 top-1 w-3.5 h-3.5 text-blitz-pink opacity-70" />
           </h1>
           
-          <p className="text-center text-blitz-lightgray mb-6 text-sm">
+          <p className="text-center text-blitz-lightgray mb-3 text-sm">
             <span className="text-blitz-pink">{planData.occasion}</span> • 
             <span className="text-white ml-1">{planData.outingType}</span> • 
             <span className="text-blitz-lightgray ml-1">{planData.locality}km</span>
           </p>
+          
+          {/* Location Info for Debugging */}
+          <div className="mb-4">
+            <LocationInfo />
+          </div>
           
           {showResults ? (
             renderResults()
