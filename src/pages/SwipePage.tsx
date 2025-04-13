@@ -10,7 +10,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useLocationContext } from '@/contexts/LocationContext';
 import { LocationInfo } from '@/components/LocationInfo';
 import { calculateDistance } from '@/utils/locationUtils';
-import { searchNearbyPlaces, NearbySearchParams } from '@/services/googlePlacesService';
+import { getPlaceRecommendations, getFallbackRecommendations, PlaceSearchParams } from '@/services/geminiPlacesService';
 import { toast } from '@/hooks/use-toast';
 import SearchFilters, { FilterParams } from '@/components/SearchFilters';
 
@@ -56,71 +56,93 @@ const SwipePage: React.FC = () => {
     description: ''
   };
   
-  const fetchGooglePlaces = async () => {
+  const fetchAIRecommendations = async () => {
     setIsLoading(true);
     setError(null);
     
-    // Check if we have location
-    if (locationContext.status !== 'granted' || !locationContext.data?.latitude || !locationContext.data?.longitude) {
-      setError('Location access is required to find places nearby. Please enable location access.');
-      setIsLoading(false);
-      return;
-    }
-    
     try {
+      // Get location information
+      const userCity = "nearby"; // Default location term
+      const hasLocationData = locationContext.status === 'granted' && 
+                             locationContext.data?.latitude && 
+                             locationContext.data?.longitude;
+      
       // Prepare search parameters
-      const searchParams: NearbySearchParams = {
-        latitude: locationContext.data.latitude,
-        longitude: locationContext.data.longitude,
-        radius: filters.radius || planData.locality * 1000, // Convert km to meters
-        type: filters.type || planData.outingType || undefined,
-        keyword: filters.keyword || planData.occasion || undefined,
-        minprice: filters.minprice,
-        maxprice: filters.maxprice,
-        opennow: filters.opennow
+      const searchParams: PlaceSearchParams = {
+        type: filters.type || planData.outingType,
+        vibe: filters.keyword || planData.occasion,
+        location: userCity,
+        budget: filters.maxprice,
+        timeWindow: getTimeWindow(), // Helper function to determine time of day
+        opennow: filters.opennow,
+        prompt: filters.prompt,
       };
       
-      console.log('Searching for places with params:', searchParams);
-      
-      // Fetch places from Google Places API
-      const googlePlaces = await searchNearbyPlaces(searchParams);
-      
-      if (googlePlaces.length === 0) {
-        setError('No places found matching your criteria. Try adjusting your filters.');
-        setIsLoading(false);
-        return;
+      // Add geolocation if available
+      if (hasLocationData) {
+        searchParams.latitude = locationContext.data.latitude;
+        searchParams.longitude = locationContext.data.longitude;
       }
       
-      // Add distance to each place
-      const placesWithDistance = googlePlaces.map(place => {
-        const distance = place.latitude && place.longitude && locationContext.data?.latitude && locationContext.data?.longitude
-          ? calculateDistance(
-              locationContext.data.latitude,
-              locationContext.data.longitude,
-              place.latitude,
-              place.longitude
-            ) * 1000 // Convert km to meters
-          : undefined;
-          
-        return { ...place, distance };
-      });
+      console.log('Searching for AI recommendations with params:', searchParams);
       
-      // Sort by distance if available
-      const sortedPlaces = placesWithDistance.sort((a, b) => {
-        if (a.distance === undefined || b.distance === undefined) return 0;
-        return a.distance - b.distance;
-      });
+      // Fetch place recommendations from Gemini
+      const recommendations = await getPlaceRecommendations(searchParams);
       
-      console.log('Found places:', sortedPlaces);
-      setPlaces(sortedPlaces);
+      if (recommendations.length === 0) {
+        console.log('No recommendations found, trying fallback...');
+        
+        // Try a fallback search if specific search returned no results
+        const fallbackPlaces = await getFallbackRecommendations("your area");
+        
+        if (fallbackPlaces.length === 0) {
+          setError('No places found matching your criteria. Try adjusting your filters.');
+          setIsLoading(false);
+          return;
+        }
+        
+        setPlaces(fallbackPlaces);
+      } else {
+        // Add simulated distance to each place (since AI doesn't provide real coordinates)
+        const placesWithDistance = recommendations.map((place, index) => {
+          // Simulate random distances between 0.5 and 5 km
+          const simulatedDistance = (Math.random() * 4.5 + 0.5) * 1000; // in meters
+          return { ...place, distance: simulatedDistance };
+        });
+        
+        // Sort by simulated distance
+        const sortedPlaces = placesWithDistance.sort((a, b) => {
+          if (a.distance === undefined || b.distance === undefined) return 0;
+          return a.distance - b.distance;
+        });
+        
+        console.log('Found AI recommendations:', sortedPlaces);
+        setPlaces(sortedPlaces);
+      }
+      
       setIsUsingExternalApi(true);
     } catch (error) {
-      console.error('Error fetching places from Google:', error);
-      setError('Could not fetch places from Google. Falling back to database.');
+      console.error('Error fetching AI recommendations:', error);
+      setError('Could not fetch recommendations. Falling back to database.');
       // Fall back to database
       fetchDatabasePlaces();
     } finally {
       setIsLoading(false);
+    }
+  };
+  
+  // Helper function to determine time of day for recommendations
+  const getTimeWindow = (): string => {
+    const hour = new Date().getHours();
+    
+    if (hour >= 5 && hour < 12) {
+      return 'Morning';
+    } else if (hour >= 12 && hour < 17) {
+      return 'Afternoon';
+    } else if (hour >= 17 && hour < 21) {
+      return 'Evening';
+    } else {
+      return 'Night';
     }
   };
   
@@ -201,12 +223,10 @@ const SwipePage: React.FC = () => {
   
   // Effect to fetch places when component mounts or filters change
   useEffect(() => {
-    // Use Google Places API if we have the API key and user has given location access
-    if (import.meta.env.VITE_GOOGLE_MAPS_API_KEY && 
-        locationContext.status === 'granted' && 
-        locationContext.data?.latitude && 
-        locationContext.data?.longitude) {
-      fetchGooglePlaces();
+    // Use AI recommendations if we can get location or have filter data
+    if (locationContext.status === 'granted' || 
+        filters.prompt || planData.occasion || planData.outingType) {
+      fetchAIRecommendations();
     } else {
       // Fall back to database places
       fetchDatabasePlaces();
@@ -224,14 +244,8 @@ const SwipePage: React.FC = () => {
       });
     }
     
-    if (import.meta.env.VITE_GOOGLE_MAPS_API_KEY && 
-        locationContext.status === 'granted' && 
-        locationContext.data?.latitude && 
-        locationContext.data?.longitude) {
-      fetchGooglePlaces();
-    } else {
-      fetchDatabasePlaces();
-    }
+    // Always try AI recommendations first, fall back to database
+    fetchAIRecommendations();
   };
   
   const handleSwipe = async (direction: 'left' | 'right' | 'up') => {
@@ -324,14 +338,8 @@ const SwipePage: React.FC = () => {
   
   const handleRetry = () => {
     // Try again with current filters
-    if (import.meta.env.VITE_GOOGLE_MAPS_API_KEY && 
-        locationContext.status === 'granted' && 
-        locationContext.data?.latitude && 
-        locationContext.data?.longitude) {
-      fetchGooglePlaces();
-    } else {
-      fetchDatabasePlaces();
-    }
+    // Always try AI recommendations first, fall back to database
+    fetchAIRecommendations();
   };
   
   // Render swipe actions indicators

@@ -8,6 +8,7 @@ export interface Place {
   location: string;
   country: string;
   image: string;
+  description?: string;    // Added for AI-generated recommendations
   rating?: number;
   reviewCount?: number;
   priceLevel?: number;
@@ -215,14 +216,28 @@ const SwipeCard: React.FC<SwipeCardProps> = ({ place, onSwipe }) => {
             {place.country && `, ${place.country}`}
           </p>
           
+          {/* Description from AI recommendations */}
+          {place.description && (
+            <p className="text-sm text-blitz-offwhite/80 mt-1 mb-2 line-clamp-2">
+              {place.description}
+            </p>
+          )}
+          
           <div className="flex items-center gap-3 mt-2">
             {renderDistance()}
-            {place.longitude && place.latitude && (
+            {place.longitude && place.latitude ? (
               <button 
                 className="text-xs text-blitz-pink"
                 onClick={() => window.open(`https://maps.google.com/?q=${place.latitude},${place.longitude}`, '_blank')}
               >
                 View on map
+              </button>
+            ) : (
+              <button 
+                className="text-xs text-blitz-pink"
+                onClick={() => window.open(`https://www.google.com/search?q=${place.name} ${place.location}`, '_blank')}
+              >
+                Search online
               </button>
             )}
           </div>

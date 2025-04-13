@@ -13,7 +13,7 @@ Blitz is a location-based discovery app that helps users find interesting places
 ## Required API Keys
 
 To use the external API features, you'll need:
-- Google Maps Places API key with Places API enabled (add to `.env` file)
+- Google AI Studio (Gemini) API key for place recommendations (add to `.env` file)
 
 ## Project info
 
