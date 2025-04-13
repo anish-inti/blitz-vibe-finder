@@ -5,11 +5,14 @@ import Header from '@/components/Header';
 import BottomNavigation from '@/components/BottomNavigation';
 import SwipeDeck from '@/components/SwipeDeck';
 import { Place } from '@/components/SwipeCard';
-import { Sparkles, ArrowRight, Check, X, ArrowUp, MapPin } from 'lucide-react';
+import { Sparkles, ArrowRight, Check, X, ArrowUp, MapPin, Filter } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useLocationContext } from '@/contexts/LocationContext';
 import { LocationInfo } from '@/components/LocationInfo';
 import { calculateDistance } from '@/utils/locationUtils';
+import { searchNearbyPlaces, NearbySearchParams } from '@/services/googlePlacesService';
+import { toast } from '@/hooks/use-toast';
+import SearchFilters, { FilterParams } from '@/components/SearchFilters';
 
 interface PlanData {
   occasion: string;
@@ -19,8 +22,6 @@ interface PlanData {
   description: string;
 }
 
-// We'll fetch places from Supabase instead of using mock data
-
 const SwipePage: React.FC = () => {
   const location = useRouterLocation();
   const navigate = useNavigate();
@@ -29,6 +30,8 @@ const SwipePage: React.FC = () => {
   const [showResults, setShowResults] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isUsingExternalApi, setIsUsingExternalApi] = useState(false);
+  const [filters, setFilters] = useState<FilterParams>({});
   
   // Get location information from context
   const locationContext = useLocationContext();
@@ -53,102 +56,187 @@ const SwipePage: React.FC = () => {
     description: ''
   };
   
-  useEffect(() => {
-    // Fetch places from Supabase based on planData filters
-    const fetchPlaces = async () => {
-      setIsLoading(true);
-      setError(null);
+  const fetchGooglePlaces = async () => {
+    setIsLoading(true);
+    setError(null);
+    
+    // Check if we have location
+    if (locationContext.status !== 'granted' || !locationContext.data?.latitude || !locationContext.data?.longitude) {
+      setError('Location access is required to find places nearby. Please enable location access.');
+      setIsLoading(false);
+      return;
+    }
+    
+    try {
+      // Prepare search parameters
+      const searchParams: NearbySearchParams = {
+        latitude: locationContext.data.latitude,
+        longitude: locationContext.data.longitude,
+        radius: filters.radius || planData.locality * 1000, // Convert km to meters
+        type: filters.type || planData.outingType || undefined,
+        keyword: filters.keyword || planData.occasion || undefined,
+        minprice: filters.minprice,
+        maxprice: filters.maxprice,
+        opennow: filters.opennow
+      };
       
-      console.log('Fetching places with filters:', {
-        occasion: planData.occasion,
-        outingType: planData.outingType,
-        locality: planData.locality
+      console.log('Searching for places with params:', searchParams);
+      
+      // Fetch places from Google Places API
+      const googlePlaces = await searchNearbyPlaces(searchParams);
+      
+      if (googlePlaces.length === 0) {
+        setError('No places found matching your criteria. Try adjusting your filters.');
+        setIsLoading(false);
+        return;
+      }
+      
+      // Add distance to each place
+      const placesWithDistance = googlePlaces.map(place => {
+        const distance = place.latitude && place.longitude && locationContext.data?.latitude && locationContext.data?.longitude
+          ? calculateDistance(
+              locationContext.data.latitude,
+              locationContext.data.longitude,
+              place.latitude,
+              place.longitude
+            ) * 1000 // Convert km to meters
+          : undefined;
+          
+        return { ...place, distance };
       });
       
-      try {
-        let query = supabase
-          .from('places')
-          .select('*');
-        
-        // Apply filters if they exist in planData
-        if (planData.occasion) {
-          // Handle case insensitivity by using ilike for text comparison
-          query = query.ilike('occasion', planData.occasion.toLowerCase());
-        }
-        
-        if (planData.outingType) {
-          // Handle case insensitivity by using ilike for text comparison
-          query = query.ilike('category', planData.outingType.toLowerCase());
-        }
-        
-        if (planData.locality) {
-          query = query.lte('locality', planData.locality);
-        }
-        
-        const { data, error } = await query;
-        
-        if (error) {
-          handleSupabaseError(error, 'Could not load places. Please try again later.');
-          return;
-        }
-        
-        console.log('Places retrieved from Supabase:', data);
-        
-        if (data && data.length > 0) {
-          // Transform Supabase data to match Place interface
-          let placesData: Place[] = data.map(place => ({
-            id: place.id,
-            name: place.name,
-            location: place.location,
-            country: place.country,
-            image: place.image
-          }));
-          
-          // If user location is available, calculate and add distance to each place
-          // This assumes places have latitude and longitude in the database
-          // For now, we're just demonstrating the integration without using actual coordinates
-          if (locationContext.status === 'granted' && locationContext.data?.latitude && locationContext.data?.longitude) {
-            console.log('Using user location for sorting places');
-            
-            // In a real implementation, you would get latitude/longitude from your places
-            // and calculate actual distances. For this demo, we're just showing the capability.
-            
-            // Sort places by distance if we had coordinates
-            // placesData = placesData.sort((a, b) => {
-            //   const distanceA = calculateDistance(
-            //     locationContext.data!.latitude!, 
-            //     locationContext.data!.longitude!,
-            //     a.latitude, 
-            //     a.longitude
-            //   );
-            //   const distanceB = calculateDistance(
-            //     locationContext.data!.latitude!, 
-            //     locationContext.data!.longitude!,
-            //     b.latitude, 
-            //     b.longitude
-            //   );
-            //   return distanceA - distanceB;
-            // });
-          }
-          
-          console.log('Transformed places data:', placesData);
-          setPlaces(placesData);
-        } else {
-          console.log('No places found with current filters');
-          setError('No places found with your filters. Try changing your preferences.');
-        }
-      } catch (error) {
-        console.error('Error in fetchPlaces:', error);
-        setError('An unexpected error occurred. Please try again.');
-      } finally {
-        setIsLoading(false);
-      }
-    };
+      // Sort by distance if available
+      const sortedPlaces = placesWithDistance.sort((a, b) => {
+        if (a.distance === undefined || b.distance === undefined) return 0;
+        return a.distance - b.distance;
+      });
+      
+      console.log('Found places:', sortedPlaces);
+      setPlaces(sortedPlaces);
+      setIsUsingExternalApi(true);
+    } catch (error) {
+      console.error('Error fetching places from Google:', error);
+      setError('Could not fetch places from Google. Falling back to database.');
+      // Fall back to database
+      fetchDatabasePlaces();
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
+  const fetchDatabasePlaces = async () => {
+    setIsLoading(true);
+    setError(null);
+    setIsUsingExternalApi(false);
     
-    fetchPlaces();
-  }, [planData.occasion, planData.outingType, planData.locality]);
+    console.log('Fetching places from database with filters:', {
+      occasion: planData.occasion,
+      outingType: planData.outingType,
+      locality: planData.locality
+    });
+    
+    try {
+      let query = supabase
+        .from('places')
+        .select('*');
+      
+      // Apply filters if they exist in planData
+      if (planData.occasion) {
+        // Handle case insensitivity by using ilike for text comparison
+        query = query.ilike('occasion', planData.occasion.toLowerCase());
+      }
+      
+      if (planData.outingType) {
+        // Handle case insensitivity by using ilike for text comparison
+        query = query.ilike('category', planData.outingType.toLowerCase());
+      }
+      
+      if (planData.locality) {
+        query = query.lte('locality', planData.locality);
+      }
+      
+      const { data, error } = await query;
+      
+      if (error) {
+        handleSupabaseError(error, 'Could not load places. Please try again later.');
+        return;
+      }
+      
+      console.log('Places retrieved from Supabase:', data);
+      
+      if (data && data.length > 0) {
+        // Transform Supabase data to match Place interface
+        let placesData: Place[] = data.map(place => ({
+          id: place.id,
+          name: place.name,
+          location: place.location,
+          country: place.country,
+          image: place.image,
+          category: place.category
+        }));
+        
+        // If user location is available, calculate and add distance to each place
+        // This assumes places have latitude and longitude in the database
+        if (locationContext.status === 'granted' && locationContext.data?.latitude && locationContext.data?.longitude) {
+          console.log('Using user location for sorting places');
+          
+          // In a real implementation, we would calculate actual distances
+          // But for now we're just showing the capability
+          // This would require adding lat/long to the places table
+        }
+        
+        console.log('Transformed places data:', placesData);
+        setPlaces(placesData);
+      } else {
+        console.log('No places found with current filters');
+        setError('No places found with your filters. Try changing your preferences.');
+      }
+    } catch (error) {
+      console.error('Error in fetchDatabasePlaces:', error);
+      setError('An unexpected error occurred. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
+  // Effect to fetch places when component mounts or filters change
+  useEffect(() => {
+    // Use Google Places API if we have the API key and user has given location access
+    if (import.meta.env.VITE_GOOGLE_MAPS_API_KEY && 
+        locationContext.status === 'granted' && 
+        locationContext.data?.latitude && 
+        locationContext.data?.longitude) {
+      fetchGooglePlaces();
+    } else {
+      // Fall back to database places
+      fetchDatabasePlaces();
+    }
+  }, [locationContext.status, planData.occasion, planData.outingType, planData.locality]);
+  
+  const handleApplyFilters = (newFilters: FilterParams) => {
+    setFilters(newFilters);
+    
+    // If user entered a prompt, show a processing toast
+    if (newFilters.prompt) {
+      toast({
+        title: 'Processing your request',
+        description: `Looking for "${newFilters.prompt}" near you...`,
+      });
+    }
+    
+    if (import.meta.env.VITE_GOOGLE_MAPS_API_KEY && 
+        locationContext.status === 'granted' && 
+        locationContext.data?.latitude && 
+        locationContext.data?.longitude) {
+      fetchGooglePlaces();
+    } else {
+      fetchDatabasePlaces();
+    }
+  };
   
   const handleSwipe = async (direction: 'left' | 'right' | 'up') => {
+    if (places.length === 0) return;
+    
     const currentPlace = places[0];
     
     console.log(`User swiped ${direction} on ${currentPlace.name}`);
@@ -160,6 +248,31 @@ const SwipePage: React.FC = () => {
       
       // Save liked place to Supabase
       try {
+        // Check if we need to save the Google Place to our database first
+        if (isUsingExternalApi) {
+          console.log(`Saving Google Place to places table`);
+          
+          // First insert the place if it doesn't exist in our database
+          const { data: placeData, error: placeError } = await supabase
+            .from('places')
+            .upsert({
+              id: currentPlace.id,
+              name: currentPlace.name,
+              location: currentPlace.location,
+              country: currentPlace.country,
+              image: currentPlace.image || '/placeholder.svg',
+              category: currentPlace.category || 'place',
+              occasion: '', // Default empty occasion
+              locality: 5 // Default locality
+            })
+            .select();
+            
+          if (placeError) {
+            console.error('Error saving Google Place to database:', placeError);
+          }
+        }
+        
+        // Now save to liked_places
         console.log(`Saving place_id ${currentPlace.id} to liked_places table`);
         const { data, error } = await supabase
           .from('liked_places')
@@ -178,7 +291,10 @@ const SwipePage: React.FC = () => {
         // User wants to book immediately
         console.log(`User wants to book ${currentPlace.name} immediately`);
         // In a real app, you would redirect to booking
-        alert(`Booking ${currentPlace.name}!`);
+        toast({
+          title: 'Booking in progress',
+          description: `Booking ${currentPlace.name}...`,
+        });
       }
     }
     
@@ -204,6 +320,18 @@ const SwipePage: React.FC = () => {
     // Save the plan (in a real app, you might want to save the full plan to Supabase)
     // For now, we'll just redirect to favorites with the liked places
     navigate('/favorites', { state: { likedPlaces } });
+  };
+  
+  const handleRetry = () => {
+    // Try again with current filters
+    if (import.meta.env.VITE_GOOGLE_MAPS_API_KEY && 
+        locationContext.status === 'granted' && 
+        locationContext.data?.latitude && 
+        locationContext.data?.longitude) {
+      fetchGooglePlaces();
+    } else {
+      fetchDatabasePlaces();
+    }
   };
   
   // Render swipe actions indicators
@@ -296,23 +424,31 @@ const SwipePage: React.FC = () => {
       
       <Header showLocationDebug={true} />
       
-      <main className="flex-1 flex flex-col items-center justify-center px-6 pb-20 z-10">
+      <main className="flex-1 flex flex-col items-center px-6 pb-20 z-10">
         <div className="w-full max-w-md mx-auto mt-6">
           <h1 className="text-xl font-semibold mb-3 text-center text-white relative tracking-tight">
             Find Your Experience
             <Sparkles className="absolute -right-5 top-1 w-3.5 h-3.5 text-blitz-pink opacity-70" />
           </h1>
           
-          <p className="text-center text-blitz-lightgray mb-3 text-sm">
-            <span className="text-blitz-pink">{planData.occasion}</span> • 
-            <span className="text-white ml-1">{planData.outingType}</span> • 
-            <span className="text-blitz-lightgray ml-1">{planData.locality}km</span>
-          </p>
-          
-          {/* Location Info for Debugging */}
+          {/* Search and filters */}
           <div className="mb-4">
-            <LocationInfo />
+            <SearchFilters 
+              onApplyFilters={handleApplyFilters}
+              initialFilters={{
+                type: planData.outingType || undefined,
+                keyword: planData.occasion || undefined,
+                radius: planData.locality * 1000, // Convert km to meters
+              }}
+            />
           </div>
+          
+          {/* Conditional debugging info */}
+          {import.meta.env.DEV && (
+            <div className="mb-4">
+              <LocationInfo />
+            </div>
+          )}
           
           {showResults ? (
             renderResults()
@@ -324,12 +460,20 @@ const SwipePage: React.FC = () => {
           ) : error ? (
             <div className="w-full p-6 text-center glassmorphism rounded-xl">
               <p className="text-white mb-4 text-sm">{error}</p>
-              <button 
-                onClick={handleContinuePlanning}
-                className="px-6 py-2.5 text-sm bg-blitz-pink text-white rounded-full active:scale-[0.98] transition-all"
-              >
-                Try different filters
-              </button>
+              <div className="flex justify-center gap-3">
+                <button 
+                  onClick={handleContinuePlanning}
+                  className="px-6 py-2.5 text-sm border border-white/10 text-white rounded-full bg-blitz-gray/50 hover:bg-blitz-gray/70 transition-all active:scale-[0.98]"
+                >
+                  Change filters
+                </button>
+                <button 
+                  onClick={handleRetry}
+                  className="px-6 py-2.5 text-sm bg-blitz-pink text-white rounded-full active:scale-[0.98] transition-all"
+                >
+                  Try again
+                </button>
+              </div>
             </div>
           ) : (
             <>

@@ -1,4 +1,19 @@
-# Welcome to your Lovable project
+# Blitz - Location-Based Discovery App
+
+Blitz is a location-based discovery app that helps users find interesting places and experiences around them based on their preferences and location.
+
+## Features
+
+- **Location-Based Discovery**: Find places near your current location
+- **Filtering Options**: Filter by type, price, distance, and more
+- **Natural Language Processing**: Describe what you're looking for in plain text
+- **Tinder-Style Swiping**: Swipe through place cards to like or skip
+- **Save Favorites**: Keep track of places you like
+
+## Required API Keys
+
+To use the external API features, you'll need:
+- Google Maps Places API key with Places API enabled (add to `.env` file)
 
 ## Project info
 

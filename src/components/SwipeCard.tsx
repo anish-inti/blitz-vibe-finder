@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Heart, Bookmark } from 'lucide-react';
+import { Heart, Bookmark, Star, MapPin, Clock } from 'lucide-react';
 
 export interface Place {
   id: string;
@@ -8,6 +8,14 @@ export interface Place {
   location: string;
   country: string;
   image: string;
+  rating?: number;
+  reviewCount?: number;
+  priceLevel?: number;
+  isOpen?: boolean;
+  category?: string;
+  distance?: number;
+  latitude?: number;
+  longitude?: number;
 }
 
 interface SwipeCardProps {
@@ -65,11 +73,81 @@ const SwipeCard: React.FC<SwipeCardProps> = ({ place, onSwipe }) => {
   const handleLike = (e: React.MouseEvent) => {
     e.stopPropagation();
     setLiked(!liked);
+    if (!liked) {
+      onSwipe('right');
+    }
   };
   
   const handleSave = (e: React.MouseEvent) => {
     e.stopPropagation();
     setSaved(!saved);
+  };
+  
+  // Helper to render price level
+  const renderPriceLevel = () => {
+    if (place.priceLevel === undefined) return null;
+    
+    return (
+      <div className="text-blitz-lightgray text-xs">
+        {Array(place.priceLevel + 1).join('$')}
+      </div>
+    );
+  };
+  
+  // Helper to render distance
+  const renderDistance = () => {
+    if (place.distance === undefined) return null;
+    
+    const formattedDistance = place.distance >= 1000 
+      ? `${(place.distance / 1000).toFixed(1)}km` 
+      : `${Math.round(place.distance)}m`;
+    
+    return (
+      <div className="flex items-center text-blitz-lightgray text-xs">
+        <MapPin className="w-3 h-3 mr-1" />
+        {formattedDistance}
+      </div>
+    );
+  };
+  
+  // Helper to render rating
+  const renderRating = () => {
+    if (place.rating === undefined) return null;
+    
+    return (
+      <div className="flex items-center text-blitz-lightgray text-xs">
+        <Star className="w-3 h-3 mr-1 text-yellow-400 fill-yellow-400" />
+        {place.rating.toFixed(1)}
+        {place.reviewCount !== undefined && (
+          <span className="ml-1">({place.reviewCount})</span>
+        )}
+      </div>
+    );
+  };
+  
+  // Helper to render open status
+  const renderOpenStatus = () => {
+    if (place.isOpen === undefined) return null;
+    
+    return (
+      <div className="flex items-center text-xs">
+        <Clock className="w-3 h-3 mr-1" />
+        <span className={place.isOpen ? "text-green-400" : "text-red-400"}>
+          {place.isOpen ? "Open" : "Closed"}
+        </span>
+      </div>
+    );
+  };
+  
+  // Helper to render category as a badge
+  const renderCategory = () => {
+    if (!place.category) return null;
+    
+    return (
+      <div className="inline-block bg-blitz-gray/60 backdrop-blur-md px-2 py-0.5 rounded-full text-xs text-white">
+        {place.category}
+      </div>
+    );
   };
   
   return (
@@ -98,6 +176,11 @@ const SwipeCard: React.FC<SwipeCardProps> = ({ place, onSwipe }) => {
         {/* Subtle overlay gradient */}
         <div className="absolute top-0 left-0 right-0 bottom-0 bg-gradient-to-b from-transparent via-blitz-black/40 to-blitz-black/90 rounded-2xl"></div>
         
+        {/* Category badge */}
+        <div className="absolute top-4 left-4">
+          {renderCategory()}
+        </div>
+        
         {/* Action buttons with Apple-style design */}
         <div className="absolute top-4 right-4 flex gap-3">
           <button 
@@ -120,8 +203,29 @@ const SwipeCard: React.FC<SwipeCardProps> = ({ place, onSwipe }) => {
         {/* Apple-styled content area */}
         <div className="absolute bottom-0 left-0 right-0 p-5 text-white">
           <h2 className="text-2xl font-semibold mb-1.5 tracking-tight">{place.name}</h2>
-          <p className="text-base text-blitz-offwhite mb-1">{place.location}</p>
-          <p className="text-sm text-blitz-lightgray">{place.country}</p>
+          
+          <div className="flex items-center gap-3 mb-1">
+            {renderRating()}
+            {renderPriceLevel()}
+            {renderOpenStatus()}
+          </div>
+          
+          <p className="text-base text-blitz-offwhite mb-1">
+            {place.location}
+            {place.country && `, ${place.country}`}
+          </p>
+          
+          <div className="flex items-center gap-3 mt-2">
+            {renderDistance()}
+            {place.longitude && place.latitude && (
+              <button 
+                className="text-xs text-blitz-pink"
+                onClick={() => window.open(`https://maps.google.com/?q=${place.latitude},${place.longitude}`, '_blank')}
+              >
+                View on map
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </div>
