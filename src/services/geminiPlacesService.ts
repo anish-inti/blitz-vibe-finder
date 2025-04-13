@@ -225,9 +225,9 @@ export const getPlaceRecommendations = async (params: PlaceSearchParams): Promis
     console.log('Sending request to Gemini API with prompt:', prompt);
     
     // Call the Gemini API
-    // Updated to use the correct API endpoint (v1 instead of v1beta)
+    // Using the correct model name for the v1 API
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1/models/gemini-1.0-pro:generateContent?key=${apiKey}`,
+      `https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent?key=${apiKey}`,
       {
         method: 'POST',
         headers: {
@@ -271,9 +271,23 @@ export const getPlaceRecommendations = async (params: PlaceSearchParams): Promis
     }
   } catch (error) {
     console.error('Error fetching place recommendations:', error);
+    
+    // Provide more specific error messages
+    let errorMessage = 'An unknown error occurred';
+    if (error instanceof Error) {
+      errorMessage = error.message;
+      
+      // Check for common API errors
+      if (errorMessage.includes('NOT_FOUND') && errorMessage.includes('models/')) {
+        errorMessage = 'The AI model is currently unavailable. Using fallback recommendations.';
+      } else if (errorMessage.includes('status 4')) {
+        errorMessage = 'Could not connect to recommendation service. Using fallback data.';
+      }
+    }
+    
     toast({
       title: 'Error fetching recommendations',
-      description: error instanceof Error ? error.message : 'An unknown error occurred',
+      description: errorMessage,
       variant: 'destructive',
     });
     return [];
