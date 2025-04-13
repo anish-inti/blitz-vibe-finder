@@ -203,8 +203,8 @@ export const getPlaceRecommendations = async (params: PlaceSearchParams): Promis
   ...more places
 ]`;
     
-    // Prepare the request
-    const apiKey = import.meta.env.VITE_GEMINI_API_KEY || "AIzaSyBaqSa1VVV-PRR-0MsjwFdVOo8BMqpDFFU"; // Use env var or fallback to provided key
+    // Prepare the request - Using the environment variable with fallback
+    const apiKey = import.meta.env.VITE_GEMINI_API_KEY || "AIzaSyBaqSa1VVV-PRR-0MsjwFdVOo8BMqpDFFU";
     
     const requestBody = {
       contents: [
@@ -225,8 +225,9 @@ export const getPlaceRecommendations = async (params: PlaceSearchParams): Promis
     console.log('Sending request to Gemini API with prompt:', prompt);
     
     // Call the Gemini API
+    // Updated to use the correct API endpoint (v1 instead of v1beta)
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`,
+      `https://generativelanguage.googleapis.com/v1/models/gemini-1.0-pro:generateContent?key=${apiKey}`,
       {
         method: 'POST',
         headers: {

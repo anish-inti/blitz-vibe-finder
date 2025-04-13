@@ -56,6 +56,62 @@ const SwipePage: React.FC = () => {
     description: ''
   };
   
+  // Generate mock places for testing when API fails
+  const generateMockPlaces = (): Place[] => {
+    const mockImages = [
+      '/placeholder.svg',
+      'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4',
+      'https://images.unsplash.com/photo-1552566626-52f8b828add9',
+      'https://images.unsplash.com/photo-1514933651103-005eec06c04b',
+      'https://images.unsplash.com/photo-1555396273-367ea4eb4db5'
+    ];
+    
+    return [
+      {
+        id: 'mock-1',
+        name: 'Cafe Sunshine',
+        location: 'Downtown',
+        country: 'India',
+        image: mockImages[1],
+        description: 'A cozy cafe with great coffee and pastries. Perfect for a relaxing afternoon.',
+        rating: 4.5,
+        reviewCount: 120,
+        priceLevel: 2,
+        isOpen: true,
+        category: 'cafe',
+        distance: 1200
+      },
+      {
+        id: 'mock-2',
+        name: 'Urban Park',
+        location: 'City Center',
+        country: 'India',
+        image: mockImages[2],
+        description: 'A beautiful urban park with walking trails and scenic views.',
+        rating: 4.2,
+        reviewCount: 85,
+        priceLevel: 1,
+        isOpen: true,
+        category: 'park',
+        distance: 800
+      },
+      {
+        id: 'mock-3',
+        name: 'Spice Route Restaurant',
+        location: 'Market Street',
+        country: 'India',
+        image: mockImages[3],
+        description: 'Authentic local cuisine with a modern twist. Great for dinner with friends.',
+        rating: 4.7,
+        reviewCount: 210,
+        priceLevel: 3,
+        isOpen: true,
+        category: 'restaurant',
+        distance: 1500
+      }
+    ];
+  };
+  
   const fetchAIRecommendations = async () => {
     setIsLoading(true);
     setError(null);
@@ -123,9 +179,16 @@ const SwipePage: React.FC = () => {
       setIsUsingExternalApi(true);
     } catch (error) {
       console.error('Error fetching AI recommendations:', error);
-      setError('Could not fetch recommendations. Falling back to database.');
-      // Fall back to database
-      fetchDatabasePlaces();
+      
+      // First try to use mock data for testing instead of showing an error
+      const mockPlaces = generateMockPlaces();
+      console.log('Using mock places as fallback:', mockPlaces);
+      toast({
+        title: 'Using demo data',
+        description: 'Could not connect to recommendation API. Showing sample places instead.',
+      });
+      setPlaces(mockPlaces);
+      setIsUsingExternalApi(true);
     } finally {
       setIsLoading(false);
     }
@@ -226,6 +289,8 @@ const SwipePage: React.FC = () => {
     // Use AI recommendations if we can get location or have filter data
     if (locationContext.status === 'granted' || 
         filters.prompt || planData.occasion || planData.outingType) {
+      console.log('Location status:', locationContext.status);
+      console.log('Location data:', locationContext.data);
       fetchAIRecommendations();
     } else {
       // Fall back to database places
