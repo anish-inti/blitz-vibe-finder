@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useLocation as useRouterLocation, useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
@@ -33,10 +32,8 @@ const SwipePage: React.FC = () => {
   const [isUsingExternalApi, setIsUsingExternalApi] = useState(false);
   const [filters, setFilters] = useState<FilterParams>({});
   
-  // Get location information from context
   const locationContext = useLocationContext();
   
-  // Helper function to handle Supabase errors
   const handleSupabaseError = (error: any, defaultMessage: string = 'An error occurred') => {
     console.error(error);
     
@@ -47,7 +44,6 @@ const SwipePage: React.FC = () => {
     }
   };
   
-  // Extract plan data from location state
   const planData = location.state as PlanData || {
     occasion: '',
     outingType: '',
@@ -56,7 +52,6 @@ const SwipePage: React.FC = () => {
     description: ''
   };
   
-  // Generate mock places for testing when API fails
   const generateMockPlaces = (): Place[] => {
     const mockImages = [
       '/placeholder.svg',
@@ -112,89 +107,6 @@ const SwipePage: React.FC = () => {
     ];
   };
   
-  const fetchAIRecommendations = async () => {
-    setIsLoading(true);
-    setError(null);
-    
-    try {
-      // Get location information
-      const userCity = "nearby"; // Default location term
-      const hasLocationData = locationContext.status === 'granted' && 
-                             locationContext.data?.latitude && 
-                             locationContext.data?.longitude;
-      
-      // Prepare search parameters
-      const searchParams: PlaceSearchParams = {
-        type: filters.type || planData.outingType,
-        vibe: filters.keyword || planData.occasion,
-        location: userCity,
-        budget: filters.maxprice,
-        timeWindow: getTimeWindow(), // Helper function to determine time of day
-        opennow: filters.opennow,
-        prompt: filters.prompt,
-      };
-      
-      // Add geolocation if available
-      if (hasLocationData) {
-        searchParams.latitude = locationContext.data.latitude;
-        searchParams.longitude = locationContext.data.longitude;
-      }
-      
-      console.log('Searching for AI recommendations with params:', searchParams);
-      
-      // Fetch place recommendations from Gemini
-      const recommendations = await getPlaceRecommendations(searchParams);
-      
-      if (recommendations.length === 0) {
-        console.log('No recommendations found, trying fallback...');
-        
-        // Try a fallback search if specific search returned no results
-        const fallbackPlaces = await getFallbackRecommendations("your area");
-        
-        if (fallbackPlaces.length === 0) {
-          setError('No places found matching your criteria. Try adjusting your filters.');
-          setIsLoading(false);
-          return;
-        }
-        
-        setPlaces(fallbackPlaces);
-      } else {
-        // Add simulated distance to each place (since AI doesn't provide real coordinates)
-        const placesWithDistance = recommendations.map((place, index) => {
-          // Simulate random distances between 0.5 and 5 km
-          const simulatedDistance = (Math.random() * 4.5 + 0.5) * 1000; // in meters
-          return { ...place, distance: simulatedDistance };
-        });
-        
-        // Sort by simulated distance
-        const sortedPlaces = placesWithDistance.sort((a, b) => {
-          if (a.distance === undefined || b.distance === undefined) return 0;
-          return a.distance - b.distance;
-        });
-        
-        console.log('Found AI recommendations:', sortedPlaces);
-        setPlaces(sortedPlaces);
-      }
-      
-      setIsUsingExternalApi(true);
-    } catch (error) {
-      console.error('Error fetching AI recommendations:', error);
-      
-      // First try to use mock data for testing instead of showing an error
-      const mockPlaces = generateMockPlaces();
-      console.log('Using mock places as fallback:', mockPlaces);
-      toast({
-        title: 'Using demo data',
-        description: 'Could not connect to recommendation API. Showing sample places instead.',
-      });
-      setPlaces(mockPlaces);
-      setIsUsingExternalApi(true);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-  
-  // Helper function to determine time of day for recommendations
   const getTimeWindow = (): string => {
     const hour = new Date().getHours();
     
@@ -217,22 +129,17 @@ const SwipePage: React.FC = () => {
     console.log('Fetching places from database with filters:', {
       occasion: planData.occasion,
       outingType: planData.outingType,
-      locality: planData.locality
+      locality: planData.locality,
     });
     
     try {
-      let query = supabase
-        .from('places')
-        .select('*');
+      let query = supabase.from('places').select('*');
       
-      // Apply filters if they exist in planData
       if (planData.occasion) {
-        // Handle case insensitivity by using ilike for text comparison
         query = query.ilike('occasion', planData.occasion.toLowerCase());
       }
       
       if (planData.outingType) {
-        // Handle case insensitivity by using ilike for text comparison
         query = query.ilike('category', planData.outingType.toLowerCase());
       }
       
@@ -250,67 +157,36 @@ const SwipePage: React.FC = () => {
       console.log('Places retrieved from Supabase:', data);
       
       if (data && data.length > 0) {
-        // Transform Supabase data to match Place interface
         let placesData: Place[] = data.map(place => ({
           id: place.id,
           name: place.name,
           location: place.location,
           country: place.country,
           image: place.image,
-          category: place.category
+          category: place.category,
         }));
         
-        // If user location is available, calculate and add distance to each place
-        // This assumes places have latitude and longitude in the database
-        if (locationContext.status === 'granted' && locationContext.data?.latitude && locationContext.data?.longitude) {
-          console.log('Using user location for sorting places');
-          
-          // In a real implementation, we would calculate actual distances
-          // But for now we're just showing the capability
-          // This would require adding lat/long to the places table
-        }
-        
-        console.log('Transformed places data:', placesData);
         setPlaces(placesData);
       } else {
-        console.log('No places found with current filters');
         setError('No places found with your filters. Try changing your preferences.');
+        setPlaces([]);
       }
     } catch (error) {
       console.error('Error in fetchDatabasePlaces:', error);
       setError('An unexpected error occurred. Please try again.');
+      setPlaces([]);
     } finally {
       setIsLoading(false);
     }
   };
   
-  // Effect to fetch places when component mounts or filters change
   useEffect(() => {
-    // Use AI recommendations if we can get location or have filter data
-    if (locationContext.status === 'granted' || 
-        filters.prompt || planData.occasion || planData.outingType) {
-      console.log('Location status:', locationContext.status);
-      console.log('Location data:', locationContext.data);
-      fetchAIRecommendations();
-    } else {
-      // Fall back to database places
-      fetchDatabasePlaces();
-    }
-  }, [locationContext.status, planData.occasion, planData.outingType, planData.locality]);
+    fetchDatabasePlaces();
+  }, [planData.occasion, planData.outingType, planData.locality, filters]);
   
   const handleApplyFilters = (newFilters: FilterParams) => {
     setFilters(newFilters);
-    
-    // If user entered a prompt, show a processing toast
-    if (newFilters.prompt) {
-      toast({
-        title: 'Processing your request',
-        description: `Looking for "${newFilters.prompt}" near you...`,
-      });
-    }
-    
-    // Always try AI recommendations first, fall back to database
-    fetchAIRecommendations();
+    fetchDatabasePlaces();
   };
   
   const handleSwipe = async (direction: 'left' | 'right' | 'up') => {
@@ -321,17 +197,13 @@ const SwipePage: React.FC = () => {
     console.log(`User swiped ${direction} on ${currentPlace.name}`);
     
     if (direction === 'right' || direction === 'up') {
-      // User liked the place
       setLikedPlaces(prev => [...prev, currentPlace]);
       console.log(`Adding ${currentPlace.name} to liked places`);
       
-      // Save liked place to Supabase
       try {
-        // Check if we need to save the Google Place to our database first
         if (isUsingExternalApi) {
           console.log(`Saving Google Place to places table`);
           
-          // First insert the place if it doesn't exist in our database
           const { data: placeData, error: placeError } = await supabase
             .from('places')
             .upsert({
@@ -341,8 +213,8 @@ const SwipePage: React.FC = () => {
               country: currentPlace.country,
               image: currentPlace.image || '/placeholder.svg',
               category: currentPlace.category || 'place',
-              occasion: '', // Default empty occasion
-              locality: 5 // Default locality
+              occasion: '',
+              locality: 5
             })
             .select();
             
@@ -351,7 +223,6 @@ const SwipePage: React.FC = () => {
           }
         }
         
-        // Now save to liked_places
         console.log(`Saving place_id ${currentPlace.id} to liked_places table`);
         const { data, error } = await supabase
           .from('liked_places')
@@ -367,9 +238,7 @@ const SwipePage: React.FC = () => {
       }
       
       if (direction === 'up') {
-        // User wants to book immediately
         console.log(`User wants to book ${currentPlace.name} immediately`);
-        // In a real app, you would redirect to booking
         toast({
           title: 'Booking in progress',
           description: `Booking ${currentPlace.name}...`,
@@ -377,13 +246,11 @@ const SwipePage: React.FC = () => {
       }
     }
     
-    // Remove the swiped place
     const newPlaces = [...places];
     newPlaces.shift();
     setPlaces(newPlaces);
     console.log(`Removed ${currentPlace.name}, ${newPlaces.length} places left`);
     
-    // When no more places, show results
     if (newPlaces.length === 0) {
       console.log('No more places, showing results');
       setShowResults(true);
@@ -391,23 +258,17 @@ const SwipePage: React.FC = () => {
   };
   
   const handleContinuePlanning = () => {
-    // Reset to start planning again
     navigate('/planner');
   };
   
   const handleFinishPlanning = async () => {
-    // Save the plan (in a real app, you might want to save the full plan to Supabase)
-    // For now, we'll just redirect to favorites with the liked places
     navigate('/favorites', { state: { likedPlaces } });
   };
   
   const handleRetry = () => {
-    // Try again with current filters
-    // Always try AI recommendations first, fall back to database
-    fetchAIRecommendations();
+    fetchDatabasePlaces();
   };
   
-  // Render swipe actions indicators
   const renderSwipeActions = () => (
     <div className="flex justify-between items-center mt-6 px-6 py-3 glassmorphism rounded-full w-64 mx-auto">
       <div className="flex flex-col items-center">
@@ -433,7 +294,6 @@ const SwipePage: React.FC = () => {
     </div>
   );
   
-  // Render results screen
   const renderResults = () => (
     <div className="animate-fade-in text-center">
       <div className="glassmorphism rounded-2xl p-7">
@@ -504,19 +364,17 @@ const SwipePage: React.FC = () => {
             <Sparkles className="absolute -right-5 top-1 w-3.5 h-3.5 text-blitz-pink opacity-70" />
           </h1>
           
-          {/* Search and filters */}
           <div className="mb-4">
             <SearchFilters 
               onApplyFilters={handleApplyFilters}
               initialFilters={{
                 type: planData.outingType || undefined,
                 keyword: planData.occasion || undefined,
-                radius: planData.locality * 1000, // Convert km to meters
+                radius: planData.locality * 1000,
               }}
             />
           </div>
           
-          {/* Conditional debugging info */}
           {import.meta.env.DEV && (
             <div className="mb-4">
               <LocationInfo />
