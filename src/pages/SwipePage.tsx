@@ -1,18 +1,16 @@
-import React, { useState, useEffect } from 'react';
-import { useLocation as useRouterLocation, useNavigate } from 'react-router-dom';
+
+import React from 'react';
+import { useLocation as useRouterLocation } from 'react-router-dom';
 import Header from '@/components/Header';
 import BottomNavigation from '@/components/BottomNavigation';
 import SwipeDeck from '@/components/SwipeDeck';
-import { Place } from '@/components/SwipeCard';
-import { Sparkles, ArrowRight, Check, X, ArrowUp } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import { Sparkles } from 'lucide-react';
 import { useLocationContext } from '@/contexts/LocationContext';
 import { LocationInfo } from '@/components/LocationInfo';
-import { toast } from '@/hooks/use-toast';
-import SearchFilters, { FilterParams } from '@/components/SearchFilters';
+import SearchFilters from '@/components/SearchFilters';
 import SwipeResults from '@/components/SwipeResults';
 import SwipeActions from '@/components/SwipeActions';
-import { fetchChennaiPlaces } from '@/utils/fetchPlaces';
+import { useSwipePlaces } from '@/hooks/useSwipePlaces';
 
 interface PlanData {
   occasion: string;
@@ -24,17 +22,9 @@ interface PlanData {
 
 const SwipePage: React.FC = () => {
   const location = useRouterLocation();
-  const navigate = useNavigate();
-  const [places, setPlaces] = useState<Place[]>([]);
-  const [likedPlaces, setLikedPlaces] = useState<Place[]>([]);
-  const [showResults, setShowResults] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [filters, setFilters] = useState<FilterParams>({});
-  
   const locationContext = useLocationContext();
-  
-  const planData = location.state as PlanData || {
+
+  const planData: PlanData = location.state as PlanData || {
     occasion: '',
     outingType: '',
     locality: 5,
@@ -42,82 +32,23 @@ const SwipePage: React.FC = () => {
     description: ''
   };
 
-  const handleSupabaseError = (error: any, defaultMessage: string = 'An error occurred') => {
-    console.error(error);
-    
-    if (error?.message) {
-      setError(`Error: ${error.message}`);
-    } else {
-      setError(defaultMessage);
-    }
-  };
-  
-  const fetchDatabasePlaces = async () => {
-    setIsLoading(true);
-    setError(null);
-
-    const { places, error } = await fetchChennaiPlaces({ planData, filters });
-    setPlaces(places);
-    setError(error);
-    setIsLoading(false);
-  };
-
-  useEffect(() => {
-    fetchDatabasePlaces();
-  }, [planData.occasion, planData.outingType, planData.locality, filters]);
-  
-  const handleApplyFilters = (newFilters: FilterParams) => {
-    setFilters(newFilters);
-  };
-  
-  const handleSwipe = async (direction: 'left' | 'right' | 'up') => {
-    if (places.length === 0) return;
-    
-    const currentPlace = places[0];
-    
-    if (direction === 'right' || direction === 'up') {
-      setLikedPlaces(prev => [...prev, currentPlace]);
-      
-      try {
-        const { error } = await supabase
-          .from('liked_places')
-          .insert({ place_id: currentPlace.id });
-          
-        if (error) {
-          handleSupabaseError(error, 'Could not save your like. Please try again.');
-        }
-      } catch (error) {
-        console.error('Error in saving liked place:', error);
-      }
-
-      if (direction === 'up') {
-        toast({
-          title: 'Booking in progress',
-          description: `Booking ${currentPlace.name}...`,
-        });
-      }
-    }
-    
-    const newPlaces = [...places];
-    newPlaces.shift();
-    setPlaces(newPlaces);
-    
-    if (newPlaces.length === 0) {
-      setShowResults(true);
-    }
-  };
-  
-  const handleContinuePlanning = () => {
-    navigate('/planner');
-  };
-  
-  const handleFinishPlanning = () => {
-    navigate('/favorites', { state: { likedPlaces } });
-  };
-  
-  const handleRetry = () => {
-    fetchDatabasePlaces();
-  };
+  const {
+    places,
+    likedPlaces,
+    showResults,
+    isLoading,
+    error,
+    filters,
+    handleApplyFilters,
+    handleSwipe,
+    handleContinuePlanning,
+    handleFinishPlanning,
+    handleRetry,
+  } = useSwipePlaces(planData, {
+    type: planData.outingType || undefined,
+    keyword: planData.occasion || undefined,
+    radius: planData.locality * 1000,
+  });
 
   return (
     <div className="min-h-screen flex flex-col relative bg-blitz-black">
@@ -192,3 +123,4 @@ const SwipePage: React.FC = () => {
 };
 
 export default SwipePage;
+
