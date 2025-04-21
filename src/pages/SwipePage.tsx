@@ -1,15 +1,14 @@
+
 import React, { useState, useEffect } from 'react';
 import { useLocation as useRouterLocation, useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
 import BottomNavigation from '@/components/BottomNavigation';
 import SwipeDeck from '@/components/SwipeDeck';
 import { Place } from '@/components/SwipeCard';
-import { Sparkles, ArrowRight, Check, X, ArrowUp, MapPin, Filter } from 'lucide-react';
+import { Sparkles, ArrowRight, Check, X, ArrowUp } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useLocationContext } from '@/contexts/LocationContext';
 import { LocationInfo } from '@/components/LocationInfo';
-import { calculateDistance } from '@/utils/locationUtils';
-import { getPlaceRecommendations, getFallbackRecommendations, PlaceSearchParams } from '@/services/geminiPlacesService';
 import { toast } from '@/hooks/use-toast';
 import SearchFilters, { FilterParams } from '@/components/SearchFilters';
 
@@ -29,11 +28,18 @@ const SwipePage: React.FC = () => {
   const [showResults, setShowResults] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isUsingExternalApi, setIsUsingExternalApi] = useState(false);
   const [filters, setFilters] = useState<FilterParams>({});
   
   const locationContext = useLocationContext();
   
+  const planData = location.state as PlanData || {
+    occasion: '',
+    outingType: '',
+    locality: 5,
+    timing: new Date(),
+    description: ''
+  };
+
   const handleSupabaseError = (error: any, defaultMessage: string = 'An error occurred') => {
     console.error(error);
     
@@ -44,129 +50,64 @@ const SwipePage: React.FC = () => {
     }
   };
   
-  const planData = location.state as PlanData || {
-    occasion: '',
-    outingType: '',
-    locality: 5,
-    timing: new Date(),
-    description: ''
-  };
-  
-  const generateMockPlaces = (): Place[] => {
-    const mockImages = [
-      '/placeholder.svg',
-      'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4',
-      'https://images.unsplash.com/photo-1552566626-52f8b828add9',
-      'https://images.unsplash.com/photo-1514933651103-005eec06c04b',
-      'https://images.unsplash.com/photo-1555396273-367ea4eb4db5'
-    ];
-    
-    return [
-      {
-        id: 'mock-1',
-        name: 'Cafe Sunshine',
-        location: 'Downtown',
-        country: 'India',
-        image: mockImages[1],
-        description: 'A cozy cafe with great coffee and pastries. Perfect for a relaxing afternoon.',
-        rating: 4.5,
-        reviewCount: 120,
-        priceLevel: 2,
-        isOpen: true,
-        category: 'cafe',
-        distance: 1200
-      },
-      {
-        id: 'mock-2',
-        name: 'Urban Park',
-        location: 'City Center',
-        country: 'India',
-        image: mockImages[2],
-        description: 'A beautiful urban park with walking trails and scenic views.',
-        rating: 4.2,
-        reviewCount: 85,
-        priceLevel: 1,
-        isOpen: true,
-        category: 'park',
-        distance: 800
-      },
-      {
-        id: 'mock-3',
-        name: 'Spice Route Restaurant',
-        location: 'Market Street',
-        country: 'India',
-        image: mockImages[3],
-        description: 'Authentic local cuisine with a modern twist. Great for dinner with friends.',
-        rating: 4.7,
-        reviewCount: 210,
-        priceLevel: 3,
-        isOpen: true,
-        category: 'restaurant',
-        distance: 1500
-      }
-    ];
-  };
-  
-  const getTimeWindow = (): string => {
-    const hour = new Date().getHours();
-    
-    if (hour >= 5 && hour < 12) {
-      return 'Morning';
-    } else if (hour >= 12 && hour < 17) {
-      return 'Afternoon';
-    } else if (hour >= 17 && hour < 21) {
-      return 'Evening';
-    } else {
-      return 'Night';
-    }
-  };
-  
   const fetchDatabasePlaces = async () => {
     setIsLoading(true);
     setError(null);
-    setIsUsingExternalApi(false);
-    
-    console.log('Fetching places from database with filters:', {
-      occasion: planData.occasion,
-      outingType: planData.outingType,
-      locality: planData.locality,
-    });
-    
+
     try {
       let query = supabase.from('places').select('*');
       
+      // Filter only if filter values are truthy
       if (planData.occasion) {
-        query = query.ilike('occasion', planData.occasion.toLowerCase());
+        query = query.ilike('occasion', `%${planData.occasion.toLowerCase()}%`);
       }
       
       if (planData.outingType) {
-        query = query.ilike('category', planData.outingType.toLowerCase());
+        query = query.ilike('category', `%${planData.outingType.toLowerCase()}%`);
       }
       
-      if (planData.locality) {
+      if (planData.locality && planData.locality > 0) {
         query = query.lte('locality', planData.locality);
       }
       
-      const { data, error } = await query;
-      
-      if (error) {
-        handleSupabaseError(error, 'Could not load places. Please try again later.');
-        return;
+      // Apply optional filters from filters state
+      if (filters.keyword) {
+        query = query.ilike('name', `%${filters.keyword}%`);
       }
       
-      console.log('Places retrieved from Supabase:', data);
-      
+      if (filters.type) {
+        query = query.ilike('category', `%${filters.type}%`);
+      }
+
+      if (filters.maxprice !== undefined && filters.maxprice !== 4) {
+        // Note: The places table does not have priceLevel field, so we skip price filtering here or you can adjust if priceLevel added later
+      }
+
+      // Opennow and radius are not available in current DB, skipping for now
+
+      const { data, error } = await query;
+
+      if (error) {
+        handleSupabaseError(error, 'Could not load places. Please try again later.');
+        setPlaces([]);
+        setIsLoading(false);
+        return;
+      }
+
       if (data && data.length > 0) {
-        let placesData: Place[] = data.map(place => ({
+        const placesData: Place[] = data.map(place => ({
           id: place.id,
           name: place.name,
           location: place.location,
           country: place.country,
           image: place.image,
           category: place.category,
+          occasion: place.occasion,
+          locality: place.locality,
         }));
-        
+
         setPlaces(placesData);
+        setError(null);
       } else {
         setError('No places found with your filters. Try changing your preferences.');
         setPlaces([]);
@@ -179,14 +120,13 @@ const SwipePage: React.FC = () => {
       setIsLoading(false);
     }
   };
-  
+
   useEffect(() => {
     fetchDatabasePlaces();
   }, [planData.occasion, planData.outingType, planData.locality, filters]);
   
   const handleApplyFilters = (newFilters: FilterParams) => {
     setFilters(newFilters);
-    fetchDatabasePlaces();
   };
   
   const handleSwipe = async (direction: 'left' | 'right' | 'up') => {
@@ -194,51 +134,23 @@ const SwipePage: React.FC = () => {
     
     const currentPlace = places[0];
     
-    console.log(`User swiped ${direction} on ${currentPlace.name}`);
-    
     if (direction === 'right' || direction === 'up') {
       setLikedPlaces(prev => [...prev, currentPlace]);
-      console.log(`Adding ${currentPlace.name} to liked places`);
       
       try {
-        if (isUsingExternalApi) {
-          console.log(`Saving Google Place to places table`);
-          
-          const { data: placeData, error: placeError } = await supabase
-            .from('places')
-            .upsert({
-              id: currentPlace.id,
-              name: currentPlace.name,
-              location: currentPlace.location,
-              country: currentPlace.country,
-              image: currentPlace.image || '/placeholder.svg',
-              category: currentPlace.category || 'place',
-              occasion: '',
-              locality: 5
-            })
-            .select();
-            
-          if (placeError) {
-            console.error('Error saving Google Place to database:', placeError);
-          }
-        }
-        
-        console.log(`Saving place_id ${currentPlace.id} to liked_places table`);
-        const { data, error } = await supabase
+        // Save liked place
+        const { error } = await supabase
           .from('liked_places')
           .insert({ place_id: currentPlace.id });
           
         if (error) {
           handleSupabaseError(error, 'Could not save your like. Please try again.');
-        } else {
-          console.log('Successfully saved liked place to Supabase');
         }
       } catch (error) {
         console.error('Error in saving liked place:', error);
       }
-      
+
       if (direction === 'up') {
-        console.log(`User wants to book ${currentPlace.name} immediately`);
         toast({
           title: 'Booking in progress',
           description: `Booking ${currentPlace.name}...`,
@@ -249,10 +161,8 @@ const SwipePage: React.FC = () => {
     const newPlaces = [...places];
     newPlaces.shift();
     setPlaces(newPlaces);
-    console.log(`Removed ${currentPlace.name}, ${newPlaces.length} places left`);
     
     if (newPlaces.length === 0) {
-      console.log('No more places, showing results');
       setShowResults(true);
     }
   };
@@ -261,7 +171,7 @@ const SwipePage: React.FC = () => {
     navigate('/planner');
   };
   
-  const handleFinishPlanning = async () => {
+  const handleFinishPlanning = () => {
     navigate('/favorites', { state: { likedPlaces } });
   };
   
@@ -427,3 +337,4 @@ const SwipePage: React.FC = () => {
 };
 
 export default SwipePage;
+
