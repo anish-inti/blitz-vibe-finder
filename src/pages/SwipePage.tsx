@@ -12,6 +12,7 @@ import { toast } from '@/hooks/use-toast';
 import SearchFilters, { FilterParams } from '@/components/SearchFilters';
 import SwipeResults from '@/components/SwipeResults';
 import SwipeActions from '@/components/SwipeActions';
+import { fetchChennaiPlaces } from '@/utils/fetchPlaces';
 
 interface PlanData {
   occasion: string;
@@ -55,67 +56,10 @@ const SwipePage: React.FC = () => {
     setIsLoading(true);
     setError(null);
 
-    try {
-      let query = supabase.from('places').select('*');
-      
-      if (planData.occasion) {
-        query = query.ilike('occasion', `%${planData.occasion.toLowerCase()}%`);
-      }
-      
-      if (planData.outingType) {
-        query = query.ilike('category', `%${planData.outingType.toLowerCase()}%`);
-      }
-      
-      if (planData.locality && planData.locality > 0) {
-        query = query.lte('locality', planData.locality);
-      }
-      
-      if (filters.keyword) {
-        query = query.ilike('name', `%${filters.keyword}%`);
-      }
-      
-      if (filters.type) {
-        query = query.ilike('category', `%${filters.type}%`);
-      }
-
-      if (filters.maxprice !== undefined && filters.maxprice !== 4) {
-        // Note: The places table does not have priceLevel field, so we skip price filtering here or you can adjust if priceLevel added later
-      }
-
-      const { data, error } = await query;
-
-      if (error) {
-        handleSupabaseError(error, 'Could not load places. Please try again later.');
-        setPlaces([]);
-        setIsLoading(false);
-        return;
-      }
-
-      if (data && data.length > 0) {
-        const placesData: Place[] = data.map(place => ({
-          id: place.id,
-          name: place.name,
-          location: place.location,
-          country: place.country,
-          image: place.image,
-          category: place.category,
-          occasion: place.occasion,
-          locality: place.locality,
-        }));
-
-        setPlaces(placesData);
-        setError(null);
-      } else {
-        setError('No places found with your filters. Try changing your preferences.');
-        setPlaces([]);
-      }
-    } catch (error) {
-      console.error('Error in fetchDatabasePlaces:', error);
-      setError('An unexpected error occurred. Please try again.');
-      setPlaces([]);
-    } finally {
-      setIsLoading(false);
-    }
+    const { places, error } = await fetchChennaiPlaces({ planData, filters });
+    setPlaces(places);
+    setError(error);
+    setIsLoading(false);
   };
 
   useEffect(() => {
