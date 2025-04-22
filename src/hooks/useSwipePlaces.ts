@@ -40,13 +40,8 @@ export function useSwipePlaces(planData: PlanData, initialFilters: FilterParams)
     setError(null);
     
     try {
-      // First attempt to fetch from our database
-      const { places, error } = await fetchChennaiPlaces({ planData, filters });
-      
-      // If we couldn't get places from the database or received an error,
-      // fallback to search simulation
-      if (error || places.length === 0) {
-        console.log("Database fetch failed or returned no results, falling back to search simulation");
+      if (useSimulation) {
+        // If user has explicitly chosen to use simulated data
         const { places: simulatedPlaces, error: simulationError } = 
           await simulateGoogleSearch("Chennai, India", filters);
         
@@ -56,17 +51,32 @@ export function useSwipePlaces(planData: PlanData, initialFilters: FilterParams)
         } else {
           setPlaces(simulatedPlaces);
           setError(null);
-          if (!useSimulation) {
-            setUseSimulation(true);
-            toast({
-              title: "Using simulated search results",
-              description: "We're showing you simulated search results for places in Chennai."
-            });
-          }
         }
       } else {
-        setPlaces(places);
-        setError(null);
+        // Default: try database first
+        const { places: dbPlaces, error: dbError } = await fetchChennaiPlaces({ planData, filters });
+        
+        if (dbError || dbPlaces.length === 0) {
+          console.log("Database fetch failed or returned no results, falling back to search simulation");
+          const { places: simulatedPlaces, error: simulationError } = 
+            await simulateGoogleSearch("Chennai, India", filters);
+          
+          if (simulationError) {
+            setError(simulationError);
+            setPlaces([]);
+          } else {
+            setPlaces(simulatedPlaces);
+            setError(null);
+            toast({
+              title: "Using simulated search results",
+              description: "We're showing you simulated search results as no database results were found."
+            });
+          }
+        } else {
+          console.log("Successfully fetched places from database:", dbPlaces);
+          setPlaces(dbPlaces);
+          setError(null);
+        }
       }
     } catch (err) {
       console.error("Error fetching places:", err);
@@ -79,7 +89,7 @@ export function useSwipePlaces(planData: PlanData, initialFilters: FilterParams)
   useEffect(() => {
     fetchDatabasePlaces();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [planData.occasion, planData.outingType, planData.locality, filters]);
+  }, [planData.occasion, planData.outingType, planData.locality, filters, useSimulation]);
 
   const handleApplyFilters = (newFilters: FilterParams) => {
     setFilters(newFilters);
@@ -93,7 +103,7 @@ export function useSwipePlaces(planData: PlanData, initialFilters: FilterParams)
       setLikedPlaces(prev => [...prev, currentPlace]);
 
       // Only save to database if it's not a simulated place ID
-      if (!currentPlace.id.startsWith('sim-')) {
+      if (!currentPlace.id.toString().startsWith('sim-')) {
         try {
           const { error } = await supabase
             .from('liked_places')

@@ -141,65 +141,108 @@ function generateSyntheticResults(searchQuery: string): Place[] {
   const numPlaces = Math.floor(Math.random() * 6) + 3;
   const results: Place[] = [];
   
-  // Place name prefixes and suffixes for generating synthetic names
-  const prefixes = ['The', 'Royal', 'Blue', 'Green', 'Golden', 'Silver', 'Urban', 'Classic', 'Modern'];
-  const suffixes = ['Place', 'Spot', 'Corner', 'Hub', 'Zone', 'Point', 'Square', 'Garden', 'View'];
+  // Real restaurant names for Chennai, categorized by type
+  const realPlaceNames: Record<string, string[]> = {
+    'restaurants': [
+      'Dakshin', 'Peshawri', 'Southern Spice', 'Benjarong', 
+      'Avartana', 'Jamavar', 'The Flying Elephant', 'Madras Pavilion', 
+      'Eden', 'Mainland China', 'Bombay Brasserie', 'Focaccia',
+      'Ottimo', 'Pan Asian', 'Royal Vega', 'Buhari', 'Saravana Bhavan',
+      'Murugan Idli', 'Junior Kuppanna', 'Dindigul Thalappakatti'
+    ],
+    'cafes': [
+      'Amethyst Cafe', 'Writers Cafe', 'Chamiers Cafe', 'Cafe de Paris',
+      'Old Madras Baking Company', 'The English Tearoom', 'Lloyds Tea House',
+      'Ciclo Cafe', 'Alwarpet Cafe', 'Cafe Mercara Express', 'Sandy\'s Chocolate Laboratory',
+      'The Brew Room', 'Ashvita Cafe', 'French Loaf', 'Tryst Cafe'
+    ],
+    'bars': [
+      'The Vault', 'Radio Room', 'Leather Bar', 'Illusions', 'The Flying Elephant',
+      'Pasha', 'Blend Bar', 'The Cheroot Malt & Cigar Lounge', 'Haze',
+      'Q Bar', 'The Velveteen Rabbit', 'Library Blu', 'The Vintage Bank'
+    ],
+    'parks': [
+      'Semmozhi Poonga', 'Guindy National Park', 'Tholkappia Poonga', 
+      'Chetpet Eco Park', 'Nageswara Rao Park', 'Anna Nagar Tower Park',
+      'Elliot\'s Beach', 'Marina Beach', 'Adyar Eco Park', 'Theosophical Society Gardens'
+    ],
+    'museums': [
+      'Government Museum', 'Egmore Museum', 'Fort Museum', 'Chennai Rail Museum',
+      'Birla Planetarium', 'Vivekananda House', 'DakshinaChitra Museum',
+      'Chennai Citi Centre Heritage Museum', 'Cholamandal Artists\' Village'
+    ],
+    'shopping malls': [
+      'Phoenix Marketcity', 'VR Chennai', 'Express Avenue', 'Palladium', 
+      'Forum Vijaya Mall', 'Spencer Plaza', 'Ampa Skywalk', 'Grand Mall',
+      'Abirami Mega Mall', 'Chennai Citi Centre'
+    ],
+    'tourist attractions': [
+      'Kapaleeshwarar Temple', 'San Thome Basilica', 'Fort St. George',
+      'Marina Beach', 'Valluvar Kottam', 'Elliot\'s Beach', 'MGM Dizzee World',
+      'Mahabalipuram Shore Temple', 'Dakshina Chitra', 'Santhome Church',
+      'Government Museum', 'Guindy National Park', 'Ripon Building'
+    ]
+  };
   
   // Sample descriptions based on place type
   const descriptions = {
     'restaurants': [
-      'Popular for its authentic cuisine and warm ambiance.',
-      'Known for farm-to-table dishes and excellent service.',
-      'Fusion cuisine with a modern twist in an elegant setting.',
-      'Family-owned restaurant serving traditional recipes.',
-      'Award-winning chef creating innovative seasonal menus.'
+      'Serves authentic Tamil cuisine in a traditional setting.',
+      'Known for its fresh seafood and signature spice blends.',
+      'Modern fusion restaurant combining local and international flavors.',
+      'Family-owned restaurant serving recipes passed down through generations.',
+      'Fine dining experience with innovative takes on South Indian classics.'
     ],
     'cafes': [
-      'Cozy spot known for artisanal coffee and pastries.',
-      'Bright, airy café with homemade desserts and Wi-Fi.',
-      'Specialty coffee shop with a relaxed atmosphere.',
-      'Book-themed café perfect for reading or working.',
-      'Organic café serving health-conscious options.'
+      'Cozy spot known for artisanal coffee and freshly baked pastries.',
+      'Bright, airy café with homemade desserts and free Wi-Fi.',
+      'Literary-themed café perfect for reading or working.',
+      'Organic café serving health-conscious options and fresh juices.',
+      'European-style café with outdoor seating and great ambiance.'
     ],
     'bars': [
       'Trendy cocktail bar with live music on weekends.',
-      'Casual pub with an extensive craft beer selection.',
-      'Rooftop bar offering stunning city views and signature drinks.',
+      'Rooftop bar offering stunning city views and craft cocktails.',
       'Speakeasy-style bar known for creative mixology.',
-      'Sports bar with multiple screens and casual food.'
+      'Sports bar with multiple screens and casual South Indian bar food.',
+      'Elegant lounge with an extensive wine and whiskey selection.'
     ],
     'parks': [
-      'Sprawling green space with walking trails and picnic areas.',
+      'Sprawling green space with walking trails and native flora.',
       'Urban park featuring beautiful gardens and water features.',
       'Family-friendly park with playgrounds and open fields.',
       'Historic park with monuments and seasonal flower displays.',
       'Riverside park offering scenic views and recreational activities.'
     ],
     'default': [
-      'Popular local spot with excellent reviews.',
-      'Hidden gem recommended by locals and tourists alike.',
+      'Popular local spot highly recommended by Chennai residents.',
+      'Hidden gem away from the typical tourist routes.',
       'Highly-rated destination with a unique atmosphere.',
-      'Well-known for its welcoming environment and service.',
-      'Top-rated location with distinctive character.'
+      'Well-known for its welcoming environment and authentic experience.',
+      'Top-rated location that showcases the best of Chennai culture.'
     ]
   };
   
   // Generate synthetic places
   for (let i = 0; i < numPlaces; i++) {
-    const prefix = prefixes[Math.floor(Math.random() * prefixes.length)];
-    const suffix = suffixes[Math.floor(Math.random() * suffixes.length)];
+    // Select a place name based on category
+    const categoryKey = placeType.toLowerCase().includes('restaurant') ? 'restaurants' : 
+                        placeType.toLowerCase().includes('cafe') ? 'cafes' :
+                        placeType.toLowerCase().includes('bar') ? 'bars' :
+                        placeType.toLowerCase().includes('park') ? 'parks' :
+                        placeType.toLowerCase().includes('museum') ? 'museums' :
+                        placeType.toLowerCase().includes('shopping') ? 'shopping malls' :
+                        placeType.toLowerCase().includes('attraction') ? 'tourist attractions' : 'restaurants';
     
-    // Create a name that reflects the place type and matched keywords
-    let placeName = `${prefix} ${suffix}`;
-    if (placeType !== 'place') {
-      // Convert plurals to singular for the name (e.g., "restaurants" to "restaurant")
-      const singularType = placeType.endsWith('s') ? placeType.slice(0, -1) : placeType;
-      placeName = `${prefix} ${singularType.charAt(0).toUpperCase() + singularType.slice(1)}`;
-    }
+    const placeNames = realPlaceNames[categoryKey as keyof typeof realPlaceNames] || realPlaceNames.restaurants;
     
-    // Add some uniqueness to avoid duplicate names
-    if (i > 0) {
-      placeName += ` ${String.fromCharCode(65 + i)}`; // Add A, B, C, etc.
+    // Select a random place name
+    const nameIndex = Math.floor(Math.random() * placeNames.length);
+    let placeName = placeNames[nameIndex];
+    
+    // Add some uniqueness to avoid duplicate names in a single result set
+    if (results.some(p => p.name === placeName)) {
+      placeName += ` ${location.split(',')[0]}`;
     }
     
     // Select description based on place type
@@ -213,7 +256,7 @@ function generateSyntheticResults(searchQuery: string): Place[] {
     
     // Create a realistic-looking image URL (placeholder URL format)
     const imageId = Math.floor(Math.random() * 1000);
-    const imageUrl = `https://images.unsplash.com/photo-${Date.now() - i * 86400000}-${imageId}?crop=entropy&cs=tinysrgb&fit=crop&fm=jpg&q=80&w=800&h=600`;
+    const imageUrl = `https://picsum.photos/seed/${placeName.replace(/\s+/g, '-').toLowerCase()}${imageId}/800/600`;
     
     // Generate a category tag based on the query
     let category = placeType;
@@ -229,12 +272,12 @@ function generateSyntheticResults(searchQuery: string): Place[] {
       id: `sim-${Date.now()}-${i}`,
       name: placeName,
       location: `${location}`,
-      country: "India", // Assuming India for Chennai, modify as needed
+      country: "India", // Assuming India for Chennai
       image: imageUrl,
       description: description + (matchedKeywords.length > 0 ? ` Perfect for ${matchedKeywords.join(', ')} outings.` : ''),
       category: category,
-      // Removed the 'occasion' property as it doesn't exist in the Place type
-      rating: rating, // Added rating as a number instead of string
+      rating: rating,
+      reviewCount: Math.floor(Math.random() * 500) + 50
     });
   }
   
