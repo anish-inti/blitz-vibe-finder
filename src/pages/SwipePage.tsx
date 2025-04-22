@@ -4,13 +4,15 @@ import { useLocation as useRouterLocation } from 'react-router-dom';
 import Header from '@/components/Header';
 import BottomNavigation from '@/components/BottomNavigation';
 import SwipeDeck from '@/components/SwipeDeck';
-import { Sparkles } from 'lucide-react';
+import { Sparkles, Database, Search } from 'lucide-react';
 import { useLocationContext } from '@/contexts/LocationContext';
 import { LocationInfo } from '@/components/LocationInfo';
 import SearchFilters from '@/components/SearchFilters';
 import SwipeResults from '@/components/SwipeResults';
 import SwipeActions from '@/components/SwipeActions';
 import { useSwipePlaces } from '@/hooks/useSwipePlaces';
+import { Button } from '@/components/ui/button';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface PlanData {
   occasion: string;
@@ -39,11 +41,13 @@ const SwipePage: React.FC = () => {
     isLoading,
     error,
     filters,
+    useSimulation,
     handleApplyFilters,
     handleSwipe,
     handleContinuePlanning,
     handleFinishPlanning,
     handleRetry,
+    handleToggleDataSource,
   } = useSwipePlaces(planData, {
     type: planData.outingType || undefined,
     keyword: planData.occasion || undefined,
@@ -56,10 +60,36 @@ const SwipePage: React.FC = () => {
       <Header showLocationDebug={true} />
       <main className="flex-1 flex flex-col items-center px-6 pb-20 z-10">
         <div className="w-full max-w-md mx-auto mt-6">
-          <h1 className="text-xl font-semibold mb-3 text-center text-white relative tracking-tight">
-            Find Your Experience
-            <Sparkles className="absolute -right-5 top-1 w-3.5 h-3.5 text-blitz-pink opacity-70" />
-          </h1>
+          <div className="flex justify-between items-center mb-3">
+            <h1 className="text-xl font-semibold text-white relative tracking-tight">
+              Find Your Experience
+              <Sparkles className="absolute -right-5 top-1 w-3.5 h-3.5 text-blitz-pink opacity-70" />
+            </h1>
+            
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="text-blitz-lightgray hover:text-white"
+                    onClick={handleToggleDataSource}
+                  >
+                    {useSimulation ? (
+                      <Search className="h-4 w-4" />
+                    ) : (
+                      <Database className="h-4 w-4" />
+                    )}
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>{useSimulation ? "Using simulated search data" : "Using database data"}</p>
+                  <p className="text-xs text-gray-400">Click to toggle</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
+          
           <div className="mb-4">
             <SearchFilters 
               onApplyFilters={handleApplyFilters}
@@ -70,11 +100,13 @@ const SwipePage: React.FC = () => {
               }}
             />
           </div>
+          
           {import.meta.env.DEV && (
             <div className="mb-4">
               <LocationInfo />
             </div>
           )}
+          
           {showResults ? (
             <SwipeResults
               likedPlaces={likedPlaces}
@@ -123,4 +155,3 @@ const SwipePage: React.FC = () => {
 };
 
 export default SwipePage;
-

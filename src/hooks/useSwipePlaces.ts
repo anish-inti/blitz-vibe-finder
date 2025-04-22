@@ -6,6 +6,7 @@ import { Place } from "@/components/SwipeCard";
 import { toast } from "@/hooks/use-toast";
 import { fetchChennaiPlaces } from "@/utils/fetchPlaces";
 import { FilterParams } from "@/components/SearchFilters";
+import { simulateGoogleSearch } from "@/services/searchSimulationService";
 
 interface PlanData {
   occasion: string;
@@ -22,6 +23,7 @@ export function useSwipePlaces(planData: PlanData, initialFilters: FilterParams)
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [filters, setFilters] = useState<FilterParams>(initialFilters);
+  const [useSimulation, setUseSimulation] = useState(false);
   const navigate = useNavigate();
 
   const handleSupabaseError = (error: any, defaultMessage = "An error occurred") => {
@@ -36,10 +38,42 @@ export function useSwipePlaces(planData: PlanData, initialFilters: FilterParams)
   const fetchDatabasePlaces = async () => {
     setIsLoading(true);
     setError(null);
-    const { places, error } = await fetchChennaiPlaces({ planData, filters });
-    setPlaces(places);
-    setError(error);
-    setIsLoading(false);
+    
+    try {
+      // First attempt to fetch from our database
+      const { places, error } = await fetchChennaiPlaces({ planData, filters });
+      
+      // If we couldn't get places from the database or received an error,
+      // fallback to search simulation
+      if (error || places.length === 0) {
+        console.log("Database fetch failed or returned no results, falling back to search simulation");
+        const { places: simulatedPlaces, error: simulationError } = 
+          await simulateGoogleSearch("Chennai, India", filters);
+        
+        if (simulationError) {
+          setError(simulationError);
+          setPlaces([]);
+        } else {
+          setPlaces(simulatedPlaces);
+          setError(null);
+          if (!useSimulation) {
+            setUseSimulation(true);
+            toast({
+              title: "Using simulated search results",
+              description: "We're showing you simulated search results for places in Chennai."
+            });
+          }
+        }
+      } else {
+        setPlaces(places);
+        setError(null);
+      }
+    } catch (err) {
+      console.error("Error fetching places:", err);
+      setError("Failed to retrieve places. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -99,6 +133,22 @@ export function useSwipePlaces(planData: PlanData, initialFilters: FilterParams)
     fetchDatabasePlaces();
   };
 
+  const handleToggleDataSource = () => {
+    setUseSimulation(!useSimulation);
+    setIsLoading(true);
+    
+    setTimeout(() => {
+      fetchDatabasePlaces();
+    }, 500);
+    
+    toast({
+      title: useSimulation ? "Using database results" : "Using simulated results",
+      description: useSimulation 
+        ? "Switching to database results for places in Chennai." 
+        : "Switching to simulated search results for places in Chennai."
+    });
+  };
+
   return {
     places,
     likedPlaces,
@@ -106,10 +156,12 @@ export function useSwipePlaces(planData: PlanData, initialFilters: FilterParams)
     isLoading,
     error,
     filters,
+    useSimulation,
     handleApplyFilters,
     handleSwipe,
     handleContinuePlanning,
     handleFinishPlanning,
     handleRetry,
+    handleToggleDataSource,
   };
 }
