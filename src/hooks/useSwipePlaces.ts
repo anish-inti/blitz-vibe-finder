@@ -92,16 +92,25 @@ export function useSwipePlaces(planData: PlanData, initialFilters: FilterParams)
     if (direction === 'right' || direction === 'up') {
       setLikedPlaces(prev => [...prev, currentPlace]);
 
-      try {
-        const { error } = await supabase
-          .from('liked_places')
-          .insert({ place_id: currentPlace.id });
+      // Only save to database if it's not a simulated place ID
+      if (!currentPlace.id.startsWith('sim-')) {
+        try {
+          const { error } = await supabase
+            .from('liked_places')
+            .insert({ place_id: currentPlace.id });
 
-        if (error) {
-          handleSupabaseError(error, 'Could not save your like. Please try again.');
+          if (error) {
+            handleSupabaseError(error, 'Could not save your like. Please try again.');
+          }
+        } catch (error) {
+          console.error('Error in saving liked place:', error);
         }
-      } catch (error) {
-        console.error('Error in saving liked place:', error);
+      } else {
+        // For simulated places, just show a toast that it was saved locally
+        toast({
+          title: 'Place liked',
+          description: `${currentPlace.name} added to your favorites`,
+        });
       }
 
       if (direction === 'up') {
