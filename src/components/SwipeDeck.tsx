@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import SwipeCard, { Place } from './SwipeCard';
 
@@ -10,29 +9,26 @@ interface SwipeDeckProps {
 
 const SwipeDeck: React.FC<SwipeDeckProps> = ({ places, onEmpty, onSwipe }) => {
   const [currentPlaces, setCurrentPlaces] = useState<Place[]>([]);
-  const [currentIndex, setCurrentIndex] = useState(0);
   
   useEffect(() => {
     setCurrentPlaces(places);
   }, [places]);
   
   const handleSwipe = (direction: 'left' | 'right' | 'up') => {
-    // If parent provided onSwipe handler, use it
+    // Always use the parent handler if provided
     if (onSwipe) {
       onSwipe(direction);
       return;
     }
     
     // Otherwise use default behavior
-    setTimeout(() => {
-      const newPlaces = [...currentPlaces];
-      newPlaces.shift();
-      setCurrentPlaces(newPlaces);
-      
-      if (newPlaces.length === 0 && onEmpty) {
-        onEmpty();
-      }
-    }, 300);
+    const newPlaces = [...currentPlaces];
+    newPlaces.shift();
+    setCurrentPlaces(newPlaces);
+    
+    if (newPlaces.length === 0 && onEmpty) {
+      onEmpty();
+    }
   };
   
   if (currentPlaces.length === 0) {
@@ -45,13 +41,14 @@ const SwipeDeck: React.FC<SwipeDeckProps> = ({ places, onEmpty, onSwipe }) => {
   
   return (
     <div className="relative w-full h-full">
-      {currentPlaces.map((place, index) => (
-        index === 0 && (
-          <div key={place.id} className="animate-scale-in">
-            <SwipeCard place={place} onSwipe={handleSwipe} />
-          </div>
-        )
-      ))}
+      {currentPlaces.length > 0 && (
+        <div className="animate-scale-in">
+          <SwipeCard 
+            place={currentPlaces[0]} 
+            onSwipe={handleSwipe} 
+          />
+        </div>
+      )}
     </div>
   );
 };

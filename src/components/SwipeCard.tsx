@@ -1,6 +1,6 @@
 
-import React, { useState } from 'react';
-import { Heart, Bookmark, Star, MapPin, Clock } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Heart, Bookmark, Star, MapPin, Clock, Check, X } from 'lucide-react';
 
 export interface Place {
   id: string;
@@ -8,7 +8,7 @@ export interface Place {
   location: string;
   country: string;
   image: string;
-  description?: string;    // Added for AI-generated recommendations
+  description?: string;
   rating?: number;
   reviewCount?: number;
   priceLevel?: number;
@@ -32,6 +32,20 @@ const SwipeCard: React.FC<SwipeCardProps> = ({ place, onSwipe }) => {
   const [offsetY, setOffsetY] = useState(0);
   const [liked, setLiked] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [showDirectionIndicator, setShowDirectionIndicator] = useState(false);
+  
+  // Reset card position after animation completes
+  useEffect(() => {
+    if (swipeDirection) {
+      const timer = setTimeout(() => {
+        setSwipeDirection(null);
+        setOffsetX(0);
+        setOffsetY(0);
+        setShowDirectionIndicator(false);
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+  }, [swipeDirection]);
   
   const handleTouchStart = (e: React.TouchEvent) => {
     setStartX(e.touches[0].clientX);
@@ -51,37 +65,71 @@ const SwipeCard: React.FC<SwipeCardProps> = ({ place, onSwipe }) => {
     if (diffY > 100) {
       // Upward swipe (book)
       setSwipeDirection('up');
+      setShowDirectionIndicator(true);
     } else if (diffX > 50) {
       // Right swipe (like)
       setSwipeDirection('right');
+      setShowDirectionIndicator(true);
     } else if (diffX < -50) {
       // Left swipe (dislike)
       setSwipeDirection('left');
+      setShowDirectionIndicator(true);
     } else {
       setSwipeDirection(null);
+      setShowDirectionIndicator(false);
     }
   };
   
   const handleTouchEnd = () => {
     if (swipeDirection) {
-      onSwipe(swipeDirection);
+      if (swipeDirection === 'right') {
+        setLiked(true);
+      }
+      
+      // Trigger animation and wait for it to complete before callback
+      setTimeout(() => {
+        onSwipe(swipeDirection);
+      }, 100);
+    } else {
+      setOffsetX(0);
+      setOffsetY(0);
     }
-    setOffsetX(0);
-    setOffsetY(0);
-    setSwipeDirection(null);
   };
   
   const handleLike = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setLiked(!liked);
-    if (!liked) {
+    setLiked(true);
+    setSwipeDirection('right');
+    setShowDirectionIndicator(true);
+    
+    setTimeout(() => {
       onSwipe('right');
-    }
+    }, 300);
   };
   
   const handleSave = (e: React.MouseEvent) => {
     e.stopPropagation();
     setSaved(!saved);
+  };
+
+  const handleDislike = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setSwipeDirection('left');
+    setShowDirectionIndicator(true);
+    
+    setTimeout(() => {
+      onSwipe('left');
+    }, 300);
+  };
+  
+  const handleBook = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setSwipeDirection('up');
+    setShowDirectionIndicator(true);
+    
+    setTimeout(() => {
+      onSwipe('up');
+    }, 300);
   };
   
   // Helper to render price level
@@ -90,7 +138,7 @@ const SwipeCard: React.FC<SwipeCardProps> = ({ place, onSwipe }) => {
     
     return (
       <div className="text-blitz-lightgray text-xs">
-        {Array(place.priceLevel + 1).join('$')}
+        {Array(place.priceLevel).fill('$').join('')}
       </div>
     );
   };
@@ -150,6 +198,40 @@ const SwipeCard: React.FC<SwipeCardProps> = ({ place, onSwipe }) => {
       </div>
     );
   };
+
+  // Render direction indicator overlay
+  const renderDirectionIndicator = () => {
+    if (!showDirectionIndicator) return null;
+    
+    let indicator;
+    if (swipeDirection === 'right') {
+      indicator = (
+        <div className="absolute inset-0 flex items-center justify-center bg-green-500/20 backdrop-blur-sm rounded-2xl">
+          <div className="w-20 h-20 rounded-full bg-green-500 flex items-center justify-center">
+            <Check className="w-10 h-10 text-white" />
+          </div>
+        </div>
+      );
+    } else if (swipeDirection === 'left') {
+      indicator = (
+        <div className="absolute inset-0 flex items-center justify-center bg-red-500/20 backdrop-blur-sm rounded-2xl">
+          <div className="w-20 h-20 rounded-full bg-red-500 flex items-center justify-center">
+            <X className="w-10 h-10 text-white" />
+          </div>
+        </div>
+      );
+    } else if (swipeDirection === 'up') {
+      indicator = (
+        <div className="absolute inset-0 flex items-center justify-center bg-blitz-pink/20 backdrop-blur-sm rounded-2xl">
+          <div className="w-20 h-20 rounded-full bg-blitz-pink flex items-center justify-center">
+            <span className="text-white text-xl font-bold">BOOK</span>
+          </div>
+        </div>
+      );
+    }
+    
+    return indicator;
+  };
   
   return (
     <div 
@@ -160,7 +242,8 @@ const SwipeCard: React.FC<SwipeCardProps> = ({ place, onSwipe }) => {
       `}
       style={{ 
         transform: `translateX(${offsetX}px) translateY(-${offsetY}px) rotate(${offsetX * 0.04}deg) scale(${1 - offsetY * 0.001})`,
-        opacity: offsetY > 0 ? 1 - offsetY * 0.005 : 1
+        opacity: offsetY > 0 ? 1 - offsetY * 0.005 : 1,
+        transition: swipeDirection ? 'transform 300ms ease-out, opacity 300ms ease-out' : 'none'
       }}
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
@@ -169,13 +252,19 @@ const SwipeCard: React.FC<SwipeCardProps> = ({ place, onSwipe }) => {
       <div className="relative aspect-[3/4] w-full overflow-hidden rounded-2xl">
         {/* Main Card with image */}
         <img 
-          src={place.image} 
+          src={place.image || '/placeholder.svg'} 
           alt={place.name} 
           className="w-full h-full object-cover rounded-2xl"
+          onError={(e) => {
+            e.currentTarget.src = '/placeholder.svg';
+          }}
         />
         
         {/* Subtle overlay gradient */}
         <div className="absolute top-0 left-0 right-0 bottom-0 bg-gradient-to-b from-transparent via-blitz-black/40 to-blitz-black/90 rounded-2xl"></div>
+        
+        {/* Direction indicator overlay */}
+        {renderDirectionIndicator()}
         
         {/* Category badge */}
         <div className="absolute top-4 left-4">
@@ -235,7 +324,7 @@ const SwipeCard: React.FC<SwipeCardProps> = ({ place, onSwipe }) => {
             ) : (
               <button 
                 className="text-xs text-blitz-pink"
-                onClick={() => window.open(`https://www.google.com/search?q=${place.name} ${place.location}`, '_blank')}
+                onClick={() => window.open(`https://www.google.com/search?q=${encodeURIComponent(`${place.name} ${place.location}`)}`, '_blank')}
               >
                 Search online
               </button>

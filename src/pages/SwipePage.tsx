@@ -141,10 +141,16 @@ const SwipePage: React.FC = () => {
               <div className="relative">
                 <SwipeDeck 
                   places={places} 
-                  onSwipe={(direction) => handleSwipe(direction as 'left' | 'right' | 'up')} 
+                  onSwipe={(direction) => handleSwipe(direction)} 
                 />
               </div>
-              {places.length > 0 && <SwipeActions />}
+              {places.length > 0 && (
+                <SwipeActions 
+                  onDislike={() => handleSwipe('left')}
+                  onBook={() => handleSwipe('up')}
+                  onLike={() => handleSwipe('right')}
+                />
+              )}
             </>
           )}
         </div>
