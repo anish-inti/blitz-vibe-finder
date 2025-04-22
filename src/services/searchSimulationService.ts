@@ -221,6 +221,9 @@ function generateSyntheticResults(searchQuery: string): Place[] {
       category = category.slice(0, -1); // Convert plural to singular
     }
     
+    // Generate a synthetic rating between 3.0 and 5.0
+    const rating = Math.floor((Math.random() * 2 + 3) * 10) / 10;
+    
     // Add the place to results
     results.push({
       id: `sim-${Date.now()}-${i}`,
@@ -230,7 +233,8 @@ function generateSyntheticResults(searchQuery: string): Place[] {
       image: imageUrl,
       description: description + (matchedKeywords.length > 0 ? ` Perfect for ${matchedKeywords.join(', ')} outings.` : ''),
       category: category,
-      occasion: matchedKeywords.join(', ')
+      // Removed the 'occasion' property as it doesn't exist in the Place type
+      rating: rating, // Added rating as a number instead of string
     });
   }
   
@@ -247,7 +251,7 @@ export async function enrichPlaceData(place: Place): Promise<Place> {
   // For now, we'll add some synthetic details
   return {
     ...place,
-    rating: (Math.random() * 2 + 3).toFixed(1),
+    rating: place.rating || (Math.random() * 2 + 3),
     reviewCount: Math.floor(Math.random() * 500) + 50,
     priceLevel: Math.floor(Math.random() * 4) + 1,
     isOpen: Math.random() > 0.3, // 70% chance of being open
