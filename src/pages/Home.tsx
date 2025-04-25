@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
@@ -8,6 +7,7 @@ import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious
 import FeaturedPlaceCard from '@/components/FeaturedPlaceCard';
 import OutingCard from '@/components/OutingCard';
 import QuickAccessButton from '@/components/QuickAccessButton';
+import { useTheme } from '@/contexts/ThemeContext';
 
 const TRENDING_PLACES = [
   {
@@ -112,6 +112,7 @@ const COMMUNITY_PICKS = [
 
 const Home: React.FC = () => {
   const navigate = useNavigate();
+  const { darkMode } = useTheme();
   const [stars, setStars] = useState<{ id: number; top: string; left: string; delay: string; size: string }[]>([]);
   const [activeFilter, setActiveFilter] = useState<string | null>(null);
   
@@ -137,14 +138,14 @@ const Home: React.FC = () => {
   };
   
   return (
-    <div className="min-h-screen flex flex-col relative bg-[#121212] overflow-x-hidden">
-      <div className="bg-gradient-to-b from-[#121212] to-[#1F1F1F] absolute inset-0 z-0"></div>
+    <div className={`min-h-screen flex flex-col relative transition-all duration-300 ${darkMode ? "bg-[#121212]" : "bg-blitz-offwhite"}`}>
+      <div className={`bg-gradient-to-b from-[#121212] to-[#1F1F1F] absolute inset-0 z-0 ${darkMode ? "opacity-100" : "opacity-20"}`}></div>
       
       {/* Animated stars - more subtle */}
       {stars.map((star) => (
         <div
           key={star.id}
-          className="cosmic-star animate-sparkle absolute opacity-60"
+          className={`cosmic-star animate-sparkle absolute ${darkMode ? "opacity-60" : "opacity-20"}`}
           style={{
             top: star.top,
             left: star.left,

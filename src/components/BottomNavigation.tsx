@@ -3,10 +3,12 @@ import React from 'react';
 import { User, Search, MapPin, Heart, Zap, Navigation } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { useLocationContext } from '@/contexts/LocationContext';
+import { useTheme } from '@/contexts/ThemeContext';
 
 const BottomNavigation: React.FC = () => {
   const location = useLocation();
   const locationContext = useLocationContext();
+  const { darkMode } = useTheme();
   
   const isActive = (path: string) => {
     return location.pathname === path;
@@ -30,13 +32,17 @@ const BottomNavigation: React.FC = () => {
   };
   
   return (
-    <nav className="fixed bottom-6 left-1/2 transform -translate-x-1/2 bg-blitz-gray/80 backdrop-blur-xl rounded-full px-8 py-3 flex justify-around items-center z-20 shadow-lg w-10/12 max-w-sm">
+    <nav className={`fixed bottom-6 left-1/2 transform -translate-x-1/2 transition-colors ${
+      darkMode 
+        ? "bg-blitz-gray/80" 
+        : "bg-white/90 border border-gray-200"
+    } backdrop-blur-xl rounded-full px-8 py-3 flex justify-around items-center z-20 shadow-lg w-10/12 max-w-sm`}>
       <Link 
         to="/" 
         className={`p-2 flex flex-col items-center transition-all duration-200 ${
           isActive('/') 
             ? 'text-blitz-pink' 
-            : 'text-blitz-lightgray hover:text-white'
+            : darkMode ? 'text-blitz-lightgray hover:text-white' : 'text-blitz-gray hover:text-blitz-black'
         }`}
       >
         <Zap className={`w-5 h-5 ${isActive('/') ? 'scale-105' : ''}`} />
@@ -47,7 +53,7 @@ const BottomNavigation: React.FC = () => {
         className={`p-2 flex flex-col items-center transition-all duration-200 ${
           isActive('/planner') 
             ? 'text-blitz-pink' 
-            : 'text-blitz-lightgray hover:text-white'
+            : darkMode ? 'text-blitz-lightgray hover:text-white' : 'text-blitz-gray hover:text-blitz-black'
         }`}
       >
         <div className="relative">
@@ -63,7 +69,7 @@ const BottomNavigation: React.FC = () => {
         className={`p-2 flex flex-col items-center transition-all duration-200 ${
           isActive('/favorites') 
             ? 'text-blitz-pink' 
-            : 'text-blitz-lightgray hover:text-white'
+            : darkMode ? 'text-blitz-lightgray hover:text-white' : 'text-blitz-gray hover:text-blitz-black'
         }`}
       >
         <Heart className={`w-5 h-5 ${isActive('/favorites') ? 'scale-105' : ''}`} />
@@ -74,7 +80,7 @@ const BottomNavigation: React.FC = () => {
         className={`p-2 flex flex-col items-center transition-all duration-200 ${
           isActive('/profile') 
             ? 'text-blitz-pink' 
-            : 'text-blitz-lightgray hover:text-white'
+            : darkMode ? 'text-blitz-lightgray hover:text-white' : 'text-blitz-gray hover:text-blitz-black'
         }`}
       >
         <User className={`w-5 h-5 ${isActive('/profile') ? 'scale-105' : ''}`} />

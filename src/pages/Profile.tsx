@@ -1,15 +1,16 @@
 
-import React, { useState } from "react";
+import React from "react";
 import Header from "@/components/Header";
 import BottomNavigation from "@/components/BottomNavigation";
 import UserHeader from "@/components/profile/UserHeader";
 import SavedPlacesSection from "@/components/profile/SavedPlacesSection";
 import PreferencesPanel from "@/components/profile/PreferencesPanel";
 import OutingHistoryTimeline from "@/components/profile/OutingHistoryTimeline";
+import { useTheme } from "@/contexts/ThemeContext";
 
 const Profile: React.FC = () => {
-  // Dark mode toggle; in real use, connect to app-wide theme context
-  const [darkMode, setDarkMode] = useState(true);
+  // Get darkMode from the global context
+  const { darkMode, setDarkMode } = useTheme();
 
   // For demo only, hardcoding "Anish"
   const name = "Anish";

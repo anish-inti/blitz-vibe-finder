@@ -1,10 +1,10 @@
-
 import React, { useState, useEffect } from 'react';
 import Header from '@/components/Header';
 import BottomNavigation from '@/components/BottomNavigation';
 import SwipeDeck from '@/components/SwipeDeck';
 import { Place } from '@/components/SwipeCard';
 import { Sparkles } from 'lucide-react';
+import { useTheme } from '@/contexts/ThemeContext';
 
 // Mock data
 const MOCK_PLACES: Place[] = [
@@ -39,6 +39,7 @@ const MOCK_PLACES: Place[] = [
 ];
 
 const Places: React.FC = () => {
+  const { darkMode } = useTheme();
   const [places, setPlaces] = useState<Place[]>([]);
   
   useEffect(() => {
@@ -49,14 +50,14 @@ const Places: React.FC = () => {
   }, []);
   
   return (
-    <div className="min-h-screen flex flex-col relative bg-blitz-black">
-      <div className="cosmic-bg absolute inset-0 z-0"></div>
+    <div className={`min-h-screen flex flex-col relative transition-all duration-300 ${darkMode ? "bg-blitz-black" : "bg-blitz-offwhite"}`}>
+      <div className={`cosmic-bg absolute inset-0 z-0 ${darkMode ? "opacity-100" : "opacity-20"}`}></div>
       
       <Header />
       
       <main className="flex-1 flex flex-col items-center justify-center px-6 pb-20 z-10">
         <div className="w-full max-w-md mx-auto mt-4">
-          <h1 className="text-2xl font-bold mb-6 text-center text-white neon-text relative">
+          <h1 className={`text-2xl font-bold mb-6 text-center ${darkMode ? "text-white" : "text-blitz-black"} neon-text relative`}>
             Discover Places
             <Sparkles className="absolute -right-6 top-1 w-4 h-4 text-blitz-stardust animate-pulse-glow" />
           </h1>
