@@ -17,6 +17,9 @@ export default {
         "blitz-purple": "#9b87f5",
         "blitz-blue": "#33C3F0",
         "blitz-stardust": "#FFDEE2",
+        "blitz-gray": "#1F1F1F",
+        "blitz-lightgray": "#8E9196",
+        "blitz-offwhite": "#F1F1F1",
       },
       animation: {
         "pulse-glow": "pulse-glow 2s ease-in-out infinite",

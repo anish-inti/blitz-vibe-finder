@@ -9,15 +9,21 @@ type ThemeContextType = {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export const ThemeProvider = ({ children }: { children: ReactNode }) => {
-  // Try to load theme preference from localStorage
   const [darkMode, setDarkMode] = useState(() => {
     const savedTheme = localStorage.getItem('blitz-theme');
-    return savedTheme ? savedTheme === 'dark' : true; // Default to dark mode
+    return savedTheme ? savedTheme === 'dark' : true;
   });
 
-  // Update localStorage and document class when theme changes
   useEffect(() => {
     localStorage.setItem('blitz-theme', darkMode ? 'dark' : 'light');
+    const root = document.documentElement;
+    if (darkMode) {
+      root.classList.add('dark');
+      root.classList.remove('light');
+    } else {
+      root.classList.add('light');
+      root.classList.remove('dark');
+    }
   }, [darkMode]);
 
   return (
