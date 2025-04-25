@@ -20,7 +20,7 @@ const PreferencesPanel: React.FC<{
       <h3 className={`flex items-center gap-2 text-lg font-semibold ${darkMode ? "text-white" : "text-blitz-black"} mb-3`}>
         <Settings className={`w-5 h-5 ${darkMode ? "text-blitz-lightgray" : "text-blitz-gray"}`} /> Preferences
       </h3>
-      <div className={`space-y-5 rounded-xl p-5 border shadow-inner ${
+      <div className={`space-y-5 rounded-xl p-5 border shadow-inner transition-colors ${
         darkMode 
           ? "bg-blitz-gray/80 border-white/10" 
           : "bg-white/90 border-gray-200"
@@ -54,7 +54,7 @@ const PreferencesPanel: React.FC<{
           <select
             value={diet}
             onChange={(e) => setDiet(e.target.value)}
-            className={`px-3 py-1 rounded-lg border-none ${
+            className={`px-3 py-1 rounded-lg border-none transition-colors ${
               darkMode 
                 ? "bg-blitz-gray text-blitz-offwhite focus:ring-2 focus:ring-blitz-pink" 
                 : "bg-gray-100 text-blitz-black focus:ring-2 focus:ring-blitz-purple"

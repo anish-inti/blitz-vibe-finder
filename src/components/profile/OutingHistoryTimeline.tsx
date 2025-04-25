@@ -68,7 +68,7 @@ const OutingHistoryTimeline: React.FC<OutingHistoryTimelineProps> = ({ darkMode 
         {dummyOutings.map((outing) => (
           <div
             key={outing.id}
-            className={`rounded-xl p-4 ${
+            className={`rounded-xl p-4 transition-colors ${
               darkMode
                 ? "bg-blitz-gray/40 shadow-sm border border-white/5"
                 : "bg-white/80 shadow-sm border border-gray-100"

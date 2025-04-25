@@ -17,7 +17,7 @@ const Profile: React.FC = () => {
 
   return (
     <div className={`min-h-screen flex flex-col relative transition-all duration-300 ${darkMode ? "bg-blitz-black" : "bg-blitz-offwhite"}`}>
-      <div className={`cosmic-bg absolute inset-0 z-0 pointer-events-none ${!darkMode && "opacity-20"}`} />
+      <div className={`cosmic-bg absolute inset-0 z-0 pointer-events-none ${darkMode ? "opacity-100" : "opacity-20"}`} />
       <Header />
 
       <main className="flex-1 flex flex-col px-4 pb-20 z-10 fade-in">

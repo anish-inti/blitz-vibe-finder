@@ -15,7 +15,7 @@ const UserHeader: React.FC<UserHeaderProps> = ({ name, avatarUrl, darkMode = tru
       {avatarUrl ? (
         <AvatarImage src={avatarUrl} />
       ) : (
-        <AvatarFallback className={`${darkMode ? "bg-blitz-gray text-blitz-pink" : "bg-blitz-lightgray text-blitz-purple"} text-2xl`}>
+        <AvatarFallback className={`${darkMode ? "bg-blitz-gray text-blitz-pink" : "bg-white text-blitz-purple"} text-2xl`}>
           {name[0]}
         </AvatarFallback>
       )}

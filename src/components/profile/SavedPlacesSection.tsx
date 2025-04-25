@@ -42,10 +42,10 @@ const SavedPlacesSection: React.FC<SavedPlacesSectionProps> = ({ darkMode = true
       {dummyPlaces.map((place) => (
         <div
           key={place.id}
-          className={`flex items-center gap-3 rounded-lg px-4 py-3 shadow-sm ${
+          className={`flex items-center gap-3 rounded-lg px-4 py-3 shadow-sm transition-colors ${
             darkMode
               ? "bg-blitz-gray/60 border border-white/5"
-              : "bg-white/80 border border-gray-100 shadow-sm"
+              : "bg-white/80 border border-gray-100"
           }`}
         >
           <span
