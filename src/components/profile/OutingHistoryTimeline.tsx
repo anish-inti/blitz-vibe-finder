@@ -1,54 +1,122 @@
 
 import React from "react";
-import { History } from "lucide-react";
+import { CalendarDays, Users, MapPin, Clock } from "lucide-react";
 
-const outings = [
+interface OutingHistoryTimelineProps {
+  darkMode?: boolean;
+}
+
+const dummyOutings = [
   {
     id: 1,
-    date: "2024-04-19",
-    plan: "Friday Hangout",
-    places: ["Neon Nights Bar", "Arcade Arena"],
-    friends: ["Priya", "Samir"],
-    reactions: "🔥 Awesome time!",
+    date: "April 19, 2025",
+    title: "Weekend Adventure",
+    places: [
+      { id: 1, name: "Mountain Trail Hike", type: "outdoor" },
+      { id: 2, name: "Lakeside Café", type: "food" },
+    ],
+    participants: ["Alex", "Maya", "Ravi"],
+    timeSpent: "5h 30m",
   },
   {
     id: 2,
-    date: "2024-04-06",
-    plan: "Chill Evening",
-    places: ["Chai Palace"],
-    friends: ["Veer"],
-    reactions: "Loved the chai & vibes!",
+    date: "April 10, 2025",
+    title: "Date Night",
+    places: [
+      { id: 1, name: "The Secret Garden Restaurant", type: "food" },
+      { id: 2, name: "Starlight Rooftop Bar", type: "nightlife" },
+    ],
+    participants: ["Kira"],
+    timeSpent: "3h 15m",
   },
 ];
 
-const OutingHistoryTimeline: React.FC = () => (
-  <section>
-    <h3 className="flex items-center gap-2 text-lg font-semibold text-white mb-3">
-      <History className="w-5 h-5 text-blitz-blue" /> Outing History
-    </h3>
-    <ol className="relative border-l-2 border-blitz-pink/20 pl-5">
-      {outings.map((outing) => (
-        <li key={outing.id} className="mb-6 ml-2">
-          <div className="absolute -left-3 mt-1 w-3 h-3 bg-blitz-pink rounded-full border-2 border-white"></div>
-          <span className="block text-xs text-blitz-lightgray mb-1">{outing.date}</span>
-          <div className="bg-blitz-gray/60 rounded-lg px-4 py-3 text-blitz-offwhite shadow-md">
-            <div className="font-bold mb-1">{outing.plan}</div>
-            <div className="mb-1">
-              <span className="font-semibold text-blitz-pink">Visited:</span>{" "}
-              {outing.places.join(", ")}
+const OutingHistoryTimeline: React.FC<OutingHistoryTimelineProps> = ({ darkMode = true }) => {
+  const getTypeColor = (type: string) => {
+    if (darkMode) {
+      switch (type) {
+        case "food":
+          return "bg-blitz-pink/20 text-blitz-pink";
+        case "outdoor":
+          return "bg-blitz-blue/20 text-blitz-blue";
+        case "nightlife":
+          return "bg-blitz-neonred/20 text-blitz-neonred";
+        default:
+          return "bg-blitz-purple/20 text-blitz-purple";
+      }
+    } else {
+      switch (type) {
+        case "food":
+          return "bg-blitz-pink/10 text-blitz-pink";
+        case "outdoor":
+          return "bg-blitz-blue/10 text-blitz-blue";
+        case "nightlife":
+          return "bg-blitz-neonred/10 text-blitz-neonred";
+        default:
+          return "bg-blitz-purple/10 text-blitz-purple";
+      }
+    }
+  };
+
+  return (
+    <section className="mb-8">
+      <h3 className={`flex items-center gap-2 text-lg font-semibold ${darkMode ? "text-white" : "text-blitz-black"} mb-3`}>
+        <CalendarDays className={`w-5 h-5 ${darkMode ? "text-blitz-blue" : "text-blitz-purple"}`} /> Outing History
+      </h3>
+
+      <div className="space-y-4">
+        {dummyOutings.map((outing) => (
+          <div
+            key={outing.id}
+            className={`rounded-xl p-4 ${
+              darkMode
+                ? "bg-blitz-gray/40 shadow-sm border border-white/5"
+                : "bg-white/80 shadow-sm border border-gray-100"
+            }`}
+          >
+            <div className="mb-3">
+              <span className={`text-xs ${darkMode ? "text-blitz-lightgray" : "text-blitz-gray"}`}>{outing.date}</span>
+              <h4 className={`font-medium ${darkMode ? "text-white" : "text-blitz-black"}`}>{outing.title}</h4>
             </div>
-            <div className="mb-1">
-              <span className="font-semibold text-blitz-stardust">Friends:</span>{" "}
-              {outing.friends.join(", ")}
+
+            {/* Places */}
+            <div className="mb-3">
+              <div className="flex items-center gap-1 mb-1">
+                <MapPin className={`w-3.5 h-3.5 ${darkMode ? "text-blitz-lightgray" : "text-blitz-gray"}`} />
+                <span className={`text-xs ${darkMode ? "text-blitz-lightgray" : "text-blitz-gray"}`}>Places Visited</span>
+              </div>
+              <div className="space-y-1.5 pl-5">
+                {outing.places.map((place) => (
+                  <div key={place.id} className="flex items-center gap-2">
+                    <span
+                      className={`text-xs px-1.5 py-0.5 rounded-sm font-medium ${getTypeColor(place.type)}`}
+                    >
+                      {place.type.charAt(0).toUpperCase() + place.type.slice(1)}
+                    </span>
+                    <span className={`text-sm ${darkMode ? "text-blitz-offwhite" : "text-blitz-black"}`}>{place.name}</span>
+                  </div>
+                ))}
+              </div>
             </div>
-            <div>
-              <span className="text-sm italic text-blitz-lightgray">“{outing.reactions}”</span>
+
+            {/* Footer info */}
+            <div className="flex items-center justify-between text-xs">
+              <div className="flex items-center gap-1">
+                <Users className={`w-3.5 h-3.5 ${darkMode ? "text-blitz-lightgray" : "text-blitz-gray"}`} />
+                <span className={`${darkMode ? "text-blitz-lightgray" : "text-blitz-gray"}`}>
+                  {outing.participants.join(", ")}
+                </span>
+              </div>
+              <div className="flex items-center gap-1">
+                <Clock className={`w-3.5 h-3.5 ${darkMode ? "text-blitz-lightgray" : "text-blitz-gray"}`} />
+                <span className={`${darkMode ? "text-blitz-lightgray" : "text-blitz-gray"}`}>{outing.timeSpent}</span>
+              </div>
             </div>
           </div>
-        </li>
-      ))}
-    </ol>
-  </section>
-);
+        ))}
+      </div>
+    </section>
+  );
+};
 
 export default OutingHistoryTimeline;

@@ -15,20 +15,19 @@ const Profile: React.FC = () => {
   const name = "Anish";
   const avatarUrl = undefined;
 
-  // Optionally switch className/bg by darkMode state
   return (
     <div className={`min-h-screen flex flex-col relative transition-all duration-300 ${darkMode ? "bg-blitz-black" : "bg-blitz-offwhite"}`}>
-      <div className="cosmic-bg absolute inset-0 z-0 pointer-events-none" />
+      <div className={`cosmic-bg absolute inset-0 z-0 pointer-events-none ${!darkMode && "opacity-20"}`} />
       <Header />
 
       <main className="flex-1 flex flex-col px-4 pb-20 z-10 fade-in">
         <section className="w-full max-w-md mx-auto mt-8 mb-6">
-          <UserHeader name={name} avatarUrl={avatarUrl} />
+          <UserHeader name={name} avatarUrl={avatarUrl} darkMode={darkMode} />
         </section>
         <section className="w-full max-w-md mx-auto">
-          <SavedPlacesSection />
+          <SavedPlacesSection darkMode={darkMode} />
           <PreferencesPanel darkMode={darkMode} setDarkMode={setDarkMode} />
-          <OutingHistoryTimeline />
+          <OutingHistoryTimeline darkMode={darkMode} />
         </section>
       </main>
 
