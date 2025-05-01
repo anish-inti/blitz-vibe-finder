@@ -1,6 +1,8 @@
+
 import React, { useState, useEffect } from 'react';
 import SwipeCard, { Place } from './SwipeCard';
 import SwipeActions from './SwipeActions';
+import SwipeCardMovieAdapter from './SwipeCardMovieAdapter';
 
 interface SwipeDeckProps {
   places: Place[];
@@ -70,6 +72,7 @@ const SwipeDeck: React.FC<SwipeDeckProps> = ({ places, onEmpty, onSwipe }) => {
   }
   
   const currentPlace = currentPlaces[0];
+  const isMovieCard = 'isMovie' in currentPlace && currentPlace.isMovie === true;
   
   return (
     <div className="relative w-full flex flex-col items-center">
@@ -81,10 +84,17 @@ const SwipeDeck: React.FC<SwipeDeckProps> = ({ places, onEmpty, onSwipe }) => {
             swipeDirection === 'up' ? 'swiping-up' : 
             showAnimation ? 'animate-scale-in' : ''
           }`}>
-            <SwipeCard 
-              place={currentPlace} 
-              onSwipe={handleSwipe} 
-            />
+            {isMovieCard ? (
+              <SwipeCardMovieAdapter 
+                place={currentPlace as any} 
+                onSwipe={handleSwipe} 
+              />
+            ) : (
+              <SwipeCard 
+                place={currentPlace} 
+                onSwipe={handleSwipe} 
+              />
+            )}
           </div>
         )}
         

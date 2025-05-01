@@ -7,6 +7,7 @@ import { toast } from "@/hooks/use-toast";
 import { fetchChennaiPlaces } from "@/utils/fetchPlaces";
 import { FilterParams } from "@/components/SearchFilters";
 import { simulateGoogleSearch } from "@/services/searchSimulationService";
+import { getMoviePlaces } from "@/services/moviesService";
 
 interface PlanData {
   occasion: string;
@@ -40,6 +41,21 @@ export function useSwipePlaces(planData: PlanData, initialFilters: FilterParams)
     setError(null);
     
     try {
+      // If outingType is "movie" or "cinema", fetch movie data
+      if (filters.type === "movie_theater" || 
+          planData.outingType === "movie" || 
+          planData.outingType === "cinema" ||
+          planData.occasion.toLowerCase().includes("movie")) {
+            
+        const moviePlaces = getMoviePlaces();
+        if (moviePlaces.length > 0) {
+          setPlaces(moviePlaces);
+          setError(null);
+          setIsLoading(false);
+          return;
+        }
+      }
+    
       if (useSimulation) {
         // If user has explicitly chosen to use simulated data
         const { places: simulatedPlaces, error: simulationError } = 
@@ -102,8 +118,8 @@ export function useSwipePlaces(planData: PlanData, initialFilters: FilterParams)
     if (direction === 'right' || direction === 'up') {
       setLikedPlaces(prev => [...prev, currentPlace]);
 
-      // Only save to database if it's not a simulated place ID
-      if (!currentPlace.id.toString().startsWith('sim-')) {
+      // Only save to database if it's not a simulated place ID or movie
+      if (!currentPlace.id.toString().startsWith('sim-') && !('isMovie' in currentPlace)) {
         try {
           const { error } = await supabase
             .from('liked_places')
@@ -116,7 +132,7 @@ export function useSwipePlaces(planData: PlanData, initialFilters: FilterParams)
           console.error('Error in saving liked place:', error);
         }
       } else {
-        // For simulated places, just show a toast that it was saved locally
+        // For simulated places or movies, just show a toast that it was saved locally
         toast({
           title: 'Place liked',
           description: `${currentPlace.name} added to your favorites`,
@@ -124,10 +140,18 @@ export function useSwipePlaces(planData: PlanData, initialFilters: FilterParams)
       }
 
       if (direction === 'up') {
-        toast({
-          title: 'Booking in progress',
-          description: `Booking ${currentPlace.name}...`,
-        });
+        if ('isMovie' in currentPlace && currentPlace.isMovie) {
+          toast({
+            title: 'Movie selected',
+            description: `Opening booking options for ${currentPlace.name}...`,
+          });
+          // The MovieCard component will handle booking links display
+        } else {
+          toast({
+            title: 'Booking in progress',
+            description: `Booking ${currentPlace.name}...`,
+          });
+        }
       }
     }
 

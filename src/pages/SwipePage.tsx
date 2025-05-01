@@ -54,6 +54,10 @@ const SwipePage: React.FC = () => {
     radius: planData.locality * 1000,
   });
 
+  // Check if showing movies
+  const isShowingMovies = places.length > 0 && 
+    places.some(place => 'isMovie' in place && place.isMovie);
+
   return (
     <div className="min-h-screen flex flex-col relative bg-blitz-black">
       <div className="cosmic-bg absolute inset-0 z-0"></div>
@@ -62,7 +66,7 @@ const SwipePage: React.FC = () => {
         <div className="w-full max-w-md mx-auto mt-6">
           <div className="flex justify-between items-center mb-3">
             <h1 className="text-xl font-semibold text-white relative tracking-tight">
-              Find Your Experience
+              {isShowingMovies ? "Find Your Movie" : "Find Your Experience"}
               <Sparkles className="absolute -right-5 top-1 w-3.5 h-3.5 text-blitz-pink opacity-70" />
             </h1>
             
@@ -116,7 +120,7 @@ const SwipePage: React.FC = () => {
           ) : isLoading ? (
             <div className="w-full h-64 flex flex-col items-center justify-center">
               <div className="w-8 h-8 rounded-full border border-blitz-pink/20 border-t-blitz-pink animate-spin mb-4"></div>
-              <p className="text-blitz-lightgray text-sm">Finding experiences...</p>
+              <p className="text-blitz-lightgray text-sm">{isShowingMovies ? "Finding movies..." : "Finding experiences..."}</p>
             </div>
           ) : error ? (
             <div className="w-full p-6 text-center glassmorphism rounded-xl">
@@ -144,7 +148,7 @@ const SwipePage: React.FC = () => {
                   onSwipe={(direction) => handleSwipe(direction)} 
                 />
               </div>
-              {places.length > 0 && (
+              {places.length > 0 && !isShowingMovies && (
                 <SwipeActions 
                   onDislike={() => handleSwipe('left')}
                   onBook={() => handleSwipe('up')}
