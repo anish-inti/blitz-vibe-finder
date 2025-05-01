@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { useTheme } from '@/contexts/ThemeContext';
 
 interface Place {
   id: string;
@@ -14,7 +15,6 @@ interface FeaturedPlaceCardProps {
 }
 
 const FeaturedPlaceCard: React.FC<FeaturedPlaceCardProps> = ({ place, onClick }) => {
-  const { useTheme } = require('@/contexts/ThemeContext');
   const { darkMode } = useTheme();
 
   return (
