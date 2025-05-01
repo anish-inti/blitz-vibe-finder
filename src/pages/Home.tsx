@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
@@ -39,7 +38,7 @@ const TRENDING_PLACES = [
   },
 ];
 
-// Updated curated outings with better data
+// Updated curated outings with better data - fixing the openStatus type
 const CURATED_OUTINGS = [
   {
     id: '1',
@@ -51,7 +50,7 @@ const CURATED_OUTINGS = [
     tags: ['Coffee', 'Breakfast', 'Wifi'],
     image: '/lovable-uploads/02972e2d-092f-4952-88c5-fcf4ee6acc82.png',
     category: 'Cafes',
-    openStatus: 'Open',
+    openStatus: 'Open' as const,
   },
   {
     id: '2',
@@ -63,7 +62,7 @@ const CURATED_OUTINGS = [
     tags: ['Beachfront', 'Spa', 'Restaurant'],
     image: '/lovable-uploads/338fb7a8-90b8-400c-a1a7-b1f2af04f5bf.png',
     category: 'Staycation',
-    openStatus: 'Open',
+    openStatus: 'Open' as const,
   },
   {
     id: '3',
@@ -75,7 +74,7 @@ const CURATED_OUTINGS = [
     tags: ['Hiking', 'Nature', 'Group-friendly'],
     image: '/lovable-uploads/b752b4f7-2a81-4715-a676-9c7bd1f9c93c.png',
     category: 'Adventure',
-    openStatus: 'Closing Soon',
+    openStatus: 'Closing Soon' as const,
   },
   {
     id: '4',
@@ -87,7 +86,7 @@ const CURATED_OUTINGS = [
     tags: ['Cocktails', 'Music', 'Late Night'],
     image: '/lovable-uploads/0d66895e-8267-4c1f-9e27-62c8bff7d8d1.png',
     category: 'Nightlife',
-    openStatus: 'Open',
+    openStatus: 'Open' as const,
   },
   {
     id: '5',
@@ -99,7 +98,7 @@ const CURATED_OUTINGS = [
     tags: ['Couples', 'Massage', 'Wellness'],
     image: '/lovable-uploads/338fb7a8-90b8-400c-a1a7-b1f2af04f5bf.png',
     category: 'Couples',
-    openStatus: 'Open',
+    openStatus: 'Open' as const,
   },
   {
     id: '6',
@@ -111,7 +110,7 @@ const CURATED_OUTINGS = [
     tags: ['Games', 'Group-friendly', 'Indoor'],
     image: '/lovable-uploads/b752b4f7-2a81-4715-a676-9c7bd1f9c93c.png',
     category: 'Groups',
-    openStatus: 'Closed',
+    openStatus: 'Closed' as const,
   },
   {
     id: '7',
@@ -123,7 +122,7 @@ const CURATED_OUTINGS = [
     tags: ['Indoor', 'Cozy', 'Books'],
     image: '/lovable-uploads/02972e2d-092f-4952-88c5-fcf4ee6acc82.png',
     category: 'Rainy Day',
-    openStatus: 'Open',
+    openStatus: 'Open' as const,
   },
 ];
 
@@ -146,7 +145,7 @@ const COMMUNITY_PICKS = [
     reviews: 423,
     tags: ['Beachfront', 'Coffee', 'Sunset View'],
     image: '/lovable-uploads/338fb7a8-90b8-400c-a1a7-b1f2af04f5bf.png',
-    openStatus: 'Open',
+    openStatus: 'Open' as const,
   },
   {
     id: '2',
@@ -156,7 +155,7 @@ const COMMUNITY_PICKS = [
     reviews: 286,
     tags: ['Mountain', 'Luxury', 'Spa'],
     image: '/lovable-uploads/02972e2d-092f-4952-88c5-fcf4ee6acc82.png',
-    openStatus: 'Closing Soon',
+    openStatus: 'Closing Soon' as const,
   },
 ];
 
@@ -314,8 +313,8 @@ const Home: React.FC = () => {
                 </CarouselItem>
               ))}
             </CarouselContent>
-            <CarouselPrevious className={`hidden sm:flex left-1 ${darkMode ? "bg-black/40 text-white" : "bg-white/40 text-black"} border-none hover:bg-black/60`} />
-            <CarouselNext className={`hidden sm:flex right-1 ${darkMode ? "bg-black/40 text-white" : "bg-white/40 text-black"} border-none hover:bg-black/60`} />
+            <CarouselPrevious className={`hidden sm:flex left-1 ${darkMode ? "bg-black/40 text-white" : "bg-white/40 text-black"}`} />
+            <CarouselNext className={`hidden sm:flex right-1 ${darkMode ? "bg-black/40 text-white" : "bg-white/40 text-black"}`} />
           </Carousel>
         </section>
         
