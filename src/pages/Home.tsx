@@ -3,8 +3,9 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
 import BottomNavigation from '@/components/BottomNavigation';
-import { Flame, Zap, Moon, Users, Compass, Coffee, Home as HomeIcon, Umbrella, Heart, Loader } from 'lucide-react';
+import { Flame, Zap, Moon, Users, Compass, Coffee, Home as HomeIcon, Umbrella, Heart, Loader, MapPin } from 'lucide-react';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
+import { toast } from "@/components/ui/use-toast";
 import FeaturedPlaceCard from '@/components/FeaturedPlaceCard';
 import OutingCard from '@/components/OutingCard';
 import QuickAccessButton from '@/components/QuickAccessButton';
@@ -50,6 +51,7 @@ const CURATED_OUTINGS = [
     tags: ['Coffee', 'Breakfast', 'Wifi'],
     image: '/lovable-uploads/02972e2d-092f-4952-88c5-fcf4ee6acc82.png',
     category: 'Cafes',
+    openStatus: 'Open',
   },
   {
     id: '2',
@@ -61,6 +63,7 @@ const CURATED_OUTINGS = [
     tags: ['Beachfront', 'Spa', 'Restaurant'],
     image: '/lovable-uploads/338fb7a8-90b8-400c-a1a7-b1f2af04f5bf.png',
     category: 'Staycation',
+    openStatus: 'Open',
   },
   {
     id: '3',
@@ -72,6 +75,7 @@ const CURATED_OUTINGS = [
     tags: ['Hiking', 'Nature', 'Group-friendly'],
     image: '/lovable-uploads/b752b4f7-2a81-4715-a676-9c7bd1f9c93c.png',
     category: 'Adventure',
+    openStatus: 'Closing Soon',
   },
   {
     id: '4',
@@ -83,6 +87,7 @@ const CURATED_OUTINGS = [
     tags: ['Cocktails', 'Music', 'Late Night'],
     image: '/lovable-uploads/0d66895e-8267-4c1f-9e27-62c8bff7d8d1.png',
     category: 'Nightlife',
+    openStatus: 'Open',
   },
   {
     id: '5',
@@ -94,6 +99,7 @@ const CURATED_OUTINGS = [
     tags: ['Couples', 'Massage', 'Wellness'],
     image: '/lovable-uploads/338fb7a8-90b8-400c-a1a7-b1f2af04f5bf.png',
     category: 'Couples',
+    openStatus: 'Open',
   },
   {
     id: '6',
@@ -105,6 +111,7 @@ const CURATED_OUTINGS = [
     tags: ['Games', 'Group-friendly', 'Indoor'],
     image: '/lovable-uploads/b752b4f7-2a81-4715-a676-9c7bd1f9c93c.png',
     category: 'Groups',
+    openStatus: 'Closed',
   },
   {
     id: '7',
@@ -116,6 +123,7 @@ const CURATED_OUTINGS = [
     tags: ['Indoor', 'Cozy', 'Books'],
     image: '/lovable-uploads/02972e2d-092f-4952-88c5-fcf4ee6acc82.png',
     category: 'Rainy Day',
+    openStatus: 'Open',
   },
 ];
 
@@ -138,6 +146,7 @@ const COMMUNITY_PICKS = [
     reviews: 423,
     tags: ['Beachfront', 'Coffee', 'Sunset View'],
     image: '/lovable-uploads/338fb7a8-90b8-400c-a1a7-b1f2af04f5bf.png',
+    openStatus: 'Open',
   },
   {
     id: '2',
@@ -147,6 +156,7 @@ const COMMUNITY_PICKS = [
     reviews: 286,
     tags: ['Mountain', 'Luxury', 'Spa'],
     image: '/lovable-uploads/02972e2d-092f-4952-88c5-fcf4ee6acc82.png',
+    openStatus: 'Closing Soon',
   },
 ];
 
@@ -157,6 +167,7 @@ const Home: React.FC = () => {
   const [activeFilter, setActiveFilter] = useState<string | null>(null);
   const [filteredOutings, setFilteredOutings] = useState(CURATED_OUTINGS);
   const [isButtonLoading, setIsButtonLoading] = useState(false);
+  const [selectedLocation, setSelectedLocation] = useState("Chennai");
   
   useEffect(() => {
     // Create random stars for the background
@@ -178,6 +189,13 @@ const Home: React.FC = () => {
         outing.tags.includes(activeFilter)
       );
       setFilteredOutings(filtered.length > 0 ? filtered : CURATED_OUTINGS);
+      
+      // Show toast notification when filter is applied
+      toast({
+        title: `${activeFilter} filter applied`,
+        description: `Showing ${filtered.length} places matching "${activeFilter}"`,
+        duration: 2000,
+      });
     } else {
       setFilteredOutings(CURATED_OUTINGS);
     }
@@ -197,16 +215,46 @@ const Home: React.FC = () => {
   };
 
   const handlePlaceClick = (id: string) => {
+    // Show toast for better UX
+    toast({
+      title: "Opening details",
+      description: "Loading place information...",
+      duration: 1500,
+    });
     navigate(`/places/${id}`);
   };
   
   const handleSeeAllClick = (section: string) => {
+    toast({
+      title: `Exploring ${section}`,
+      description: "Loading more options...",
+      duration: 1500,
+    });
     navigate(`/search?section=${section}`);
   };
 
   const handleSponsoredClick = () => {
     // In a real app, this would open the sponsored content or track the click
+    toast({
+      title: "Opening sponsored content",
+      description: "You clicked on a sponsored item",
+      duration: 1500,
+    });
     window.open('https://example.com/sponsored', '_blank');
+  };
+
+  const handleLocationClick = () => {
+    // Toggle between different locations for demo purposes
+    const locations = ["Chennai", "Bengaluru", "Mumbai", "Delhi"];
+    const currentIndex = locations.indexOf(selectedLocation);
+    const nextLocation = locations[(currentIndex + 1) % locations.length];
+    setSelectedLocation(nextLocation);
+    
+    toast({
+      title: `Location changed to ${nextLocation}`,
+      description: "Updating available places...",
+      duration: 2000,
+    });
   };
   
   return (
@@ -231,8 +279,20 @@ const Home: React.FC = () => {
       <Header />
       
       <main className="flex-1 flex flex-col px-4 pb-20 z-10 overflow-y-auto">
+        {/* Location Selector */}
+        <div className="mt-4 mb-2">
+          <button 
+            onClick={handleLocationClick}
+            className={`flex items-center ${darkMode ? "text-white" : "text-blitz-black"} font-medium px-3 py-1.5 rounded-full 
+              ${darkMode ? "bg-blitz-gray/40 hover:bg-blitz-gray/60" : "bg-white/30 hover:bg-white/50"} transition-all active:scale-95`}
+          >
+            <MapPin className="w-4 h-4 mr-1" />
+            {selectedLocation}
+          </button>
+        </div>
+        
         {/* What's Hot Now Section */}
-        <section className="mt-6 mb-8 animate-fade-in">
+        <section className="mt-4 mb-8 animate-fade-in">
           <div className="flex items-center justify-between mb-4 px-2">
             <div className="flex items-center">
               <Flame className={`${darkMode ? "text-blitz-pink" : "text-blitz-black"} mr-2 w-5 h-5`} />
@@ -240,7 +300,7 @@ const Home: React.FC = () => {
             </div>
             <button 
               onClick={() => handleSeeAllClick('trending')} 
-              className={`text-sm ${darkMode ? "text-blitz-pink" : "text-blitz-black"}`}
+              className={`text-sm ${darkMode ? "text-blitz-pink" : "text-blitz-black"} hover:underline active:opacity-70 transition-all`}
             >
               See All
             </button>
@@ -287,7 +347,7 @@ const Home: React.FC = () => {
             </h2>
             <button 
               onClick={() => handleSeeAllClick('curated')} 
-              className={`text-sm ${darkMode ? "text-blitz-pink" : "text-blitz-black"}`}
+              className={`text-sm ${darkMode ? "text-blitz-pink" : "text-blitz-black"} hover:underline active:opacity-70 transition-all`}
             >
               See All
             </button>
@@ -315,7 +375,7 @@ const Home: React.FC = () => {
               <div className="flex-1">
                 <h3 className={`${darkMode ? "text-white" : "text-blitz-black"} font-medium mb-1`}>Food Truck Festival</h3>
                 <p className={`text-sm ${darkMode ? "text-blitz-lightgray" : "text-blitz-black/60"}`}>Discover 20+ food trucks this weekend near you!</p>
-                <button className={`mt-3 px-4 py-2 ${darkMode ? "bg-blitz-pink text-white" : "bg-blitz-black text-blitz-pink"} rounded-full text-sm`}>
+                <button className={`mt-3 px-4 py-2 ${darkMode ? "bg-blitz-pink text-white" : "bg-blitz-black text-white"} rounded-full text-sm transition-all hover:opacity-90 active:scale-95`}>
                   Learn More
                 </button>
               </div>
@@ -333,7 +393,7 @@ const Home: React.FC = () => {
             <h2 className={`text-lg font-semibold ${darkMode ? "text-white" : "text-blitz-black"}`}>Community Picks</h2>
             <button 
               onClick={() => handleSeeAllClick('community')} 
-              className={`text-sm ${darkMode ? "text-blitz-pink" : "text-blitz-black"}`}>
+              className={`text-sm ${darkMode ? "text-blitz-pink" : "text-blitz-black"} hover:underline active:opacity-70 transition-all`}>
               See All
             </button>
           </div>
@@ -355,7 +415,13 @@ const Home: React.FC = () => {
           <button 
             onClick={handleStartBlitz}
             disabled={isButtonLoading}
-            className={`w-full max-w-xs mx-auto px-10 py-3.5 ${darkMode ? "bg-[#1F1F1F] text-white" : "bg-blitz-black text-blitz-pink"} text-base font-medium rounded-full shadow-sm hover:bg-[#2A2A2A] active:scale-[0.98] transition-all duration-200 group`}
+            className={`w-full max-w-xs mx-auto px-10 py-3.5 ${
+              darkMode 
+                ? "bg-gradient-to-r from-blitz-purple to-blitz-pink text-white" 
+                : "bg-blitz-black text-white"
+            } text-base font-medium rounded-full shadow-lg hover:shadow-xl active:scale-[0.98] transition-all duration-200 group ${
+              darkMode ? "shadow-blitz-pink/20" : "shadow-black/20"
+            }`}
           >
             <span className="flex items-center justify-center">
               {isButtonLoading ? (
@@ -366,7 +432,7 @@ const Home: React.FC = () => {
               ) : (
                 <>
                   Start Blitzing
-                  <Zap className={`ml-2 w-4 h-4 ${darkMode ? "text-blitz-pink" : "text-blitz-pink"} opacity-90`} />
+                  <Zap className={`ml-2 w-4 h-4 ${darkMode ? "text-white" : "text-blitz-pink"} opacity-90`} />
                 </>
               )}
             </span>

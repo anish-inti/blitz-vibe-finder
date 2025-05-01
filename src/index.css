@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -330,6 +331,17 @@ body {
   }
 }
 
+@keyframes ping-slow {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.7;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0;
+  }
+}
+
 @layer utilities {
   .animate-pulse-glow {
     animation: pulse-glow 2s ease-in-out infinite;
@@ -350,6 +362,10 @@ body {
   .animate-slide-up {
     animation: slide-up 0.5s ease-out forwards;
   }
+
+  .animate-ping-slow {
+    animation: ping-slow 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+  }
   
   .delay-100 {
     animation-delay: 0.1s;
@@ -362,4 +378,34 @@ body {
   .delay-300 {
     animation-delay: 0.3s;
   }
+
+  .delay-400 {
+    animation-delay: 0.4s;
+  }
+  
+  .delay-500 {
+    animation-delay: 0.5s;
+  }
+}
+
+/* Line clamp utilities */
+.line-clamp-1 {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1;
+}
+
+.line-clamp-2 {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.line-clamp-3 {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
 }
