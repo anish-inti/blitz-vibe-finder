@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
@@ -8,6 +7,7 @@ import { fetchChennaiPlaces } from "@/utils/fetchPlaces";
 import { FilterParams } from "@/components/SearchFilters";
 import { simulateGoogleSearch } from "@/services/searchSimulationService";
 import { getMoviePlaces } from "@/services/moviesService";
+import { parseAndFilterPlaces } from "@/utils/promptParser";
 
 interface PlanData {
   occasion: string;
@@ -19,6 +19,7 @@ interface PlanData {
 
 export function useSwipePlaces(planData: PlanData, initialFilters: FilterParams) {
   const [places, setPlaces] = useState<Place[]>([]);
+  const [allPlaces, setAllPlaces] = useState<Place[]>([]);
   const [likedPlaces, setLikedPlaces] = useState<Place[]>([]);
   const [showResults, setShowResults] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -50,6 +51,7 @@ export function useSwipePlaces(planData: PlanData, initialFilters: FilterParams)
         const moviePlaces = getMoviePlaces();
         if (moviePlaces.length > 0) {
           setPlaces(moviePlaces);
+          setAllPlaces(moviePlaces);
           setError(null);
           setIsLoading(false);
           return;
@@ -64,8 +66,20 @@ export function useSwipePlaces(planData: PlanData, initialFilters: FilterParams)
         if (simulationError) {
           setError(simulationError);
           setPlaces([]);
+          setAllPlaces([]);
         } else {
-          setPlaces(simulatedPlaces);
+          // Add fake props for simulation
+          const enhancedPlaces = simulatedPlaces.map(place => ({
+            ...place,
+            tags: place.category ? [place.category.toLowerCase(), ...getRandomTags()] : getRandomTags(),
+            budget: Math.floor(Math.random() * 500) + 100,
+            maxGroupSize: Math.floor(Math.random() * 10) + 1,
+            time: getRandomTime(),
+            hours: getRandomHours(),
+          }));
+          
+          setPlaces(enhancedPlaces);
+          setAllPlaces(enhancedPlaces);
           setError(null);
         }
       } else {
@@ -80,8 +94,20 @@ export function useSwipePlaces(planData: PlanData, initialFilters: FilterParams)
           if (simulationError) {
             setError(simulationError);
             setPlaces([]);
+            setAllPlaces([]);
           } else {
-            setPlaces(simulatedPlaces);
+            // Add fake props for simulation
+            const enhancedPlaces = simulatedPlaces.map(place => ({
+              ...place,
+              tags: place.category ? [place.category.toLowerCase(), ...getRandomTags()] : getRandomTags(),
+              budget: Math.floor(Math.random() * 500) + 100,
+              maxGroupSize: Math.floor(Math.random() * 10) + 1,
+              time: getRandomTime(),
+              hours: getRandomHours(),
+            }));
+            
+            setPlaces(enhancedPlaces);
+            setAllPlaces(enhancedPlaces);
             setError(null);
             toast({
               title: "Using simulated search results",
@@ -90,7 +116,19 @@ export function useSwipePlaces(planData: PlanData, initialFilters: FilterParams)
           }
         } else {
           console.log("Successfully fetched places from database:", dbPlaces);
-          setPlaces(dbPlaces);
+          
+          // Add fake props for database places if they don't have them
+          const enhancedPlaces = dbPlaces.map(place => ({
+            ...place,
+            tags: place.category ? [place.category.toLowerCase(), ...getRandomTags()] : getRandomTags(),
+            budget: Math.floor(Math.random() * 500) + 100,
+            maxGroupSize: Math.floor(Math.random() * 10) + 1,
+            time: getRandomTime(),
+            hours: getRandomHours(),
+          }));
+          
+          setPlaces(enhancedPlaces);
+          setAllPlaces(enhancedPlaces);
           setError(null);
         }
       }
@@ -101,6 +139,25 @@ export function useSwipePlaces(planData: PlanData, initialFilters: FilterParams)
       setIsLoading(false);
     }
   };
+  
+  // Helper functions for generating random data
+  const getRandomTags = () => {
+    const allTags = ["rooftop", "outdoor", "cafe", "club", "aesthetic", "chill", "romantic", "premium", "dance", "cozy", "peaceful", "nightlife"];
+    const numTags = Math.floor(Math.random() * 3) + 1;
+    const shuffled = [...allTags].sort(() => 0.5 - Math.random());
+    return shuffled.slice(0, numTags);
+  };
+  
+  const getRandomTime = () => {
+    const times = ["morning", "afternoon", "evening", "night"];
+    return times[Math.floor(Math.random() * times.length)];
+  };
+  
+  const getRandomHours = () => {
+    const startHour = Math.floor(Math.random() * 12) + 7;
+    const endHour = Math.floor(Math.random() * 6) + 18;
+    return `${startHour}:00 AM - ${endHour}:00 PM`;
+  };
 
   useEffect(() => {
     fetchDatabasePlaces();
@@ -109,6 +166,32 @@ export function useSwipePlaces(planData: PlanData, initialFilters: FilterParams)
 
   const handleApplyFilters = (newFilters: FilterParams) => {
     setFilters(newFilters);
+  };
+
+  const handleFilterByPrompt = (prompt: string) => {
+    setIsLoading(true);
+    
+    // Use the original places array for filtering
+    if (prompt && allPlaces.length > 0) {
+      const filteredPlaces = parseAndFilterPlaces(prompt, allPlaces);
+      
+      if (filteredPlaces.length === 0) {
+        toast({
+          title: "No matching places",
+          description: "No places match your criteria. Try a different search."
+        });
+        // Keep the current places
+      } else {
+        setPlaces(filteredPlaces);
+        
+        toast({
+          title: "Places filtered",
+          description: `Found ${filteredPlaces.length} places matching your criteria.`
+        });
+      }
+    }
+    
+    setIsLoading(false);
   };
 
   const handleSwipe = async (direction: 'left' | 'right' | 'up') => {
@@ -201,6 +284,7 @@ export function useSwipePlaces(planData: PlanData, initialFilters: FilterParams)
     filters,
     useSimulation,
     handleApplyFilters,
+    handleFilterByPrompt,
     handleSwipe,
     handleContinuePlanning,
     handleFinishPlanning,

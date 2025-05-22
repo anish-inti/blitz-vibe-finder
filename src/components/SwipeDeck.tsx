@@ -1,15 +1,18 @@
+
 import React, { useState, useEffect } from 'react';
 import SwipeCard, { Place } from './SwipeCard';
 import SwipeActions from './SwipeActions';
 import SwipeCardMovieAdapter from './SwipeCardMovieAdapter';
+import { ParsedFilters } from '@/utils/promptParser';
 
 interface SwipeDeckProps {
   places: Place[];
   onEmpty?: () => void;
   onSwipe?: (direction: 'left' | 'right' | 'up') => void;
+  promptFilters?: ParsedFilters;
 }
 
-const SwipeDeck: React.FC<SwipeDeckProps> = ({ places, onEmpty, onSwipe }) => {
+const SwipeDeck: React.FC<SwipeDeckProps> = ({ places, onEmpty, onSwipe, promptFilters }) => {
   const [currentPlaces, setCurrentPlaces] = useState<Place[]>([]);
   const [previousPlace, setPreviousPlace] = useState<Place | null>(null);
   const [showAnimation, setShowAnimation] = useState(false);
@@ -91,7 +94,8 @@ const SwipeDeck: React.FC<SwipeDeckProps> = ({ places, onEmpty, onSwipe }) => {
             ) : (
               <SwipeCard 
                 place={currentPlace} 
-                onSwipe={handleSwipe} 
+                onSwipe={handleSwipe}
+                promptFilters={promptFilters}
               />
             )}
           </div>

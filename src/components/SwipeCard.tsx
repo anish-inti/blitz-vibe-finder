@@ -1,5 +1,7 @@
+
 import React, { useState, useEffect } from 'react';
-import { Heart, Bookmark, Star, MapPin, Clock, Check, X } from 'lucide-react';
+import { Heart, Bookmark, Star, MapPin, Clock, Check, X, Users, DollarSign, Tag } from 'lucide-react';
+import { Badge } from './ui/badge';
 
 export interface Place {
   id: string;
@@ -16,14 +18,26 @@ export interface Place {
   distance?: number;
   latitude?: number;
   longitude?: number;
+  budget?: number;
+  maxGroupSize?: number;
+  tags?: string[];
+  time?: string;
+  hours?: string;
+  matchedVibes?: string[];
 }
 
 interface SwipeCardProps {
   place: Place;
   onSwipe: (direction: 'left' | 'right' | 'up') => void;
+  promptFilters?: {
+    vibes: string[];
+    budget: number | null;
+    groupSize: number | null;
+    time: string | null;
+  };
 }
 
-const SwipeCard: React.FC<SwipeCardProps> = ({ place, onSwipe }) => {
+const SwipeCard: React.FC<SwipeCardProps> = ({ place, onSwipe, promptFilters }) => {
   const [swipeDirection, setSwipeDirection] = useState<'left' | 'right' | 'up' | null>(null);
   const [startX, setStartX] = useState(0);
   const [startY, setStartY] = useState(0);
@@ -133,11 +147,32 @@ const SwipeCard: React.FC<SwipeCardProps> = ({ place, onSwipe }) => {
   
   // Helper to render price level
   const renderPriceLevel = () => {
-    if (place.priceLevel === undefined) return null;
+    if (place.priceLevel === undefined && place.budget === undefined) return null;
+    
+    if (place.budget) {
+      return (
+        <div className="flex items-center text-blitz-lightgray text-xs">
+          <DollarSign className="w-3 h-3 mr-1" />
+          ₹{place.budget}/person
+        </div>
+      );
+    }
     
     return (
       <div className="text-blitz-lightgray text-xs">
         {Array(place.priceLevel).fill('$').join('')}
+      </div>
+    );
+  };
+
+  // Helper to render group size
+  const renderGroupSize = () => {
+    if (place.maxGroupSize === undefined) return null;
+    
+    return (
+      <div className="flex items-center text-blitz-lightgray text-xs">
+        <Users className="w-3 h-3 mr-1" />
+        Up to {place.maxGroupSize} people
       </div>
     );
   };
@@ -183,6 +218,40 @@ const SwipeCard: React.FC<SwipeCardProps> = ({ place, onSwipe }) => {
         <span className={place.isOpen ? "text-green-400" : "text-red-400"}>
           {place.isOpen ? "Open" : "Closed"}
         </span>
+      </div>
+    );
+  };
+  
+  // Helper to render hours
+  const renderHours = () => {
+    if (!place.hours) return null;
+    
+    return (
+      <div className="flex items-center text-xs text-blitz-lightgray">
+        <Clock className="w-3 h-3 mr-1" />
+        {place.hours}
+      </div>
+    );
+  };
+  
+  // Helper to render tags
+  const renderTags = () => {
+    if (!place.tags || place.tags.length === 0) return null;
+    
+    return (
+      <div className="flex flex-wrap gap-1 mt-2">
+        {place.tags.map((tag, index) => {
+          const isMatched = promptFilters?.vibes?.includes(tag);
+          return (
+            <Badge 
+              key={index} 
+              variant={isMatched ? "default" : "secondary"}
+              className={`text-xs py-0.5 px-1.5 ${isMatched ? 'bg-blitz-pink/80' : 'bg-blitz-gray/60'}`}
+            >
+              {tag}
+            </Badge>
+          );
+        })}
       </div>
     );
   };
@@ -301,10 +370,12 @@ const SwipeCard: React.FC<SwipeCardProps> = ({ place, onSwipe }) => {
         <div className="absolute bottom-0 left-0 right-0 p-5 text-white">
           <h2 className="text-2xl font-semibold mb-1.5 tracking-tight">{place.name}</h2>
           
-          <div className="flex items-center gap-3 mb-1">
+          <div className="flex items-center gap-3 mb-1 flex-wrap">
             {renderRating()}
             {renderPriceLevel()}
+            {renderGroupSize()}
             {renderOpenStatus()}
+            {renderHours()}
           </div>
           
           <p className="text-base text-blitz-offwhite mb-1">
@@ -319,12 +390,15 @@ const SwipeCard: React.FC<SwipeCardProps> = ({ place, onSwipe }) => {
             </p>
           )}
           
+          {/* Tags */}
+          {renderTags()}
+          
           <div className="flex items-center gap-3 mt-2">
             {renderDistance()}
             {place.longitude && place.latitude ? (
               <button 
                 className="text-xs text-blitz-pink"
-                onClick={() => window.open(`https://maps.google.com/?q=${place.latitude},${place.longitude}`, '_blank')}
+                onClick={() => window.open(`https://maps.google.com/maps?q=${place.latitude},${place.longitude}`, '_blank')}
                 aria-label={`View ${place.name} on map`}
               >
                 View on map

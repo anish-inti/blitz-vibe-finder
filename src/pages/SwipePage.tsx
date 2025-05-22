@@ -1,17 +1,18 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useLocation as useRouterLocation } from 'react-router-dom';
 import Header from '@/components/Header';
 import BottomNavigation from '@/components/BottomNavigation';
 import SwipeDeck from '@/components/SwipeDeck';
-import { Sparkles, Database, Search } from 'lucide-react';
+import { Sparkles, Database, Search, Filter } from 'lucide-react';
 import { useLocationContext } from '@/contexts/LocationContext';
 import SearchFilters from '@/components/SearchFilters';
 import SwipeResults from '@/components/SwipeResults';
-import SwipeActions from '@/components/SwipeActions';
 import { useSwipePlaces } from '@/hooks/useSwipePlaces';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { ParsedFilters, parseUserPrompt } from '@/utils/promptParser';
+import { Input } from '@/components/ui/input';
 
 interface PlanData {
   occasion: string;
@@ -24,6 +25,9 @@ interface PlanData {
 const SwipePage: React.FC = () => {
   const location = useRouterLocation();
   const locationContext = useLocationContext();
+  const [userPrompt, setUserPrompt] = useState<string>('');
+  const [promptFilters, setPromptFilters] = useState<ParsedFilters | null>(null);
+  const [showPromptInput, setShowPromptInput] = useState<boolean>(false);
 
   const planData: PlanData = location.state as PlanData || {
     occasion: '',
@@ -47,6 +51,7 @@ const SwipePage: React.FC = () => {
     handleFinishPlanning,
     handleRetry,
     handleToggleDataSource,
+    handleFilterByPrompt,
   } = useSwipePlaces(planData, {
     type: planData.outingType || undefined,
     keyword: planData.occasion || undefined,
@@ -56,6 +61,15 @@ const SwipePage: React.FC = () => {
   // Check if showing movies
   const isShowingMovies = places.length > 0 && 
     places.some(place => 'isMovie' in place && place.isMovie);
+
+  const handlePromptSearch = () => {
+    if (!userPrompt.trim()) return;
+    
+    const filters = parseUserPrompt(userPrompt);
+    setPromptFilters(filters);
+    handleFilterByPrompt(userPrompt);
+    setShowPromptInput(false);
+  };
 
   return (
     <div className="min-h-screen flex flex-col relative bg-blitz-black">
@@ -70,39 +84,100 @@ const SwipePage: React.FC = () => {
               <Sparkles className="absolute -right-5 top-1 w-3.5 h-3.5 text-blitz-pink opacity-70" />
             </h1>
             
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    className="text-blitz-lightgray hover:text-white"
-                    onClick={handleToggleDataSource}
-                  >
-                    {useSimulation ? (
-                      <Search className="h-4 w-4" />
-                    ) : (
-                      <Database className="h-4 w-4" />
-                    )}
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>{useSimulation ? "Using simulated search data" : "Using database data"}</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+            <div className="flex space-x-2">
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="text-blitz-lightgray hover:text-white"
+                      onClick={() => setShowPromptInput(!showPromptInput)}
+                    >
+                      <Filter className="h-4 w-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Search by prompt</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+              
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="text-blitz-lightgray hover:text-white"
+                      onClick={handleToggleDataSource}
+                    >
+                      {useSimulation ? (
+                        <Search className="h-4 w-4" />
+                      ) : (
+                        <Database className="h-4 w-4" />
+                      )}
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{useSimulation ? "Using simulated search data" : "Using database data"}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
           </div>
           
-          <div className="mb-4">
-            <SearchFilters 
-              onApplyFilters={handleApplyFilters}
-              initialFilters={{
-                type: planData.outingType || undefined,
-                keyword: planData.occasion || undefined,
-                radius: planData.locality * 1000,
-              }}
-            />
-          </div>
+          {showPromptInput && (
+            <div className="mb-4 transition-all duration-300 animate-in fade-in slide-in-from-top-2">
+              <div className="flex gap-2">
+                <Input
+                  type="text"
+                  placeholder="e.g., We're 4 people, ₹300 per person, looking for rooftop cafes in the evening"
+                  value={userPrompt}
+                  onChange={(e) => setUserPrompt(e.target.value)}
+                  className="bg-transparent border-blitz-gray text-white"
+                />
+                <Button 
+                  onClick={handlePromptSearch}
+                  size="sm"
+                  className="whitespace-nowrap bg-blitz-pink hover:bg-blitz-pink/90"
+                >
+                  Search
+                </Button>
+              </div>
+              {promptFilters && (
+                <div className="mt-2 text-xs text-blitz-lightgray">
+                  <div className="flex flex-wrap gap-2">
+                    {promptFilters.budget && (
+                      <Badge className="bg-blitz-gray/70">₹{promptFilters.budget}</Badge>
+                    )}
+                    {promptFilters.groupSize && (
+                      <Badge className="bg-blitz-gray/70">{promptFilters.groupSize} people</Badge>
+                    )}
+                    {promptFilters.time && (
+                      <Badge className="bg-blitz-gray/70">{promptFilters.time}</Badge>
+                    )}
+                    {promptFilters.vibes.map((vibe, index) => (
+                      <Badge key={index} className="bg-blitz-pink/80">{vibe}</Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+          
+          {!showPromptInput && (
+            <div className="mb-4">
+              <SearchFilters 
+                onApplyFilters={handleApplyFilters}
+                initialFilters={{
+                  type: planData.outingType || undefined,
+                  keyword: planData.occasion || undefined,
+                  radius: planData.locality * 1000,
+                }}
+              />
+            </div>
+          )}
           
           {showResults ? (
             <SwipeResults
@@ -134,21 +209,13 @@ const SwipePage: React.FC = () => {
               </div>
             </div>
           ) : (
-            <>
-              <div className="relative">
-                <SwipeDeck 
-                  places={places} 
-                  onSwipe={handleSwipe} 
-                />
-              </div>
-              {places.length > 0 && (
-                <SwipeActions 
-                  onDislike={() => handleSwipe('left')}
-                  onBook={() => handleSwipe('up')}
-                  onLike={() => handleSwipe('right')}
-                />
-              )}
-            </>
+            <div className="relative">
+              <SwipeDeck 
+                places={places} 
+                onSwipe={handleSwipe}
+                promptFilters={promptFilters || undefined}
+              />
+            </div>
           )}
         </div>
       </main>
