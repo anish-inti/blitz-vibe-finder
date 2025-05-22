@@ -3,8 +3,18 @@ import React from 'react';
 import { Place } from './SwipeCard';
 import MovieCard from './MovieCard';
 
+// Define the movie-specific properties
+interface MoviePlace extends Place {
+  isMovie?: boolean;
+  genre?: string[];
+  duration?: string;
+  releaseDate?: string;
+  language?: string;
+  bookingLinks?: Record<string, string>;
+}
+
 interface SwipeCardMovieAdapterProps {
-  place: Place & { isMovie?: boolean };
+  place: MoviePlace;
   onSwipe: (direction: 'left' | 'right' | 'up') => void;
 }
 

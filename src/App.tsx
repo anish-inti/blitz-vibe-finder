@@ -16,6 +16,7 @@ import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 import Planner from "./pages/Planner";
 import SwipePage from "./pages/SwipePage";
+import AddYours from "./pages/AddYours";
 
 const queryClient = new QueryClient();
 
@@ -35,6 +36,7 @@ const App = () => (
               <Route path="/profile" element={<Profile />} />
               <Route path="/planner" element={<Planner />} />
               <Route path="/swipe" element={<SwipePage />} />
+              <Route path="/add" element={<AddYours />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>
