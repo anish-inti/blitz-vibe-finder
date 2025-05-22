@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import SwipeCard, { Place } from './SwipeCard';
 import SwipeActions from './SwipeActions';

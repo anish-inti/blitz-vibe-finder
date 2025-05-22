@@ -38,8 +38,39 @@ const SwipeCardMovieAdapter: React.FC<SwipeCardMovieAdapterProps> = ({ place, on
     bookingLinks: place.bookingLinks
   };
   
+  // Handle touch/swipe for movie card
+  const handleTouchStart = (e: React.TouchEvent) => {
+    const startX = e.touches[0].clientX;
+    
+    const handleTouchMove = (e: TouchEvent) => {
+      const currentX = e.touches[0].clientX;
+      const diffX = currentX - startX;
+      
+      if (diffX > 100) {
+        onSwipe('right');
+        document.removeEventListener('touchmove', handleTouchMove);
+        document.removeEventListener('touchend', handleTouchEnd);
+      } else if (diffX < -100) {
+        onSwipe('left');
+        document.removeEventListener('touchmove', handleTouchMove);
+        document.removeEventListener('touchend', handleTouchEnd);
+      }
+    };
+    
+    const handleTouchEnd = () => {
+      document.removeEventListener('touchmove', handleTouchMove);
+      document.removeEventListener('touchend', handleTouchEnd);
+    };
+    
+    document.addEventListener('touchmove', handleTouchMove);
+    document.addEventListener('touchend', handleTouchEnd);
+  };
+  
   return (
-    <div className="swipe-card w-full overflow-hidden relative max-w-md mx-auto">
+    <div 
+      className="swipe-card w-full overflow-hidden relative max-w-md mx-auto"
+      onTouchStart={handleTouchStart}
+    >
       <MovieCard movie={movie} />
     </div>
   );

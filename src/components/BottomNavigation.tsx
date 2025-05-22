@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { User, Search, MapPin, Heart, Zap, Navigation, PlusCircle } from 'lucide-react';
+import { User, MapPin, Heart, Zap, PlusCircle } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { useLocationContext } from '@/contexts/LocationContext';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -44,6 +44,7 @@ const BottomNavigation: React.FC = () => {
             ? 'text-blitz-pink' 
             : darkMode ? 'text-blitz-lightgray hover:text-white' : 'text-blitz-gray hover:text-blitz-black'
         }`}
+        aria-label="Home"
       >
         <Zap className={`w-5 h-5 ${isActive('/') ? 'scale-105' : ''}`} />
       </Link>
@@ -55,6 +56,7 @@ const BottomNavigation: React.FC = () => {
             ? 'text-blitz-pink' 
             : darkMode ? 'text-blitz-lightgray hover:text-white' : 'text-blitz-gray hover:text-blitz-black'
         }`}
+        aria-label="Planner"
       >
         <div className="relative">
           <MapPin className={`w-5 h-5 ${isActive('/planner') ? 'scale-105' : ''}`} />
@@ -71,6 +73,7 @@ const BottomNavigation: React.FC = () => {
             ? 'text-blitz-pink' 
             : darkMode ? 'text-blitz-lightgray hover:text-white' : 'text-blitz-gray hover:text-blitz-black'
         }`}
+        aria-label="Add Yours"
       >
         <PlusCircle className={`w-5 h-5 ${isActive('/add') ? 'scale-105' : ''}`} />
       </Link>
@@ -82,6 +85,7 @@ const BottomNavigation: React.FC = () => {
             ? 'text-blitz-pink' 
             : darkMode ? 'text-blitz-lightgray hover:text-white' : 'text-blitz-gray hover:text-blitz-black'
         }`}
+        aria-label="Favorites"
       >
         <Heart className={`w-5 h-5 ${isActive('/favorites') ? 'scale-105' : ''}`} />
       </Link>
@@ -93,6 +97,7 @@ const BottomNavigation: React.FC = () => {
             ? 'text-blitz-pink' 
             : darkMode ? 'text-blitz-lightgray hover:text-white' : 'text-blitz-gray hover:text-blitz-black'
         }`}
+        aria-label="Profile"
       >
         <User className={`w-5 h-5 ${isActive('/profile') ? 'scale-105' : ''}`} />
       </Link>

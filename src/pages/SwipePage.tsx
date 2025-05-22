@@ -6,7 +6,6 @@ import BottomNavigation from '@/components/BottomNavigation';
 import SwipeDeck from '@/components/SwipeDeck';
 import { Sparkles, Database, Search } from 'lucide-react';
 import { useLocationContext } from '@/contexts/LocationContext';
-import { LocationInfo } from '@/components/LocationInfo';
 import SearchFilters from '@/components/SearchFilters';
 import SwipeResults from '@/components/SwipeResults';
 import SwipeActions from '@/components/SwipeActions';
@@ -61,9 +60,10 @@ const SwipePage: React.FC = () => {
   return (
     <div className="min-h-screen flex flex-col relative bg-blitz-black">
       <div className="cosmic-bg absolute inset-0 z-0"></div>
-      <Header showLocationDebug={true} />
-      <main className="flex-1 flex flex-col items-center px-6 pb-20 z-10">
-        <div className="w-full max-w-md mx-auto mt-6">
+      <Header showBackButton title="Find Places" />
+      
+      <main className="flex-1 flex flex-col items-center px-4 sm:px-6 pb-20 z-10">
+        <div className="w-full max-w-md mx-auto mt-4">
           <div className="flex justify-between items-center mb-3">
             <h1 className="text-xl font-semibold text-white relative tracking-tight">
               {isShowingMovies ? "Find Your Movie" : "Find Your Experience"}
@@ -88,7 +88,6 @@ const SwipePage: React.FC = () => {
                 </TooltipTrigger>
                 <TooltipContent>
                   <p>{useSimulation ? "Using simulated search data" : "Using database data"}</p>
-                  <p className="text-xs text-gray-400">Click to toggle</p>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
@@ -104,12 +103,6 @@ const SwipePage: React.FC = () => {
               }}
             />
           </div>
-          
-          {import.meta.env.DEV && (
-            <div className="mb-4">
-              <LocationInfo />
-            </div>
-          )}
           
           {showResults ? (
             <SwipeResults
@@ -145,10 +138,10 @@ const SwipePage: React.FC = () => {
               <div className="relative">
                 <SwipeDeck 
                   places={places} 
-                  onSwipe={(direction) => handleSwipe(direction)} 
+                  onSwipe={handleSwipe} 
                 />
               </div>
-              {places.length > 0 && !isShowingMovies && (
+              {places.length > 0 && (
                 <SwipeActions 
                   onDislike={() => handleSwipe('left')}
                   onBook={() => handleSwipe('up')}

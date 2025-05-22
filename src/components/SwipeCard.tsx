@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Heart, Bookmark, Star, MapPin, Clock, Check, X } from 'lucide-react';
 
@@ -248,12 +247,13 @@ const SwipeCard: React.FC<SwipeCardProps> = ({ place, onSwipe }) => {
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
+      aria-label={`Place card for ${place.name}`}
     >
       <div className="relative aspect-[3/4] w-full overflow-hidden rounded-2xl">
         {/* Main Card with image */}
         <img 
           src={place.image || '/placeholder.svg'} 
-          alt={place.name} 
+          alt={`${place.name} in ${place.location}`} 
           className="w-full h-full object-cover rounded-2xl"
           onError={(e) => {
             e.currentTarget.src = '/placeholder.svg';
@@ -261,7 +261,10 @@ const SwipeCard: React.FC<SwipeCardProps> = ({ place, onSwipe }) => {
         />
         
         {/* Subtle overlay gradient */}
-        <div className="absolute top-0 left-0 right-0 bottom-0 bg-gradient-to-b from-transparent via-blitz-black/40 to-blitz-black/90 rounded-2xl"></div>
+        <div 
+          className="absolute top-0 left-0 right-0 bottom-0 bg-gradient-to-b from-transparent via-blitz-black/40 to-blitz-black/90 rounded-2xl"
+          aria-hidden="true"
+        ></div>
         
         {/* Direction indicator overlay */}
         {renderDirectionIndicator()}
@@ -277,6 +280,8 @@ const SwipeCard: React.FC<SwipeCardProps> = ({ place, onSwipe }) => {
             onClick={handleSave}
             className="w-10 h-10 flex items-center justify-center bg-blitz-black/30 backdrop-blur-md rounded-full shadow-lg transition-all duration-200 active:scale-95"
             style={{ WebkitTapHighlightColor: 'transparent' }}
+            aria-label={saved ? "Remove from bookmarks" : "Save to bookmarks"}
+            aria-pressed={saved}
           >
             <Bookmark className={`w-5 h-5 ${saved ? 'fill-blitz-pink text-blitz-pink' : 'text-white'}`} />
           </button>
@@ -285,6 +290,8 @@ const SwipeCard: React.FC<SwipeCardProps> = ({ place, onSwipe }) => {
             onClick={handleLike}
             className="w-10 h-10 flex items-center justify-center bg-blitz-black/30 backdrop-blur-md rounded-full shadow-lg transition-all duration-200 active:scale-95"
             style={{ WebkitTapHighlightColor: 'transparent' }}
+            aria-label={liked ? "Unlike place" : "Like place"}
+            aria-pressed={liked}
           >
             <Heart className={`w-5 h-5 ${liked ? 'fill-blitz-pink text-blitz-pink' : 'text-white'}`} />
           </button>
@@ -318,6 +325,7 @@ const SwipeCard: React.FC<SwipeCardProps> = ({ place, onSwipe }) => {
               <button 
                 className="text-xs text-blitz-pink"
                 onClick={() => window.open(`https://maps.google.com/?q=${place.latitude},${place.longitude}`, '_blank')}
+                aria-label={`View ${place.name} on map`}
               >
                 View on map
               </button>
@@ -325,6 +333,7 @@ const SwipeCard: React.FC<SwipeCardProps> = ({ place, onSwipe }) => {
               <button 
                 className="text-xs text-blitz-pink"
                 onClick={() => window.open(`https://www.google.com/search?q=${encodeURIComponent(`${place.name} ${place.location}`)}`, '_blank')}
+                aria-label={`Search for ${place.name} online`}
               >
                 Search online
               </button>
