@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { User, Search, MapPin, Heart, Zap, Navigation } from 'lucide-react';
+import { User, Search, MapPin, Heart, Zap, Navigation, PlusCircle } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { useLocationContext } from '@/contexts/LocationContext';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -36,7 +36,7 @@ const BottomNavigation: React.FC = () => {
       darkMode 
         ? "bg-blitz-gray/80" 
         : "bg-white/90 border border-gray-200"
-    } backdrop-blur-xl rounded-full px-8 py-3 flex justify-around items-center z-20 shadow-lg w-10/12 max-w-sm`}>
+    } backdrop-blur-xl rounded-full px-6 py-3 flex justify-around items-center z-20 shadow-lg w-10/12 max-w-sm`}>
       <Link 
         to="/" 
         className={`p-2 flex flex-col items-center transition-all duration-200 ${
@@ -62,6 +62,17 @@ const BottomNavigation: React.FC = () => {
             className={`absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full ${getLocationStatusColor()}`}
           />
         </div>
+      </Link>
+      
+      <Link 
+        to="/add" 
+        className={`p-2 flex flex-col items-center transition-all duration-200 ${
+          isActive('/add') 
+            ? 'text-blitz-pink' 
+            : darkMode ? 'text-blitz-lightgray hover:text-white' : 'text-blitz-gray hover:text-blitz-black'
+        }`}
+      >
+        <PlusCircle className={`w-5 h-5 ${isActive('/add') ? 'scale-105' : ''}`} />
       </Link>
       
       <Link 
