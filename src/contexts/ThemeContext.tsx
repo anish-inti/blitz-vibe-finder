@@ -1,33 +1,34 @@
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 
-type ThemeContextType = {
+interface ThemeContextType {
   darkMode: boolean;
-  setDarkMode: (dark: boolean) => void;
-};
+  toggleDarkMode: () => void;
+}
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
-export const ThemeProvider = ({ children }: { children: ReactNode }) => {
+export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [darkMode, setDarkMode] = useState(() => {
-    const savedTheme = localStorage.getItem('blitz-theme');
-    return savedTheme ? savedTheme === 'dark' : true;
+    const saved = localStorage.getItem('darkMode');
+    return saved ? JSON.parse(saved) : true; // Default to dark mode
   });
 
   useEffect(() => {
-    localStorage.setItem('blitz-theme', darkMode ? 'dark' : 'light');
-    const root = document.documentElement;
+    localStorage.setItem('darkMode', JSON.stringify(darkMode));
     if (darkMode) {
-      root.classList.add('dark');
-      root.classList.remove('light');
+      document.documentElement.classList.add('dark');
     } else {
-      root.classList.add('light');
-      root.classList.remove('dark');
+      document.documentElement.classList.remove('dark');
     }
   }, [darkMode]);
 
+  const toggleDarkMode = () => {
+    setDarkMode(!darkMode);
+  };
+
   return (
-    <ThemeContext.Provider value={{ darkMode, setDarkMode }}>
+    <ThemeContext.Provider value={{ darkMode, toggleDarkMode }}>
       {children}
     </ThemeContext.Provider>
   );
@@ -35,10 +36,8 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
 
 export const useTheme = () => {
   const context = useContext(ThemeContext);
-  
   if (context === undefined) {
     throw new Error('useTheme must be used within a ThemeProvider');
   }
-  
   return context;
 };

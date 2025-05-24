@@ -1,106 +1,49 @@
 
 import React from 'react';
-import { User, MapPin, Heart, Zap, PlusCircle } from 'lucide-react';
-import { Link, useLocation } from 'react-router-dom';
-import { useLocationContext } from '@/contexts/LocationContext';
+import { Home, Search, Heart, User, Calendar } from 'lucide-react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useTheme } from '@/contexts/ThemeContext';
 
 const BottomNavigation: React.FC = () => {
+  const navigate = useNavigate();
   const location = useLocation();
-  const locationContext = useLocationContext();
   const { darkMode } = useTheme();
-  
-  const isActive = (path: string) => {
-    return location.pathname === path;
-  };
-  
-  // Get location status indicator color
-  const getLocationStatusColor = () => {
-    switch (locationContext.status) {
-      case 'granted':
-        return 'bg-green-400';
-      case 'requesting':
-        return 'bg-yellow-400 animate-pulse';
-      case 'denied':
-        return 'bg-orange-400';
-      case 'error':
-      case 'unavailable':
-        return 'bg-red-400';
-      default:
-        return 'bg-gray-400';
-    }
-  };
-  
+
+  const navItems = [
+    { icon: Home, label: 'Home', path: '/home' },
+    { icon: Search, label: 'Search', path: '/search' },
+    { icon: Calendar, label: 'Planner', path: '/planner' },
+    { icon: Heart, label: 'Favorites', path: '/favorites' },
+    { icon: User, label: 'Profile', path: '/profile' },
+  ];
+
   return (
-    <nav className={`fixed bottom-6 left-1/2 transform -translate-x-1/2 transition-colors ${
-      darkMode 
-        ? "bg-blitz-gray/80" 
-        : "bg-white/90 border border-gray-200"
-    } backdrop-blur-xl rounded-full px-6 py-3 flex justify-around items-center z-20 shadow-lg w-10/12 max-w-sm`}>
-      <Link 
-        to="/" 
-        className={`p-2 flex flex-col items-center transition-all duration-200 ${
-          isActive('/') 
-            ? 'text-blitz-pink' 
-            : darkMode ? 'text-blitz-lightgray hover:text-white' : 'text-blitz-gray hover:text-blitz-black'
-        }`}
-        aria-label="Home"
-      >
-        <Zap className={`w-5 h-5 ${isActive('/') ? 'scale-105' : ''}`} />
-      </Link>
-      
-      <Link 
-        to="/planner" 
-        className={`p-2 flex flex-col items-center transition-all duration-200 ${
-          isActive('/planner') 
-            ? 'text-blitz-pink' 
-            : darkMode ? 'text-blitz-lightgray hover:text-white' : 'text-blitz-gray hover:text-blitz-black'
-        }`}
-        aria-label="Planner"
-      >
-        <div className="relative">
-          <MapPin className={`w-5 h-5 ${isActive('/planner') ? 'scale-105' : ''}`} />
-          <div 
-            className={`absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full ${getLocationStatusColor()}`}
-          />
-        </div>
-      </Link>
-      
-      <Link 
-        to="/add" 
-        className={`p-2 flex flex-col items-center transition-all duration-200 ${
-          isActive('/add') 
-            ? 'text-blitz-pink' 
-            : darkMode ? 'text-blitz-lightgray hover:text-white' : 'text-blitz-gray hover:text-blitz-black'
-        }`}
-        aria-label="Add Yours"
-      >
-        <PlusCircle className={`w-5 h-5 ${isActive('/add') ? 'scale-105' : ''}`} />
-      </Link>
-      
-      <Link 
-        to="/favorites" 
-        className={`p-2 flex flex-col items-center transition-all duration-200 ${
-          isActive('/favorites') 
-            ? 'text-blitz-pink' 
-            : darkMode ? 'text-blitz-lightgray hover:text-white' : 'text-blitz-gray hover:text-blitz-black'
-        }`}
-        aria-label="Favorites"
-      >
-        <Heart className={`w-5 h-5 ${isActive('/favorites') ? 'scale-105' : ''}`} />
-      </Link>
-      
-      <Link 
-        to="/profile" 
-        className={`p-2 flex flex-col items-center transition-all duration-200 ${
-          isActive('/profile') 
-            ? 'text-blitz-pink' 
-            : darkMode ? 'text-blitz-lightgray hover:text-white' : 'text-blitz-gray hover:text-blitz-black'
-        }`}
-        aria-label="Profile"
-      >
-        <User className={`w-5 h-5 ${isActive('/profile') ? 'scale-105' : ''}`} />
-      </Link>
+    <nav className={`fixed bottom-0 left-0 right-0 z-50 border-t backdrop-blur supports-[backdrop-filter]:bg-background/60 ${
+      darkMode ? 'bg-blitz-black/80 border-blitz-gray/20' : 'bg-white/80 border-gray-200'
+    }`}>
+      <div className="flex justify-around items-center h-16 px-4">
+        {navItems.map((item) => {
+          const Icon = item.icon;
+          const isActive = location.pathname === item.path;
+          
+          return (
+            <button
+              key={item.path}
+              onClick={() => navigate(item.path)}
+              className={`flex flex-col items-center justify-center space-y-1 transition-colors ${
+                isActive 
+                  ? 'text-blitz-pink' 
+                  : darkMode 
+                    ? 'text-blitz-lightgray hover:text-white' 
+                    : 'text-gray-500 hover:text-gray-900'
+              }`}
+            >
+              <Icon className="h-5 w-5" />
+              <span className="text-xs">{item.label}</span>
+            </button>
+          );
+        })}
+      </div>
     </nav>
   );
 };
