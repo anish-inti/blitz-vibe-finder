@@ -5,7 +5,7 @@ import { Loader2, MapPin, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export function LocationInfo() {
-  const { location, coordinates, isLoading, error, requestLocation } = useLocationContext();
+  const { status, data, isLoading, error, getLocation } = useLocationContext();
 
   // Format the timestamp to a readable date/time
   const formatTimestamp = (timestamp: number) => {
@@ -22,7 +22,7 @@ export function LocationInfo() {
         </h3>
         <Button 
           size="sm" 
-          onClick={requestLocation}
+          onClick={getLocation}
           variant="ghost"
           className="h-8 text-xs text-white/70 hover:text-white hover:bg-white/10"
           disabled={isLoading}
@@ -35,20 +35,28 @@ export function LocationInfo() {
         </Button>
       </div>
 
-      {coordinates ? (
+      {status === 'granted' && data ? (
         <div className="space-y-2 text-sm">
           <div className="flex justify-between items-center">
             <span className="text-white/60">Latitude:</span>
-            <span className="font-mono">{coordinates.lat?.toFixed(6)}</span>
+            <span className="font-mono">{data.latitude?.toFixed(6)}</span>
           </div>
           <div className="flex justify-between items-center">
             <span className="text-white/60">Longitude:</span>
-            <span className="font-mono">{coordinates.lng?.toFixed(6)}</span>
+            <span className="font-mono">{data.longitude?.toFixed(6)}</span>
           </div>
-          <div className="flex justify-between items-center">
-            <span className="text-white/60">Location:</span>
-            <span>{location}</span>
-          </div>
+          {data.accuracy && (
+            <div className="flex justify-between items-center">
+              <span className="text-white/60">Accuracy:</span>
+              <span>±{Math.round(data.accuracy)}m</span>
+            </div>
+          )}
+          {data.timestamp && (
+            <div className="flex justify-between items-center">
+              <span className="text-white/60">Updated:</span>
+              <span>{formatTimestamp(data.timestamp)}</span>
+            </div>
+          )}
         </div>
       ) : (
         <div className="flex items-center justify-center py-2 text-sm text-white/70">
@@ -59,8 +67,8 @@ export function LocationInfo() {
             </div>
           ) : (
             <div className="flex items-center">
-              <AlertCircle className="w-4 w-4 mr-2 text-orange-400" />
-              <span>{error || 'Location not available'}</span>
+              <AlertCircle className="w-4 h-4 mr-2 text-orange-400" />
+              <span>{error || `Status: ${status}`}</span>
             </div>
           )}
         </div>

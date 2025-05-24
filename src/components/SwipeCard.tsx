@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Heart, Bookmark, Star, MapPin, Clock, Check, X, Users, DollarSign } from 'lucide-react';
+import { Heart, Bookmark, Star, MapPin, Clock, Check, X, Users, DollarSign, Tag } from 'lucide-react';
 import { Badge } from './ui/badge';
 
 export interface Place {
@@ -76,12 +76,15 @@ const SwipeCard: React.FC<SwipeCardProps> = ({ place, onSwipe, promptFilters }) 
     
     // Determine swipe direction
     if (diffY > 100) {
+      // Upward swipe (book)
       setSwipeDirection('up');
       setShowDirectionIndicator(true);
     } else if (diffX > 50) {
+      // Right swipe (like)
       setSwipeDirection('right');
       setShowDirectionIndicator(true);
     } else if (diffX < -50) {
+      // Left swipe (dislike)
       setSwipeDirection('left');
       setShowDirectionIndicator(true);
     } else {
@@ -96,6 +99,7 @@ const SwipeCard: React.FC<SwipeCardProps> = ({ place, onSwipe, promptFilters }) 
         setLiked(true);
       }
       
+      // Trigger animation and wait for it to complete before callback
       setTimeout(() => {
         onSwipe(swipeDirection);
       }, 100);
@@ -156,7 +160,7 @@ const SwipeCard: React.FC<SwipeCardProps> = ({ place, onSwipe, promptFilters }) 
     
     return (
       <div className="text-blitz-lightgray text-xs">
-        {Array(place.priceLevel || 1).fill('$').join('')}
+        {Array(place.priceLevel).fill('$').join('')}
       </div>
     );
   };
@@ -315,6 +319,7 @@ const SwipeCard: React.FC<SwipeCardProps> = ({ place, onSwipe, promptFilters }) 
       aria-label={`Place card for ${place.name}`}
     >
       <div className="relative aspect-[3/4] w-full overflow-hidden rounded-2xl">
+        {/* Main Card with image */}
         <img 
           src={place.image || '/placeholder.svg'} 
           alt={`${place.name} in ${place.location}`} 
@@ -324,17 +329,21 @@ const SwipeCard: React.FC<SwipeCardProps> = ({ place, onSwipe, promptFilters }) 
           }}
         />
         
+        {/* Subtle overlay gradient */}
         <div 
           className="absolute top-0 left-0 right-0 bottom-0 bg-gradient-to-b from-transparent via-blitz-black/40 to-blitz-black/90 rounded-2xl"
           aria-hidden="true"
         ></div>
         
+        {/* Direction indicator overlay */}
         {renderDirectionIndicator()}
         
+        {/* Category badge */}
         <div className="absolute top-4 left-4">
           {renderCategory()}
         </div>
         
+        {/* Action buttons with Apple-style design */}
         <div className="absolute top-4 right-4 flex gap-3">
           <button 
             onClick={handleSave}
@@ -357,6 +366,7 @@ const SwipeCard: React.FC<SwipeCardProps> = ({ place, onSwipe, promptFilters }) 
           </button>
         </div>
         
+        {/* Apple-styled content area */}
         <div className="absolute bottom-0 left-0 right-0 p-5 text-white">
           <h2 className="text-2xl font-semibold mb-1.5 tracking-tight">{place.name}</h2>
           
@@ -373,12 +383,14 @@ const SwipeCard: React.FC<SwipeCardProps> = ({ place, onSwipe, promptFilters }) 
             {place.country && `, ${place.country}`}
           </p>
           
+          {/* Description from AI recommendations */}
           {place.description && (
             <p className="text-sm text-blitz-offwhite/80 mt-1 mb-2 line-clamp-2">
               {place.description}
             </p>
           )}
           
+          {/* Tags */}
           {renderTags()}
           
           <div className="flex items-center gap-3 mt-2">

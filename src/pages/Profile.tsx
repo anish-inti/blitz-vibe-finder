@@ -1,25 +1,37 @@
 
-import React from 'react';
-import Header from '@/components/Header';
-import BottomNavigation from '@/components/BottomNavigation';
-import { useTheme } from '@/contexts/ThemeContext';
+import React from "react";
+import Header from "@/components/Header";
+import BottomNavigation from "@/components/BottomNavigation";
+import UserHeader from "@/components/profile/UserHeader";
+import SavedPlacesSection from "@/components/profile/SavedPlacesSection";
+import PreferencesPanel from "@/components/profile/PreferencesPanel";
+import OutingHistoryTimeline from "@/components/profile/OutingHistoryTimeline";
+import { useTheme } from "@/contexts/ThemeContext";
 
 const Profile: React.FC = () => {
-  const { darkMode } = useTheme();
+  // Get darkMode from the global context
+  const { darkMode, setDarkMode } = useTheme();
+
+  // For demo only, hardcoding "Anish"
+  const name = "Anish";
+  const avatarUrl = undefined;
 
   return (
-    <div className={`min-h-screen flex flex-col ${darkMode ? 'bg-blitz-black' : 'bg-blitz-offwhite'}`}>
-      <Header title="Profile" showBackButton />
-      
-      <main className="flex-1 flex flex-col items-center justify-center px-4 sm:px-6 pb-20">
-        <div className={`text-center ${darkMode ? 'text-white' : 'text-blitz-black'}`}>
-          <h2 className="text-2xl font-semibold mb-4">Profile</h2>
-          <p className={darkMode ? 'text-blitz-lightgray' : 'text-blitz-gray'}>
-            Manage your preferences and settings
-          </p>
-        </div>
+    <div className={`min-h-screen flex flex-col relative transition-all duration-300 ${darkMode ? "bg-blitz-black" : "bg-blitz-offwhite"}`}>
+      <div className={`cosmic-bg absolute inset-0 z-0 pointer-events-none ${darkMode ? "opacity-100" : "opacity-20"}`} />
+      <Header />
+
+      <main className="flex-1 flex flex-col px-4 pb-20 z-10 fade-in">
+        <section className="w-full max-w-md mx-auto mt-8 mb-6">
+          <UserHeader name={name} avatarUrl={avatarUrl} darkMode={darkMode} />
+        </section>
+        <section className="w-full max-w-md mx-auto">
+          <SavedPlacesSection darkMode={darkMode} />
+          <PreferencesPanel darkMode={darkMode} setDarkMode={setDarkMode} />
+          <OutingHistoryTimeline darkMode={darkMode} />
+        </section>
       </main>
-      
+
       <BottomNavigation />
     </div>
   );

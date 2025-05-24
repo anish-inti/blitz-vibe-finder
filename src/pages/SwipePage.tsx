@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useLocation as useRouterLocation } from 'react-router-dom';
 import Header from '@/components/Header';
@@ -12,7 +13,6 @@ import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { ParsedFilters, parseUserPrompt } from '@/utils/promptParser';
 import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
 
 interface PlanData {
   occasion: string;
