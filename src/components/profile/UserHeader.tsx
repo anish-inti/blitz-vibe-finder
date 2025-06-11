@@ -1,7 +1,6 @@
-
 import React from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Sparkles } from "lucide-react";
+import { Sparkles, Crown } from "lucide-react";
 
 interface UserHeaderProps {
   name: string;
@@ -10,24 +9,35 @@ interface UserHeaderProps {
 }
 
 const UserHeader: React.FC<UserHeaderProps> = ({ name, avatarUrl, darkMode = true }) => (
-  <div className="flex flex-col items-center mb-4">
-    <Avatar className={`w-20 h-20 ring-4 ${darkMode ? "ring-blitz-pink" : "ring-blitz-purple"} mb-2 shadow-md ${darkMode ? "shadow-blitz-pink/40" : "shadow-blitz-purple/40"}`}>
-      {avatarUrl ? (
-        <AvatarImage src={avatarUrl} />
-      ) : (
-        <AvatarFallback className={`${darkMode ? "bg-blitz-gray text-blitz-pink" : "bg-white text-blitz-purple"} text-2xl`}>
-          {name[0]}
-        </AvatarFallback>
-      )}
-    </Avatar>
-    <div className="text-center">
-      <h2 className={`text-xl font-semibold ${darkMode ? "text-white" : "text-blitz-black"}`}>{name}</h2>
-      <div className="flex items-center justify-center gap-1">
-        <span className={`text-sm ${darkMode ? "text-blitz-lightgray" : "text-blitz-gray"}`}>
-          Welcome back, {name}! Ready for your next adventure?
-        </span>
-        <Sparkles className={`w-5 h-5 ${darkMode ? "text-blitz-stardust" : "text-blitz-purple"} animate-sparkle`} />
+  <div className="flex flex-col items-center space-y-4">
+    <div className="relative">
+      <Avatar className="w-24 h-24 ring-4 ring-blitz-primary shadow-xl shadow-blitz-primary/20">
+        {avatarUrl ? (
+          <AvatarImage src={avatarUrl} />
+        ) : (
+          <AvatarFallback className="bg-gradient-to-br from-blitz-primary to-blitz-accent text-white text-2xl font-bold">
+            {name[0]}
+          </AvatarFallback>
+        )}
+      </Avatar>
+      
+      {/* Status indicator */}
+      <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-gradient-to-br from-blitz-secondary to-blitz-primary rounded-full flex items-center justify-center shadow-lg">
+        <Crown className="w-3 h-3 text-white" />
       </div>
+    </div>
+    
+    <div className="text-center space-y-2">
+      <h2 className="text-2xl font-bold text-foreground">{name}</h2>
+      <div className="flex items-center justify-center space-x-2">
+        <span className="text-sm text-muted-foreground">
+          Explorer Level 3
+        </span>
+        <Sparkles className="w-4 h-4 text-blitz-secondary animate-pulse-glow" />
+      </div>
+      <p className="text-caption text-muted-foreground max-w-xs">
+        Discovering Chennai's hidden gems, one experience at a time
+      </p>
     </div>
   </div>
 );

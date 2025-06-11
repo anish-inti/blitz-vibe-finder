@@ -1,6 +1,6 @@
-
 import React from 'react';
 import { Place } from './SwipeCard';
+import { Sparkles, Heart, MapPin, Star } from 'lucide-react';
 
 interface SwipeResultsProps {
   likedPlaces: Place[];
@@ -9,52 +9,89 @@ interface SwipeResultsProps {
 }
 
 const SwipeResults: React.FC<SwipeResultsProps> = ({ likedPlaces, onContinue, onFinish }) => (
-  <div className="animate-fade-in text-center">
-    <div className="glassmorphism rounded-2xl p-7">
-      <h2 className="text-xl font-semibold mb-4 text-white">
-        Your Blitz Plan
-      </h2>
-      <p className="text-blitz-lightgray mb-6 text-sm">
-        You've liked {likedPlaces.length} {likedPlaces.length === 1 ? 'place' : 'places'}!
-        <br />
-        <span className="text-xs text-blitz-pink mt-1 inline-block">Saved to your profile</span>
-      </p>
+  <div className="animate-fade-in text-center space-y-6">
+    <div className="card-hero rounded-3xl p-8">
+      {/* Header */}
+      <div className="space-y-4 mb-8">
+        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-blitz-secondary to-blitz-primary text-white shadow-lg">
+          <Heart className="w-8 h-8 fill-current" />
+        </div>
+        
+        <div>
+          <h2 className="text-display mb-2 text-gradient">
+            Your Perfect Plan
+          </h2>
+          <p className="text-caption text-muted-foreground">
+            {likedPlaces.length > 0 
+              ? `You've discovered ${likedPlaces.length} amazing ${likedPlaces.length === 1 ? 'place' : 'places'}!`
+              : "Ready to explore more options?"
+            }
+          </p>
+        </div>
+      </div>
+
+      {/* Places List */}
       {likedPlaces.length > 0 ? (
-        <div className="mb-6 max-h-64 overflow-y-auto">
-          {likedPlaces.map(place => (
+        <div className="space-y-3 mb-8 max-h-64 overflow-y-auto">
+          {likedPlaces.map((place, index) => (
             <div 
               key={place.id} 
-              className="flex items-center p-3 mb-2 bg-blitz-gray/50 rounded-xl"
+              className="card-spotify rounded-2xl p-4 text-left animate-scale-in"
+              style={{ animationDelay: `${index * 0.1}s` }}
             >
-              <img 
-                src={place.image} 
-                alt={place.name} 
-                className="w-12 h-12 rounded-xl object-cover mr-3" 
-              />
-              <div className="text-left">
-                <h3 className="text-white text-sm font-medium">{place.name}</h3>
-                <p className="text-xs text-blitz-lightgray">{place.location}, {place.country}</p>
+              <div className="flex items-center space-x-4">
+                <img 
+                  src={place.image} 
+                  alt={place.name} 
+                  className="w-12 h-12 rounded-xl object-cover" 
+                />
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-semibold text-foreground line-clamp-1">{place.name}</h3>
+                  <div className="flex items-center space-x-2 mt-1">
+                    <div className="flex items-center space-x-1">
+                      <MapPin className="w-3 h-3 text-muted-foreground" />
+                      <span className="text-xs text-muted-foreground">{place.location}</span>
+                    </div>
+                    {place.rating && (
+                      <>
+                        <span className="text-muted-foreground">•</span>
+                        <div className="flex items-center space-x-1">
+                          <Star className="w-3 h-3 text-yellow-500 fill-current" />
+                          <span className="text-xs font-medium">{place.rating}</span>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </div>
+                <Heart className="w-4 h-4 text-blitz-secondary fill-current" />
               </div>
             </div>
           ))}
         </div>
       ) : (
-        <p className="text-blitz-pink mb-6 text-sm">
-          You didn't like any places. Let's try again!
-        </p>
+        <div className="py-8 mb-8">
+          <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-muted mb-4">
+            <Sparkles className="w-6 h-6 text-muted-foreground" />
+          </div>
+          <p className="text-muted-foreground">
+            No places caught your eye? Let's find something perfect for you!
+          </p>
+        </div>
       )}
-      <div className="flex justify-center gap-4">
+
+      {/* Action Buttons */}
+      <div className="flex space-x-3">
         <button
           onClick={onContinue}
-          className="px-6 py-2.5 text-sm border border-white/10 text-white rounded-full bg-blitz-gray/50 hover:bg-blitz-gray/70 transition-all active:scale-[0.98]"
+          className="flex-1 py-3 px-4 border border-border text-muted-foreground rounded-2xl hover:bg-muted/50 transition-all font-semibold interactive"
         >
-          Continue
+          Explore More
         </button>
         <button
           onClick={onFinish}
-          className="px-6 py-2.5 text-sm bg-blitz-pink text-white rounded-full shadow-sm hover:shadow-md transition-all active:scale-[0.98]"
+          className="flex-1 btn-primary rounded-2xl py-3 font-bold interactive-glow"
         >
-          Finish
+          {likedPlaces.length > 0 ? 'Save Plan' : 'Try Again'}
         </button>
       </div>
     </div>
