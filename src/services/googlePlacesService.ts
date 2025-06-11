@@ -169,7 +169,7 @@ export const searchPlaces = async (params: NearbySearchParams): Promise<any[]> =
     
     return places;
   } catch (error) {
-    console.error('Error fetching places:', error);
+    console.warn('Google Places API unavailable, using fallback data:', error);
     
     // Return fallback data instead of throwing
     return getFallbackPlaces(params.query || 'places in Chennai');
@@ -439,7 +439,7 @@ export const parseUserPreferences = (text: string): {
       result.radius = value * 1000; // Convert km to meters
     } else if (unit === 'mile') {
       result.radius = value * 1609; // Convert miles to meters
-    } else if (unit === 'm' || unit === 'meter') {
+    } else if (unit === 'meter') {
       result.radius = value;
     }
   }
