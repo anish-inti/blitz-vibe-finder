@@ -9,122 +9,8 @@ import FeaturedPlaceCard from '@/components/FeaturedPlaceCard';
 import OutingCard from '@/components/OutingCard';
 import QuickAccessButton from '@/components/QuickAccessButton';
 import { useTheme } from '@/contexts/ThemeContext';
-
-// Updated trending places with better images
-const TRENDING_PLACES = [
-  {
-    id: '1',
-    name: 'Marina Bay Lounge',
-    description: 'Rooftop · Aesthetic · Group Friendly',
-    image: '/lovable-uploads/338fb7a8-90b8-400c-a1a7-b1f2af04f5bf.png',
-  },
-  {
-    id: '2',
-    name: 'VM Food Street',
-    description: 'Street Food · Budget · Lively',
-    image: '/lovable-uploads/b752b4f7-2a81-4715-a676-9c7bd1f9c93c.png',
-  },
-  {
-    id: '3',
-    name: 'Neon Club',
-    description: 'Nightlife · Music · Drinks',
-    image: '/lovable-uploads/0d66895e-8267-4c1f-9e27-62c8bff7d8d1.png',
-  },
-  {
-    id: '4',
-    name: 'Phoenix Garden Cafe',
-    description: 'Peaceful · Coffee · Work-friendly',
-    image: '/lovable-uploads/02972e2d-092f-4952-88c5-fcf4ee6acc82.png',
-  },
-];
-
-// Updated curated outings with better data - fixing the openStatus type
-const CURATED_OUTINGS = [
-  {
-    id: '1',
-    name: 'Urban Brew Cafe',
-    type: 'Cafe',
-    rating: 4.5,
-    reviews: 128,
-    budget: 'Budget',
-    tags: ['Coffee', 'Breakfast', 'Wifi'],
-    image: '/lovable-uploads/02972e2d-092f-4952-88c5-fcf4ee6acc82.png',
-    category: 'Cafes',
-    openStatus: 'Open' as const,
-  },
-  {
-    id: '2',
-    name: 'Coastline Beach Resort',
-    type: 'Staycation',
-    rating: 4.8,
-    reviews: 253,
-    budget: 'Luxury',
-    tags: ['Beachfront', 'Spa', 'Restaurant'],
-    image: '/lovable-uploads/338fb7a8-90b8-400c-a1a7-b1f2af04f5bf.png',
-    category: 'Staycation',
-    openStatus: 'Open' as const,
-  },
-  {
-    id: '3',
-    name: 'Forest Trek Adventures',
-    type: 'Outdoor',
-    rating: 4.6,
-    reviews: 178,
-    budget: 'Mid-Range',
-    tags: ['Hiking', 'Nature', 'Group-friendly'],
-    image: '/lovable-uploads/b752b4f7-2a81-4715-a676-9c7bd1f9c93c.png',
-    category: 'Adventure',
-    openStatus: 'Closing Soon' as const,
-  },
-  {
-    id: '4',
-    name: 'Night Owl Lounge',
-    type: 'Nightlife',
-    rating: 4.4,
-    reviews: 315,
-    budget: 'Premium',
-    tags: ['Cocktails', 'Music', 'Late Night'],
-    image: '/lovable-uploads/0d66895e-8267-4c1f-9e27-62c8bff7d8d1.png',
-    category: 'Nightlife',
-    openStatus: 'Open' as const,
-  },
-  {
-    id: '5',
-    name: 'Couple\'s Retreat Spa',
-    type: 'Relaxation',
-    rating: 4.9,
-    reviews: 201,
-    budget: 'Premium',
-    tags: ['Couples', 'Massage', 'Wellness'],
-    image: '/lovable-uploads/338fb7a8-90b8-400c-a1a7-b1f2af04f5bf.png',
-    category: 'Couples',
-    openStatus: 'Open' as const,
-  },
-  {
-    id: '6',
-    name: 'The Group Hub',
-    type: 'Entertainment',
-    rating: 4.7,
-    reviews: 156,
-    budget: 'Mid-Range',
-    tags: ['Games', 'Group-friendly', 'Indoor'],
-    image: '/lovable-uploads/b752b4f7-2a81-4715-a676-9c7bd1f9c93c.png',
-    category: 'Groups',
-    openStatus: 'Closed' as const,
-  },
-  {
-    id: '7',
-    name: 'Rainy Day Cafe',
-    type: 'Cafe',
-    rating: 4.3,
-    reviews: 89,
-    budget: 'Budget',
-    tags: ['Indoor', 'Cozy', 'Books'],
-    image: '/lovable-uploads/02972e2d-092f-4952-88c5-fcf4ee6acc82.png',
-    category: 'Rainy Day',
-    openStatus: 'Open' as const,
-  },
-];
+import { getBlitzRecommendations } from '@/services/googlePlacesService';
+import { Place } from '@/components/SwipeCard';
 
 const QUICK_ACCESS = [
   { id: '1', name: 'Nightlife', icon: <Moon className="w-5 h-5" /> },
@@ -136,37 +22,21 @@ const QUICK_ACCESS = [
   { id: '7', name: 'Rainy Day', icon: <Umbrella className="w-5 h-5" /> },
 ];
 
-const COMMUNITY_PICKS = [
-  {
-    id: '1',
-    name: 'Sunset Beach Cafe',
-    type: 'Cafe',
-    rating: 4.9,
-    reviews: 423,
-    tags: ['Beachfront', 'Coffee', 'Sunset View'],
-    image: '/lovable-uploads/338fb7a8-90b8-400c-a1a7-b1f2af04f5bf.png',
-    openStatus: 'Open' as const,
-  },
-  {
-    id: '2',
-    name: 'Mountain View Resort',
-    type: 'Staycation',
-    rating: 4.7,
-    reviews: 286,
-    tags: ['Mountain', 'Luxury', 'Spa'],
-    image: '/lovable-uploads/02972e2d-092f-4952-88c5-fcf4ee6acc82.png',
-    openStatus: 'Closing Soon' as const,
-  },
-];
-
 const Home: React.FC = () => {
   const navigate = useNavigate();
   const { darkMode } = useTheme();
   const [stars, setStars] = useState<{ id: number; top: string; left: string; delay: string; size: string }[]>([]);
   const [activeFilter, setActiveFilter] = useState<string | null>(null);
-  const [filteredOutings, setFilteredOutings] = useState(CURATED_OUTINGS);
   const [isButtonLoading, setIsButtonLoading] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState("Chennai");
+  
+  // API-driven state
+  const [hotNowPlaces, setHotNowPlaces] = useState<Place[]>([]);
+  const [curatedOutings, setCuratedOutings] = useState<Place[]>([]);
+  const [communityPicks, setCommunityPicks] = useState<Place[]>([]);
+  const [isLoadingHotNow, setIsLoadingHotNow] = useState(true);
+  const [isLoadingCurated, setIsLoadingCurated] = useState(true);
+  const [isLoadingCommunity, setIsLoadingCommunity] = useState(true);
   
   useEffect(() => {
     // Create random stars for the background
@@ -180,26 +50,76 @@ const Home: React.FC = () => {
     setStars(newStars);
   }, []);
 
-  // Filter outings based on the active filter
-  useEffect(() => {
-    if (activeFilter) {
-      const filtered = CURATED_OUTINGS.filter(outing => 
-        outing.category === activeFilter || 
-        outing.tags.includes(activeFilter)
-      );
-      setFilteredOutings(filtered.length > 0 ? filtered : CURATED_OUTINGS);
-      
-      // Show toast notification when filter is applied
+  // Fetch "What's Hot Now" places
+  const fetchHotNowPlaces = useCallback(async () => {
+    setIsLoadingHotNow(true);
+    try {
+      const places = await getBlitzRecommendations(`trending popular youth hangout spots in ${selectedLocation}`);
+      setHotNowPlaces(places.slice(0, 6)); // Limit to 6 places
+    } catch (error) {
+      console.error('Failed to fetch hot places:', error);
       toast({
-        title: `${activeFilter} filter applied`,
-        description: `Showing ${filtered.length} places matching "${activeFilter}"`,
-        duration: 2000,
+        title: "Could not load trending places",
+        description: "Using fallback data",
+        variant: "destructive",
       });
-    } else {
-      setFilteredOutings(CURATED_OUTINGS);
+    } finally {
+      setIsLoadingHotNow(false);
     }
-  }, [activeFilter]);
-  
+  }, [selectedLocation]);
+
+  // Fetch curated outings based on active filter
+  const fetchCuratedOutings = useCallback(async () => {
+    setIsLoadingCurated(true);
+    try {
+      let query = `best places to visit in ${selectedLocation}`;
+      if (activeFilter) {
+        query = `${activeFilter.toLowerCase()} places in ${selectedLocation}`;
+      }
+      
+      const places = await getBlitzRecommendations(query);
+      setCuratedOutings(places.slice(0, 8)); // Limit to 8 places
+    } catch (error) {
+      console.error('Failed to fetch curated places:', error);
+      toast({
+        title: "Could not load curated places",
+        description: "Using fallback data",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoadingCurated(false);
+    }
+  }, [selectedLocation, activeFilter]);
+
+  // Fetch community picks
+  const fetchCommunityPicks = useCallback(async () => {
+    setIsLoadingCommunity(true);
+    try {
+      const places = await getBlitzRecommendations(`highly rated top rated best places in ${selectedLocation}`);
+      setCommunityPicks(places.slice(0, 4)); // Limit to 4 places
+    } catch (error) {
+      console.error('Failed to fetch community picks:', error);
+      toast({
+        title: "Could not load community picks",
+        description: "Using fallback data",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoadingCommunity(false);
+    }
+  }, [selectedLocation]);
+
+  // Load data on mount and when location changes
+  useEffect(() => {
+    fetchHotNowPlaces();
+    fetchCommunityPicks();
+  }, [fetchHotNowPlaces, fetchCommunityPicks]);
+
+  // Load curated outings when filter changes
+  useEffect(() => {
+    fetchCuratedOutings();
+  }, [fetchCuratedOutings]);
+
   const handleStartBlitz = () => {
     setIsButtonLoading(true);
     // Simulate loading state for better UX
@@ -210,17 +130,25 @@ const Home: React.FC = () => {
   };
 
   const handleQuickAccessClick = (filter: string) => {
-    setActiveFilter(filter === activeFilter ? null : filter);
+    const newFilter = filter === activeFilter ? null : filter;
+    setActiveFilter(newFilter);
+    
+    if (newFilter) {
+      toast({
+        title: `${newFilter} filter applied`,
+        description: `Loading ${newFilter.toLowerCase()} places...`,
+        duration: 2000,
+      });
+    }
   };
 
-  const handlePlaceClick = (id: string) => {
-    // Show toast for better UX
+  const handlePlaceClick = (place: Place) => {
     toast({
       title: "Opening details",
       description: "Loading place information...",
       duration: 1500,
     });
-    navigate(`/places/${id}`);
+    navigate(`/places/${place.id}`);
   };
   
   const handleSeeAllClick = (section: string) => {
@@ -233,7 +161,6 @@ const Home: React.FC = () => {
   };
 
   const handleSponsoredClick = () => {
-    // In a real app, this would open the sponsored content or track the click
     toast({
       title: "Opening sponsored content",
       description: "You clicked on a sponsored item",
@@ -243,7 +170,6 @@ const Home: React.FC = () => {
   };
 
   const handleLocationClick = () => {
-    // Toggle between different locations for demo purposes
     const locations = ["Chennai", "Bengaluru", "Mumbai", "Delhi"];
     const currentIndex = locations.indexOf(selectedLocation);
     const nextLocation = locations[(currentIndex + 1) % locations.length];
@@ -255,6 +181,20 @@ const Home: React.FC = () => {
       duration: 2000,
     });
   };
+
+  // Convert Place to OutingCard format
+  const convertPlaceToOuting = (place: Place) => ({
+    id: place.id,
+    name: place.name,
+    type: place.category || 'Place',
+    rating: place.rating || 4.0,
+    reviews: place.reviewCount || 0,
+    budget: place.budget ? `₹${place.budget}` : undefined,
+    tags: place.tags || [],
+    image: place.image,
+    category: place.category,
+    openStatus: place.isOpen ? 'Open' : 'Closed' as const,
+  });
   
   return (
     <div className={`min-h-screen flex flex-col relative transition-all duration-300 ${darkMode ? "bg-[#121212]" : "bg-blitz-pink"}`}>
@@ -305,20 +245,34 @@ const Home: React.FC = () => {
             </button>
           </div>
           
-          <Carousel className="w-full">
-            <CarouselContent>
-              {TRENDING_PLACES.map((place) => (
-                <CarouselItem key={place.id} className="basis-4/5 sm:basis-1/2 md:basis-1/3 lg:basis-1/4">
-                  <FeaturedPlaceCard place={place} onClick={() => handlePlaceClick(place.id)} />
-                </CarouselItem>
-              ))}
-            </CarouselContent>
-            <CarouselPrevious className={`hidden sm:flex left-1 ${darkMode ? "bg-black/40 text-white" : "bg-white/40 text-black"}`} />
-            <CarouselNext className={`hidden sm:flex right-1 ${darkMode ? "bg-black/40 text-white" : "bg-white/40 text-black"}`} />
-          </Carousel>
+          {isLoadingHotNow ? (
+            <div className="flex items-center justify-center h-52">
+              <Loader className="w-6 h-6 animate-spin text-blitz-pink" />
+            </div>
+          ) : (
+            <Carousel className="w-full">
+              <CarouselContent>
+                {hotNowPlaces.map((place) => (
+                  <CarouselItem key={place.id} className="basis-4/5 sm:basis-1/2 md:basis-1/3 lg:basis-1/4">
+                    <FeaturedPlaceCard 
+                      place={{
+                        id: place.id,
+                        name: place.name,
+                        description: place.description || `${place.category} in ${place.location}`,
+                        image: place.image,
+                      }} 
+                      onClick={() => handlePlaceClick(place)} 
+                    />
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+              <CarouselPrevious className={`hidden sm:flex left-1 ${darkMode ? "bg-black/40 text-white" : "bg-white/40 text-black"}`} />
+              <CarouselNext className={`hidden sm:flex right-1 ${darkMode ? "bg-black/40 text-white" : "bg-white/40 text-black"}`} />
+            </Carousel>
+          )}
         </section>
         
-        {/* Quick Access Buttons - Moved up for better UX */}
+        {/* Quick Access Buttons */}
         <section className="mb-8 animate-fade-in delay-100">
           <div className="flex items-center mb-4 px-2">
             <Zap className={`${darkMode ? "text-blitz-pink" : "text-blitz-black"} mr-2 w-5 h-5`} />
@@ -352,15 +306,21 @@ const Home: React.FC = () => {
             </button>
           </div>
           
-          <div className="space-y-4">
-            {filteredOutings.slice(0, 4).map((outing) => (
-              <OutingCard 
-                key={outing.id} 
-                outing={outing}
-                onClick={() => handlePlaceClick(outing.id)} 
-              />
-            ))}
-          </div>
+          {isLoadingCurated ? (
+            <div className="flex items-center justify-center h-32">
+              <Loader className="w-6 h-6 animate-spin text-blitz-pink" />
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {curatedOutings.slice(0, 4).map((place) => (
+                <OutingCard 
+                  key={place.id} 
+                  outing={convertPlaceToOuting(place)}
+                  onClick={() => handlePlaceClick(place)} 
+                />
+              ))}
+            </div>
+          )}
         </section>
         
         {/* Sponsored Banner */}
@@ -380,7 +340,7 @@ const Home: React.FC = () => {
               </div>
               <div 
                 className="w-24 h-24 bg-cover bg-center rounded-lg ml-4"
-                style={{ backgroundImage: `url('/lovable-uploads/b752b4f7-2a81-4715-a676-9c7bd1f9c93c.png')` }}
+                style={{ backgroundImage: `url('https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?w=400&h=400&fit=crop')` }}
               ></div>
             </div>
           </div>
@@ -397,16 +357,22 @@ const Home: React.FC = () => {
             </button>
           </div>
           
-          <div className="space-y-4">
-            {COMMUNITY_PICKS.map((pick) => (
-              <OutingCard 
-                key={pick.id} 
-                outing={pick} 
-                showCommunityBadge
-                onClick={() => handlePlaceClick(pick.id)}
-              />
-            ))}
-          </div>
+          {isLoadingCommunity ? (
+            <div className="flex items-center justify-center h-32">
+              <Loader className="w-6 h-6 animate-spin text-blitz-pink" />
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {communityPicks.slice(0, 2).map((place) => (
+                <OutingCard 
+                  key={place.id} 
+                  outing={convertPlaceToOuting(place)} 
+                  showCommunityBadge
+                  onClick={() => handlePlaceClick(place)}
+                />
+              ))}
+            </div>
+          )}
         </section>
         
         {/* Start Planning Button */}
