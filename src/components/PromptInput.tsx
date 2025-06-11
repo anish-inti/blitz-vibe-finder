@@ -32,11 +32,11 @@ const PromptInput: React.FC<PromptInputProps> = ({
       <form onSubmit={handleSubmit} className="relative">
         <div 
           className={`relative glassmorphism-strong rounded-2xl transition-all duration-300 ${
-            isFocused ? 'ring-2 ring-blitz-primary shadow-xl shadow-blitz-primary/20' : 'shadow-lg'
+            isFocused ? 'ring-2 ring-blitz-primary shadow-xl shadow-blitz-primary/10' : 'shadow-lg'
           }`}
         >
-          {/* Animated background gradient */}
-          <div className="absolute inset-0 bg-gradient-to-r from-blitz-primary/5 to-blitz-secondary/5 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+          {/* Subtle animated background gradient */}
+          <div className="absolute inset-0 bg-gradient-to-r from-blitz-primary/3 to-blitz-secondary/3 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
           
           <input
             type="text"
@@ -59,7 +59,7 @@ const PromptInput: React.FC<PromptInputProps> = ({
             }`}
           >
             {isFocused && prompt.trim() ? (
-              <Zap className="w-5 h-5 group-hover:animate-bounce-in" />
+              <Zap className="w-5 h-5 group-hover:scale-110 transition-transform" />
             ) : (
               <Search className="w-5 h-5" />
             )}
@@ -67,25 +67,25 @@ const PromptInput: React.FC<PromptInputProps> = ({
         </div>
       </form>
       
-      {/* Example prompts */}
+      {/* Example prompts - Spotify style */}
       <div className="mt-6 text-center animate-slide-up">
         <p className="text-xs text-muted-foreground mb-3 font-medium">Try examples like:</p>
         <div className="flex flex-wrap gap-2 justify-center">
           <button
             onClick={() => setPrompt("6 of us want rooftop vibes under ₹500")}
-            className="px-3 py-2 bg-gradient-to-r from-blitz-primary/10 to-blitz-secondary/10 text-blitz-primary rounded-xl text-xs font-semibold hover:from-blitz-primary/20 hover:to-blitz-secondary/20 transition-all duration-300 interactive border border-blitz-primary/20"
+            className="px-3 py-2 bg-gradient-to-r from-blitz-primary/10 to-blitz-accent/10 text-blitz-primary rounded-xl text-xs font-semibold hover:from-blitz-primary/20 hover:to-blitz-accent/20 transition-all duration-300 interactive border border-blitz-primary/20"
           >
             "6 of us want rooftop vibes under ₹500"
           </button>
           <button
             onClick={() => setPrompt("romantic dinner for 2 people")}
-            className="px-3 py-2 bg-gradient-to-r from-blitz-secondary/10 to-blitz-accent/10 text-blitz-secondary rounded-xl text-xs font-semibold hover:from-blitz-secondary/20 hover:to-blitz-accent/20 transition-all duration-300 interactive border border-blitz-secondary/20"
+            className="px-3 py-2 bg-gradient-to-r from-blitz-secondary/10 to-blitz-primary/10 text-blitz-secondary rounded-xl text-xs font-semibold hover:from-blitz-secondary/20 hover:to-blitz-primary/20 transition-all duration-300 interactive border border-blitz-secondary/20"
           >
             "romantic dinner for 2 people"
           </button>
           <button
             onClick={() => setPrompt("outdoor cafe with good wifi")}
-            className="px-3 py-2 bg-gradient-to-r from-blitz-accent/10 to-blitz-primary/10 text-blitz-accent rounded-xl text-xs font-semibold hover:from-blitz-accent/20 hover:to-blitz-primary/20 transition-all duration-300 interactive border border-blitz-accent/20"
+            className="px-3 py-2 bg-gradient-to-r from-blitz-accent/10 to-blitz-secondary/10 text-blitz-accent rounded-xl text-xs font-semibold hover:from-blitz-accent/20 hover:to-blitz-secondary/20 transition-all duration-300 interactive border border-blitz-accent/20"
           >
             "outdoor cafe with good wifi"
           </button>

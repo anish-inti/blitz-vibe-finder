@@ -2,7 +2,6 @@ import React from 'react';
 import { ChevronLeft, MoreHorizontal, Sparkles } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { LocationAccess } from './LocationAccess';
-import { useTheme } from '@/contexts/ThemeContext';
 
 interface HeaderProps {
   showMenu?: boolean;
@@ -17,7 +16,6 @@ const Header: React.FC<HeaderProps> = ({
   title,
   showBackButton = false
 }) => {
-  const { darkMode } = useTheme();
   const navigate = useNavigate();
   
   const handleBack = () => {
@@ -25,7 +23,7 @@ const Header: React.FC<HeaderProps> = ({
   };
   
   return (
-    <header className="sticky top-0 z-50 w-full glassmorphism-strong border-b border-white/10">
+    <header className="sticky top-0 z-50 w-full glassmorphism-strong border-b border-white/5">
       <div className="flex h-16 items-center justify-between px-6">
         <div className="flex items-center">
           {showBackButton ? (

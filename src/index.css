@@ -26,18 +26,30 @@
     --ring: 0 0% 3.9%;
     --radius: 0.75rem;
 
-    /* Blitz Brand Colors - Bold & Energetic */
-    --blitz-primary: 15 100% 60%;        /* Bold Orange-Red #FF4E00 */
+    /* Blitz Brand Colors - Spotify-Inspired with Deep Purple */
+    --blitz-primary: 270 91% 65%;        /* Deep Purple #8B5CF6 */
     --blitz-secondary: 315 100% 70%;     /* Vibrant Pink #FF66B2 */
-    --blitz-accent: 270 100% 75%;        /* Electric Purple #9B00FF */
+    --blitz-accent: 280 100% 70%;        /* Electric Purple #C084FC */
     --blitz-surface: 0 0% 98%;           /* Clean White */
     --blitz-surface-dark: 240 10% 8%;    /* Deep Dark */
     --blitz-text: 0 0% 9%;               /* Rich Black */
     --blitz-text-secondary: 0 0% 45%;    /* Medium Gray */
     --blitz-border: 0 0% 89%;            /* Light Border */
-    --blitz-success: 120 100% 40%;       /* Success Green */
-    --blitz-warning: 45 100% 50%;        /* Warning Yellow */
-    --blitz-error: 0 100% 60%;           /* Error Red */
+    --blitz-success: 142 76% 36%;        /* Success Green */
+    --blitz-warning: 45 93% 47%;         /* Warning Yellow */
+    --blitz-error: 0 84% 60%;            /* Error Red */
+    
+    /* Spotify-inspired neutrals */
+    --blitz-neutral-50: 0 0% 98%;
+    --blitz-neutral-100: 0 0% 96%;
+    --blitz-neutral-200: 0 0% 89%;
+    --blitz-neutral-300: 0 0% 83%;
+    --blitz-neutral-400: 0 0% 64%;
+    --blitz-neutral-500: 0 0% 45%;
+    --blitz-neutral-600: 0 0% 32%;
+    --blitz-neutral-700: 0 0% 25%;
+    --blitz-neutral-800: 0 0% 15%;
+    --blitz-neutral-900: 0 0% 9%;
   }
 
   .dark {
@@ -80,70 +92,81 @@
   }
 }
 
-/* Blitz Brand Components */
+/* Spotify-Inspired Brand Components */
 .blitz-gradient {
-  background: linear-gradient(135deg, hsl(var(--blitz-primary)) 0%, hsl(var(--blitz-secondary)) 100%);
+  background: linear-gradient(135deg, hsl(var(--blitz-primary)) 0%, hsl(var(--blitz-accent)) 100%);
 }
 
 .blitz-gradient-reverse {
-  background: linear-gradient(135deg, hsl(var(--blitz-secondary)) 0%, hsl(var(--blitz-accent)) 100%);
+  background: linear-gradient(135deg, hsl(var(--blitz-secondary)) 0%, hsl(var(--blitz-primary)) 100%);
 }
 
 .blitz-glow {
-  box-shadow: 0 0 20px hsl(var(--blitz-primary) / 0.3);
+  box-shadow: 0 0 20px hsl(var(--blitz-primary) / 0.25);
 }
 
 .blitz-glow-secondary {
-  box-shadow: 0 0 20px hsl(var(--blitz-secondary) / 0.3);
+  box-shadow: 0 0 20px hsl(var(--blitz-secondary) / 0.25);
 }
 
-/* Tech-forward glassmorphism */
+/* Spotify-style glassmorphism - more subtle */
 .glassmorphism {
-  @apply backdrop-blur-xl bg-white/10 dark:bg-black/20 border border-white/20 dark:border-white/10;
+  @apply backdrop-blur-xl bg-white/5 dark:bg-black/10 border border-white/10 dark:border-white/5;
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
 }
 
 .glassmorphism-strong {
-  @apply backdrop-blur-2xl bg-white/20 dark:bg-black/40 border border-white/30 dark:border-white/20;
+  @apply backdrop-blur-2xl bg-white/10 dark:bg-black/20 border border-white/20 dark:border-white/10;
   backdrop-filter: blur(40px);
   -webkit-backdrop-filter: blur(40px);
 }
 
-/* Button styles - Bold & Energetic */
+/* Button styles - Spotify-inspired */
 .btn-primary {
-  @apply bg-gradient-to-r from-[hsl(var(--blitz-primary))] to-[hsl(var(--blitz-secondary))] 
-         text-white font-semibold shadow-lg hover:shadow-xl 
-         active:scale-[0.98] transition-all duration-200;
+  @apply bg-gradient-to-r from-[hsl(var(--blitz-primary))] to-[hsl(var(--blitz-accent))] 
+         text-white font-semibold shadow-lg hover:shadow-xl hover:shadow-[hsl(var(--blitz-primary))]/20
+         active:scale-[0.98] transition-all duration-200 hover:brightness-110;
 }
 
 .btn-secondary {
-  @apply bg-gradient-to-r from-[hsl(var(--blitz-secondary))] to-[hsl(var(--blitz-accent))] 
-         text-white font-semibold shadow-lg hover:shadow-xl 
-         active:scale-[0.98] transition-all duration-200;
+  @apply bg-gradient-to-r from-[hsl(var(--blitz-secondary))] to-[hsl(var(--blitz-primary))] 
+         text-white font-semibold shadow-lg hover:shadow-xl hover:shadow-[hsl(var(--blitz-secondary))]/20
+         active:scale-[0.98] transition-all duration-200 hover:brightness-110;
 }
 
 .btn-outline {
   @apply border-2 border-[hsl(var(--blitz-primary))] text-[hsl(var(--blitz-primary))] 
          hover:bg-[hsl(var(--blitz-primary))] hover:text-white font-semibold
-         active:scale-[0.98] transition-all duration-200;
+         active:scale-[0.98] transition-all duration-200 hover:shadow-lg hover:shadow-[hsl(var(--blitz-primary))]/20;
 }
 
-/* Card styles - Modern & Clean */
+.btn-ghost {
+  @apply text-muted-foreground hover:text-[hsl(var(--blitz-primary))] hover:bg-[hsl(var(--blitz-primary))]/10
+         active:scale-[0.98] transition-all duration-200 font-medium;
+}
+
+/* Card styles - Spotify-inspired */
 .card-elevated {
   @apply bg-card/80 backdrop-blur-xl border border-border/50 shadow-lg hover:shadow-xl 
-         transition-all duration-300 hover:border-[hsl(var(--blitz-primary))]/30;
+         transition-all duration-300 hover:border-[hsl(var(--blitz-primary))]/30 hover:bg-card/90;
 }
 
 .card-hero {
-  @apply bg-gradient-to-br from-[hsl(var(--blitz-primary))]/10 to-[hsl(var(--blitz-secondary))]/10 
-         backdrop-blur-xl border border-[hsl(var(--blitz-primary))]/20 shadow-xl;
+  @apply bg-gradient-to-br from-[hsl(var(--blitz-primary))]/5 to-[hsl(var(--blitz-secondary))]/5 
+         backdrop-blur-xl border border-[hsl(var(--blitz-primary))]/10 shadow-xl hover:shadow-2xl
+         transition-all duration-300;
 }
 
-/* Typography - Bold & Confident */
+.card-spotify {
+  @apply bg-card/60 backdrop-blur-md border border-border/30 shadow-md hover:shadow-lg
+         hover:bg-card/80 transition-all duration-300 hover:border-[hsl(var(--blitz-primary))]/20;
+}
+
+/* Typography - Spotify-inspired */
 .text-hero {
   @apply text-4xl font-black tracking-tight bg-gradient-to-r from-[hsl(var(--blitz-primary))] 
-         to-[hsl(var(--blitz-secondary))] bg-clip-text text-transparent;
+         to-[hsl(var(--blitz-accent))] bg-clip-text text-transparent;
 }
 
 .text-display {
@@ -166,17 +189,17 @@
   @apply text-sm text-muted-foreground font-medium;
 }
 
-/* Interactive elements - Smooth & Responsive */
+/* Interactive elements - Spotify-style */
 .interactive {
   @apply transition-all duration-200 active:scale-[0.98] cursor-pointer;
 }
 
 .interactive:hover {
-  @apply shadow-lg;
+  @apply shadow-md;
 }
 
 .interactive-glow:hover {
-  @apply shadow-lg shadow-[hsl(var(--blitz-primary))]/20;
+  @apply shadow-lg shadow-[hsl(var(--blitz-primary))]/15;
 }
 
 /* Focus styles - Accessible & Branded */
@@ -184,22 +207,22 @@
   @apply focus:outline-none focus:ring-2 focus:ring-[hsl(var(--blitz-primary))] focus:ring-offset-2;
 }
 
-/* Animations - Energetic & Fun */
+/* Animations - Smooth & Professional */
 @keyframes float {
   0%, 100% {
     transform: translateY(0px);
   }
   50% {
-    transform: translateY(-10px);
+    transform: translateY(-8px);
   }
 }
 
 @keyframes pulse-glow {
   0%, 100% {
-    box-shadow: 0 0 20px hsl(var(--blitz-primary) / 0.3);
+    box-shadow: 0 0 15px hsl(var(--blitz-primary) / 0.2);
   }
   50% {
-    box-shadow: 0 0 30px hsl(var(--blitz-primary) / 0.6);
+    box-shadow: 0 0 25px hsl(var(--blitz-primary) / 0.4);
   }
 }
 
@@ -218,7 +241,7 @@
 @keyframes fade-in {
   from {
     opacity: 0;
-    transform: translateY(20px);
+    transform: translateY(16px);
   }
   to {
     opacity: 1;
@@ -229,7 +252,7 @@
 @keyframes scale-in {
   from {
     opacity: 0;
-    transform: scale(0.9);
+    transform: scale(0.95);
   }
   to {
     opacity: 1;
@@ -240,7 +263,7 @@
 @keyframes slide-up {
   from {
     opacity: 0;
-    transform: translateY(30px);
+    transform: translateY(24px);
   }
   to {
     opacity: 1;
@@ -251,13 +274,10 @@
 @keyframes bounce-in {
   0% {
     opacity: 0;
-    transform: scale(0.3);
+    transform: scale(0.8);
   }
   50% {
-    transform: scale(1.05);
-  }
-  70% {
-    transform: scale(0.9);
+    transform: scale(1.02);
   }
   100% {
     opacity: 1;
@@ -265,22 +285,31 @@
   }
 }
 
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
 /* Animation classes */
 .animate-float {
-  animation: float 3s ease-in-out infinite;
+  animation: float 4s ease-in-out infinite;
 }
 
 .animate-pulse-glow {
-  animation: pulse-glow 2s ease-in-out infinite;
+  animation: pulse-glow 3s ease-in-out infinite;
 }
 
 .animate-gradient {
   background-size: 200% 200%;
-  animation: gradient-shift 3s ease infinite;
+  animation: gradient-shift 4s ease infinite;
 }
 
 .animate-fade-in {
-  animation: fade-in 0.6s ease-out;
+  animation: fade-in 0.5s ease-out;
 }
 
 .animate-scale-in {
@@ -288,11 +317,20 @@
 }
 
 .animate-slide-up {
-  animation: slide-up 0.5s ease-out;
+  animation: slide-up 0.6s ease-out;
 }
 
 .animate-bounce-in {
-  animation: bounce-in 0.6s ease-out;
+  animation: bounce-in 0.5s ease-out;
+}
+
+.animate-shimmer {
+  background: linear-gradient(90deg, 
+    hsl(var(--muted)) 25%, 
+    hsl(var(--muted-foreground) / 0.1) 50%, 
+    hsl(var(--muted)) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
 }
 
 /* Swipe card animations - Smooth & Engaging */
@@ -301,12 +339,12 @@
 }
 
 .swipe-card.swiping-left {
-  transform: translateX(-120%) rotate(-10deg);
+  transform: translateX(-120%) rotate(-8deg);
   opacity: 0;
 }
 
 .swipe-card.swiping-right {
-  transform: translateX(120%) rotate(10deg);
+  transform: translateX(120%) rotate(8deg);
   opacity: 0;
 }
 
@@ -317,12 +355,17 @@
 
 /* Utility classes */
 .text-gradient {
-  @apply bg-gradient-to-r from-[hsl(var(--blitz-primary))] to-[hsl(var(--blitz-secondary))] 
+  @apply bg-gradient-to-r from-[hsl(var(--blitz-primary))] to-[hsl(var(--blitz-accent))] 
+         bg-clip-text text-transparent;
+}
+
+.text-gradient-secondary {
+  @apply bg-gradient-to-r from-[hsl(var(--blitz-secondary))] to-[hsl(var(--blitz-primary))] 
          bg-clip-text text-transparent;
 }
 
 .border-gradient {
-  border-image: linear-gradient(135deg, hsl(var(--blitz-primary)), hsl(var(--blitz-secondary))) 1;
+  border-image: linear-gradient(135deg, hsl(var(--blitz-primary)), hsl(var(--blitz-accent))) 1;
 }
 
 /* Remove default tap highlights */
@@ -335,9 +378,9 @@ html {
   scroll-behavior: smooth;
 }
 
-/* Custom scrollbar - Branded */
+/* Custom scrollbar - Spotify-inspired */
 ::-webkit-scrollbar {
-  width: 6px;
+  width: 8px;
 }
 
 ::-webkit-scrollbar-track {
@@ -345,12 +388,12 @@ html {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: hsl(var(--blitz-primary));
-  border-radius: 3px;
+  background: hsl(var(--blitz-primary) / 0.6);
+  border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: hsl(var(--blitz-secondary));
+  background: hsl(var(--blitz-primary) / 0.8);
 }
 
 /* Line clamp utilities */
@@ -375,7 +418,7 @@ html {
   -webkit-line-clamp: 3;
 }
 
-/* Loading states */
+/* Loading states - Spotify-style */
 .loading-shimmer {
   background: linear-gradient(90deg, 
     hsl(var(--muted)) 25%, 
@@ -385,22 +428,29 @@ html {
   animation: shimmer 1.5s infinite;
 }
 
-@keyframes shimmer {
-  0% {
-    background-position: -200% 0;
-  }
-  100% {
-    background-position: 200% 0;
-  }
-}
-
-/* Youth-focused micro-interactions */
+/* Professional micro-interactions */
 .bounce-hover:hover {
   animation: bounce-in 0.3s ease-out;
 }
 
 .glow-hover:hover {
-  animation: pulse-glow 1s ease-in-out;
+  animation: pulse-glow 2s ease-in-out;
+}
+
+/* Spotify-inspired badges */
+.badge-live {
+  @apply bg-gradient-to-r from-green-500 to-emerald-500 text-white px-2 py-1 rounded-full text-xs font-bold
+         shadow-lg shadow-green-500/20 animate-pulse-glow;
+}
+
+.badge-trending {
+  @apply bg-gradient-to-r from-[hsl(var(--blitz-secondary))] to-[hsl(var(--blitz-primary))] text-white px-2 py-1 rounded-full text-xs font-bold
+         shadow-lg shadow-[hsl(var(--blitz-secondary))]/20;
+}
+
+.badge-new {
+  @apply bg-gradient-to-r from-[hsl(var(--blitz-primary))] to-[hsl(var(--blitz-accent))] text-white px-2 py-1 rounded-full text-xs font-bold
+         shadow-lg shadow-[hsl(var(--blitz-primary))]/20;
 }
 
 /* Responsive design helpers */
@@ -412,4 +462,30 @@ html {
   .text-display {
     @apply text-2xl;
   }
+}
+
+/* Dark mode specific enhancements */
+.dark .glassmorphism {
+  @apply bg-white/5 border-white/10;
+}
+
+.dark .card-elevated {
+  @apply bg-white/5 border-white/10;
+}
+
+.dark .card-spotify {
+  @apply bg-white/5 border-white/10;
+}
+
+/* Light mode specific enhancements */
+.light .glassmorphism {
+  @apply bg-black/5 border-black/10;
+}
+
+.light .card-elevated {
+  @apply bg-white/80 border-black/10;
+}
+
+.light .card-spotify {
+  @apply bg-white/60 border-black/10;
 }

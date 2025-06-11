@@ -42,6 +42,7 @@ const GlowButton: React.FC<GlowButtonProps> = ({
         'font-bold relative overflow-hidden transition-all duration-300 interactive group',
         variant === 'default' && getColorClasses(),
         variant === 'outline' && 'btn-outline',
+        variant === 'ghost' && 'btn-ghost',
         'rounded-2xl shadow-lg hover:shadow-xl',
         className
       )}
@@ -54,8 +55,8 @@ const GlowButton: React.FC<GlowButtonProps> = ({
         )}
       </div>
       
-      {/* Animated background effect */}
-      <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
+      {/* Subtle animated background effect */}
+      <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0 -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
     </Button>
   );
 };

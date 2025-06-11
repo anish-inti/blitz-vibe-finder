@@ -27,24 +27,24 @@ const FeaturedPlaceCard: React.FC<FeaturedPlaceCardProps> = ({ place, onClick })
       onClick={onClick}
     >
       <div 
-        className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-110" 
+        className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105" 
         style={{ backgroundImage: `url(${place.image})` }}
       />
       
-      {/* Gradient overlay */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+      {/* Gradient overlay - Spotify style */}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
       
-      {/* Animated sparkles */}
+      {/* Subtle sparkles */}
       <div className="absolute top-4 left-4 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
         <Sparkles className="w-4 h-4 text-blitz-secondary animate-pulse-glow" />
       </div>
       
-      {/* Heart button */}
+      {/* Heart button - Spotify style */}
       <button 
         className={`absolute top-3 right-3 p-2.5 rounded-full backdrop-blur-md transition-all duration-300 interactive group/heart ${
           isLiked 
             ? 'bg-blitz-primary text-white shadow-lg shadow-blitz-primary/30' 
-            : 'bg-white/20 text-white hover:bg-white/30'
+            : 'bg-white/10 text-white hover:bg-white/20'
         }`}
         onClick={handleLikeClick}
       >
@@ -61,8 +61,8 @@ const FeaturedPlaceCard: React.FC<FeaturedPlaceCardProps> = ({ place, onClick })
         </p>
       </div>
 
-      {/* Hover glow effect */}
-      <div className="absolute inset-0 bg-gradient-to-t from-blitz-primary/0 to-blitz-primary/0 group-hover:from-blitz-primary/10 group-hover:to-blitz-secondary/10 transition-all duration-500 pointer-events-none" />
+      {/* Subtle hover glow effect */}
+      <div className="absolute inset-0 bg-gradient-to-t from-blitz-primary/0 to-blitz-primary/0 group-hover:from-blitz-primary/5 group-hover:to-blitz-secondary/5 transition-all duration-500 pointer-events-none" />
     </div>
   );
 };

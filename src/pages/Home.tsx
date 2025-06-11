@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
 import BottomNavigation from '@/components/BottomNavigation';
-import { Zap, MapPin, Loader2, Sparkles, TrendingUp, Users, Coffee, Moon, ShoppingBag, Camera } from 'lucide-react';
+import { Zap, MapPin, Loader2, Sparkles, TrendingUp, Users, Coffee, Moon, ShoppingBag, Camera, Play } from 'lucide-react';
 import { Carousel, CarouselContent, CarouselItem } from "@/components/ui/carousel";
 import { toast } from "@/components/ui/use-toast";
 import FeaturedPlaceCard from '@/components/FeaturedPlaceCard';
@@ -13,12 +13,12 @@ import { getBlitzRecommendations } from '@/services/googlePlacesService';
 import { Place } from '@/components/SwipeCard';
 
 const QUICK_ACCESS = [
-  { id: '1', name: 'Food', icon: <Coffee className="w-5 h-5" />, color: 'from-orange-500 to-red-500' },
-  { id: '2', name: 'Nightlife', icon: <Moon className="w-5 h-5" />, color: 'from-purple-500 to-pink-500' },
-  { id: '3', name: 'Groups', icon: <Users className="w-5 h-5" />, color: 'from-blue-500 to-cyan-500' },
-  { id: '4', name: 'Shopping', icon: <ShoppingBag className="w-5 h-5" />, color: 'from-green-500 to-emerald-500' },
-  { id: '5', name: 'Culture', icon: <Camera className="w-5 h-5" />, color: 'from-indigo-500 to-purple-500' },
-  { id: '6', name: 'Trending', icon: <TrendingUp className="w-5 h-5" />, color: 'from-pink-500 to-rose-500' },
+  { id: '1', name: 'Food', icon: <Coffee className="w-5 h-5" />, gradient: 'from-orange-500 to-red-500' },
+  { id: '2', name: 'Nightlife', icon: <Moon className="w-5 h-5" />, gradient: 'from-blitz-primary to-blitz-accent' },
+  { id: '3', name: 'Groups', icon: <Users className="w-5 h-5" />, gradient: 'from-blue-500 to-cyan-500' },
+  { id: '4', name: 'Shopping', icon: <ShoppingBag className="w-5 h-5" />, gradient: 'from-green-500 to-emerald-500' },
+  { id: '5', name: 'Culture', icon: <Camera className="w-5 h-5" />, gradient: 'from-blitz-secondary to-blitz-primary' },
+  { id: '6', name: 'Trending', icon: <TrendingUp className="w-5 h-5" />, gradient: 'from-pink-500 to-rose-500' },
 ];
 
 const Home: React.FC = () => {
@@ -103,9 +103,9 @@ const Home: React.FC = () => {
     const newFilter = filter === activeFilter ? null : filter;
     setActiveFilter(newFilter);
     
-    // Add some fun feedback
+    // Spotify-style feedback
     toast({
-      title: `${filter} mode activated! 🚀`,
+      title: `${filter} mode activated`,
       description: `Finding the best ${filter.toLowerCase()} spots for you...`,
     });
   };
@@ -121,7 +121,7 @@ const Home: React.FC = () => {
     setSelectedLocation(nextLocation);
     
     toast({
-      title: `Welcome to ${nextLocation}! 🌟`,
+      title: `Welcome to ${nextLocation}!`,
       description: "Discovering amazing places in your new city...",
     });
   };
@@ -141,11 +141,11 @@ const Home: React.FC = () => {
   
   return (
     <div className="min-h-screen bg-background">
-      {/* Animated background elements */}
+      {/* Subtle floating background elements - Spotify style */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-20 left-10 w-32 h-32 bg-blitz-primary/10 rounded-full blur-xl animate-float" />
-        <div className="absolute top-40 right-20 w-24 h-24 bg-blitz-secondary/10 rounded-full blur-xl animate-float" style={{ animationDelay: '1s' }} />
-        <div className="absolute bottom-40 left-20 w-40 h-40 bg-blitz-accent/10 rounded-full blur-xl animate-float" style={{ animationDelay: '2s' }} />
+        <div className="absolute top-20 left-10 w-32 h-32 bg-blitz-primary/5 rounded-full blur-3xl animate-float" />
+        <div className="absolute top-40 right-20 w-24 h-24 bg-blitz-secondary/5 rounded-full blur-3xl animate-float" style={{ animationDelay: '2s' }} />
+        <div className="absolute bottom-40 left-20 w-40 h-40 bg-blitz-accent/5 rounded-full blur-3xl animate-float" style={{ animationDelay: '4s' }} />
       </div>
 
       <Header />
@@ -157,19 +157,19 @@ const Home: React.FC = () => {
             onClick={handleLocationClick}
             className="flex items-center text-muted-foreground hover:text-blitz-primary transition-all duration-300 interactive group"
           >
-            <MapPin className="w-4 h-4 mr-2 group-hover:animate-bounce-in" />
+            <MapPin className="w-4 h-4 mr-2 group-hover:scale-110 transition-transform" />
             <span className="font-semibold">{selectedLocation}</span>
             <Sparkles className="w-3 h-3 ml-1 opacity-0 group-hover:opacity-100 transition-opacity" />
           </button>
         </div>
         
-        {/* Hero Section */}
+        {/* Hero Section - Spotify-inspired */}
         <section className="px-6 space-y-6">
           <div className="space-y-4 animate-fade-in">
-            <h1 className="text-hero animate-gradient bg-gradient-to-r from-blitz-primary to-blitz-secondary bg-clip-text text-transparent">
+            <h1 className="text-hero">
               Unlock Your City
             </h1>
-            <p className="text-body text-muted-foreground max-w-md">
+            <p className="text-body text-muted-foreground max-w-md leading-relaxed">
               Your perfect outing is just a swipe away. Discover, explore, and make memories in {selectedLocation}.
             </p>
           </div>
@@ -179,7 +179,6 @@ const Home: React.FC = () => {
             disabled={isButtonLoading}
             className="w-full btn-primary rounded-2xl py-4 font-bold text-lg relative overflow-hidden group"
           >
-            <div className="absolute inset-0 bg-gradient-to-r from-blitz-primary to-blitz-secondary opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
             <div className="relative flex items-center justify-center">
               {isButtonLoading ? (
                 <>
@@ -188,7 +187,7 @@ const Home: React.FC = () => {
                 </>
               ) : (
                 <>
-                  <Zap className="w-5 h-5 mr-2 group-hover:animate-bounce-in" />
+                  <Play className="w-5 h-5 mr-2 group-hover:scale-110 transition-transform" />
                   Start Blitzing
                 </>
               )}
@@ -196,7 +195,7 @@ const Home: React.FC = () => {
           </button>
         </section>
         
-        {/* Quick Access */}
+        {/* Quick Access - Spotify grid style */}
         <section className="space-y-4 animate-slide-up">
           <div className="px-6">
             <h2 className="text-headline flex items-center">
@@ -213,19 +212,19 @@ const Home: React.FC = () => {
                   icon={item.icon}
                   isActive={activeFilter === item.name}
                   onClick={() => handleQuickAccessClick(item.name)}
-                  gradient={item.color}
+                  gradient={item.gradient}
                 />
               ))}
             </div>
           </div>
         </section>
         
-        {/* What's Hot Now */}
+        {/* What's Hot Now - Spotify-style */}
         <section className="space-y-4 animate-fade-in">
           <div className="px-6 flex items-center justify-between">
             <h2 className="text-headline flex items-center">
               🔥 What's Hot
-              <span className="ml-2 px-2 py-1 bg-blitz-primary/10 text-blitz-primary text-xs font-bold rounded-full">
+              <span className="ml-2 badge-live">
                 LIVE
               </span>
             </h2>
@@ -261,7 +260,7 @@ const Home: React.FC = () => {
           )}
         </section>
         
-        {/* Curated For You */}
+        {/* Curated For You - Spotify list style */}
         <section className="space-y-4 animate-slide-up">
           <div className="px-6">
             <h2 className="text-headline flex items-center">
@@ -271,7 +270,7 @@ const Home: React.FC = () => {
                   <span className="ml-2">Spots</span>
                 </>
               ) : (
-                'Curated For You'
+                'Made for You'
               )}
               <TrendingUp className="w-5 h-5 ml-2 text-blitz-accent" />
             </h2>
@@ -280,7 +279,7 @@ const Home: React.FC = () => {
           {isLoadingCurated ? (
             <div className="px-6 space-y-3">
               {[1, 2, 3].map((i) => (
-                <div key={i} className="h-20 bg-muted/50 rounded-xl loading-shimmer" />
+                <div key={i} className="h-20 bg-muted/30 rounded-xl animate-shimmer" />
               ))}
             </div>
           ) : (
@@ -297,12 +296,12 @@ const Home: React.FC = () => {
           )}
         </section>
         
-        {/* Community Picks */}
+        {/* Community Picks - Spotify-style */}
         <section className="space-y-4 animate-fade-in">
           <div className="px-6">
             <h2 className="text-headline flex items-center">
               Community Favorites
-              <span className="ml-2 px-2 py-1 bg-blitz-secondary/10 text-blitz-secondary text-xs font-bold rounded-full">
+              <span className="ml-2 badge-trending">
                 TOP RATED
               </span>
             </h2>
@@ -311,7 +310,7 @@ const Home: React.FC = () => {
           {isLoadingCommunity ? (
             <div className="px-6 space-y-3">
               {[1, 2].map((i) => (
-                <div key={i} className="h-20 bg-muted/50 rounded-xl loading-shimmer" />
+                <div key={i} className="h-20 bg-muted/30 rounded-xl animate-shimmer" />
               ))}
             </div>
           ) : (
@@ -329,7 +328,7 @@ const Home: React.FC = () => {
           )}
         </section>
 
-        {/* Call to Action */}
+        {/* Call to Action - Spotify-inspired */}
         <section className="px-6 py-8 animate-bounce-in">
           <div className="card-hero rounded-2xl p-6 text-center space-y-4">
             <h3 className="text-title text-gradient">Ready to explore?</h3>

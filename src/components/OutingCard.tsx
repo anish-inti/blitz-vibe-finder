@@ -30,15 +30,15 @@ const OutingCard: React.FC<OutingCardProps> = ({ outing, showCommunityBadge = fa
   
   return (
     <div 
-      className="flex rounded-2xl overflow-hidden card-elevated hover:shadow-xl transition-all duration-300 cursor-pointer interactive group"
+      className="flex rounded-2xl overflow-hidden card-spotify hover:shadow-xl transition-all duration-300 cursor-pointer interactive group"
       onClick={onClick}
     >
       <div 
-        className="w-20 h-20 flex-shrink-0 bg-cover bg-center relative overflow-hidden"
+        className="w-20 h-20 flex-shrink-0 bg-cover bg-center relative overflow-hidden rounded-l-2xl"
         style={{ backgroundImage: `url(${outing.image})` }}
       >
-        {/* Image overlay effect */}
-        <div className="absolute inset-0 bg-gradient-to-r from-transparent to-blitz-primary/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+        {/* Subtle image overlay effect */}
+        <div className="absolute inset-0 bg-gradient-to-r from-transparent to-blitz-primary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
       </div>
       
       <div className="flex-1 p-4 min-w-0">
@@ -59,7 +59,7 @@ const OutingCard: React.FC<OutingCardProps> = ({ outing, showCommunityBadge = fa
             
             {showCommunityBadge && (
               <div className="flex items-center mt-2">
-                <span className="inline-flex items-center bg-blitz-secondary/10 text-blitz-secondary px-2 py-1 rounded-full text-xs font-bold">
+                <span className="inline-flex items-center badge-trending">
                   <TrendingUp className="w-3 h-3 mr-1" />
                   Community Pick
                 </span>
@@ -79,7 +79,7 @@ const OutingCard: React.FC<OutingCardProps> = ({ outing, showCommunityBadge = fa
             )}
           </div>
           
-          {/* Heart button */}
+          {/* Heart button - Spotify style */}
           <button
             className={`p-2 rounded-full transition-all duration-300 ml-3 interactive group/heart ${
               isLiked 
