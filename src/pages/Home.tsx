@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
 import BottomNavigation from '@/components/BottomNavigation';
-import { Zap, MapPin, Loader2 } from 'lucide-react';
+import { Zap, MapPin, Loader2, Sparkles, TrendingUp, Users, Coffee, Moon, ShoppingBag, Camera } from 'lucide-react';
 import { Carousel, CarouselContent, CarouselItem } from "@/components/ui/carousel";
 import { toast } from "@/components/ui/use-toast";
 import FeaturedPlaceCard from '@/components/FeaturedPlaceCard';
@@ -13,12 +13,12 @@ import { getBlitzRecommendations } from '@/services/googlePlacesService';
 import { Place } from '@/components/SwipeCard';
 
 const QUICK_ACCESS = [
-  { id: '1', name: 'Cafes', icon: '☕' },
-  { id: '2', name: 'Food', icon: '🍽️' },
-  { id: '3', name: 'Nightlife', icon: '🌙' },
-  { id: '4', name: 'Outdoor', icon: '🌳' },
-  { id: '5', name: 'Shopping', icon: '🛍️' },
-  { id: '6', name: 'Culture', icon: '🎭' },
+  { id: '1', name: 'Food', icon: <Coffee className="w-5 h-5" />, color: 'from-orange-500 to-red-500' },
+  { id: '2', name: 'Nightlife', icon: <Moon className="w-5 h-5" />, color: 'from-purple-500 to-pink-500' },
+  { id: '3', name: 'Groups', icon: <Users className="w-5 h-5" />, color: 'from-blue-500 to-cyan-500' },
+  { id: '4', name: 'Shopping', icon: <ShoppingBag className="w-5 h-5" />, color: 'from-green-500 to-emerald-500' },
+  { id: '5', name: 'Culture', icon: <Camera className="w-5 h-5" />, color: 'from-indigo-500 to-purple-500' },
+  { id: '6', name: 'Trending', icon: <TrendingUp className="w-5 h-5" />, color: 'from-pink-500 to-rose-500' },
 ];
 
 const Home: React.FC = () => {
@@ -102,6 +102,12 @@ const Home: React.FC = () => {
   const handleQuickAccessClick = (filter: string) => {
     const newFilter = filter === activeFilter ? null : filter;
     setActiveFilter(newFilter);
+    
+    // Add some fun feedback
+    toast({
+      title: `${filter} mode activated! 🚀`,
+      description: `Finding the best ${filter.toLowerCase()} spots for you...`,
+    });
   };
 
   const handlePlaceClick = (place: Place) => {
@@ -115,8 +121,8 @@ const Home: React.FC = () => {
     setSelectedLocation(nextLocation);
     
     toast({
-      title: `Switched to ${nextLocation}`,
-      description: "Finding places in your new location...",
+      title: `Welcome to ${nextLocation}! 🌟`,
+      description: "Discovering amazing places in your new city...",
     });
   };
 
@@ -135,93 +141,119 @@ const Home: React.FC = () => {
   
   return (
     <div className="min-h-screen bg-background">
+      {/* Animated background elements */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-20 left-10 w-32 h-32 bg-blitz-primary/10 rounded-full blur-xl animate-float" />
+        <div className="absolute top-40 right-20 w-24 h-24 bg-blitz-secondary/10 rounded-full blur-xl animate-float" style={{ animationDelay: '1s' }} />
+        <div className="absolute bottom-40 left-20 w-40 h-40 bg-blitz-accent/10 rounded-full blur-xl animate-float" style={{ animationDelay: '2s' }} />
+      </div>
+
       <Header />
       
-      <main className="pb-24 space-y-8">
+      <main className="relative pb-24 space-y-8">
         {/* Location Selector */}
         <div className="px-6 pt-4">
           <button 
             onClick={handleLocationClick}
-            className="flex items-center text-muted-foreground hover:text-foreground transition-colors"
+            className="flex items-center text-muted-foreground hover:text-blitz-primary transition-all duration-300 interactive group"
           >
-            <MapPin className="w-4 h-4 mr-2" />
-            <span className="font-medium">{selectedLocation}</span>
+            <MapPin className="w-4 h-4 mr-2 group-hover:animate-bounce-in" />
+            <span className="font-semibold">{selectedLocation}</span>
+            <Sparkles className="w-3 h-3 ml-1 opacity-0 group-hover:opacity-100 transition-opacity" />
           </button>
         </div>
         
         {/* Hero Section */}
         <section className="px-6 space-y-6">
-          <div className="space-y-2">
-            <h1 className="text-display">Discover</h1>
-            <p className="text-muted-foreground">Find your perfect experience in {selectedLocation}</p>
+          <div className="space-y-4 animate-fade-in">
+            <h1 className="text-hero animate-gradient bg-gradient-to-r from-blitz-primary to-blitz-secondary bg-clip-text text-transparent">
+              Unlock Your City
+            </h1>
+            <p className="text-body text-muted-foreground max-w-md">
+              Your perfect outing is just a swipe away. Discover, explore, and make memories in {selectedLocation}.
+            </p>
           </div>
           
           <button 
             onClick={handleStartBlitz}
             disabled={isButtonLoading}
-            className="w-full btn-primary rounded-xl py-4 font-semibold text-lg"
+            className="w-full btn-primary rounded-2xl py-4 font-bold text-lg relative overflow-hidden group"
           >
-            {isButtonLoading ? (
-              <div className="flex items-center justify-center">
-                <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                Starting...
-              </div>
-            ) : (
-              <div className="flex items-center justify-center">
-                <Zap className="w-5 h-5 mr-2" />
-                Start Planning
-              </div>
-            )}
+            <div className="absolute inset-0 bg-gradient-to-r from-blitz-primary to-blitz-secondary opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+            <div className="relative flex items-center justify-center">
+              {isButtonLoading ? (
+                <>
+                  <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                  Starting your adventure...
+                </>
+              ) : (
+                <>
+                  <Zap className="w-5 h-5 mr-2 group-hover:animate-bounce-in" />
+                  Start Blitzing
+                </>
+              )}
+            </div>
           </button>
         </section>
         
         {/* Quick Access */}
-        <section className="space-y-4">
-          <h2 className="text-headline px-6">Browse</h2>
+        <section className="space-y-4 animate-slide-up">
+          <div className="px-6">
+            <h2 className="text-headline flex items-center">
+              Explore by Vibe
+              <Sparkles className="w-5 h-5 ml-2 text-blitz-secondary animate-pulse-glow" />
+            </h2>
+          </div>
           <div className="px-6">
             <div className="grid grid-cols-3 gap-3">
               {QUICK_ACCESS.map((item) => (
-                <button
+                <QuickAccessButton
                   key={item.id}
+                  name={item.name}
+                  icon={item.icon}
+                  isActive={activeFilter === item.name}
                   onClick={() => handleQuickAccessClick(item.name)}
-                  className={`p-4 rounded-xl text-center transition-all ${
-                    activeFilter === item.name
-                      ? 'bg-blitz-primary text-white'
-                      : 'bg-card hover:bg-accent'
-                  }`}
-                >
-                  <div className="text-2xl mb-2">{item.icon}</div>
-                  <div className="text-sm font-medium">{item.name}</div>
-                </button>
+                  gradient={item.color}
+                />
               ))}
             </div>
           </div>
         </section>
         
         {/* What's Hot Now */}
-        <section className="space-y-4">
-          <div className="px-6">
-            <h2 className="text-headline">What's Hot</h2>
+        <section className="space-y-4 animate-fade-in">
+          <div className="px-6 flex items-center justify-between">
+            <h2 className="text-headline flex items-center">
+              🔥 What's Hot
+              <span className="ml-2 px-2 py-1 bg-blitz-primary/10 text-blitz-primary text-xs font-bold rounded-full">
+                LIVE
+              </span>
+            </h2>
           </div>
           
           {isLoadingHotNow ? (
             <div className="flex items-center justify-center h-48">
-              <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+              <div className="flex flex-col items-center space-y-3">
+                <Loader2 className="w-8 h-8 animate-spin text-blitz-primary" />
+                <p className="text-caption text-muted-foreground">Finding the hottest spots...</p>
+              </div>
             </div>
           ) : (
             <Carousel className="w-full">
               <CarouselContent className="ml-6">
-                {hotNowPlaces.map((place) => (
+                {hotNowPlaces.map((place, index) => (
                   <CarouselItem key={place.id} className="basis-4/5 pr-4">
-                    <FeaturedPlaceCard 
-                      place={{
-                        id: place.id,
-                        name: place.name,
-                        description: place.description || `${place.category} in ${place.location}`,
-                        image: place.image,
-                      }} 
-                      onClick={() => handlePlaceClick(place)} 
-                    />
+                    <div className="animate-scale-in" style={{ animationDelay: `${index * 0.1}s` }}>
+                      <FeaturedPlaceCard 
+                        place={{
+                          id: place.id,
+                          name: place.name,
+                          description: place.description || `${place.category} in ${place.location}`,
+                          image: place.image,
+                        }} 
+                        onClick={() => handlePlaceClick(place)} 
+                      />
+                    </div>
                   </CarouselItem>
                 ))}
               </CarouselContent>
@@ -230,52 +262,87 @@ const Home: React.FC = () => {
         </section>
         
         {/* Curated For You */}
-        <section className="space-y-4">
+        <section className="space-y-4 animate-slide-up">
           <div className="px-6">
-            <h2 className="text-headline">
-              {activeFilter ? `${activeFilter} Places` : 'For You'}
+            <h2 className="text-headline flex items-center">
+              {activeFilter ? (
+                <>
+                  <span className="text-gradient">{activeFilter}</span>
+                  <span className="ml-2">Spots</span>
+                </>
+              ) : (
+                'Curated For You'
+              )}
+              <TrendingUp className="w-5 h-5 ml-2 text-blitz-accent" />
             </h2>
           </div>
           
           {isLoadingCurated ? (
-            <div className="flex items-center justify-center h-32">
-              <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+            <div className="px-6 space-y-3">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="h-20 bg-muted/50 rounded-xl loading-shimmer" />
+              ))}
             </div>
           ) : (
             <div className="px-6 space-y-3">
-              {curatedOutings.slice(0, 4).map((place) => (
-                <OutingCard 
-                  key={place.id} 
-                  outing={convertPlaceToOuting(place)}
-                  onClick={() => handlePlaceClick(place)} 
-                />
+              {curatedOutings.slice(0, 4).map((place, index) => (
+                <div key={place.id} className="animate-fade-in" style={{ animationDelay: `${index * 0.1}s` }}>
+                  <OutingCard 
+                    outing={convertPlaceToOuting(place)}
+                    onClick={() => handlePlaceClick(place)} 
+                  />
+                </div>
               ))}
             </div>
           )}
         </section>
         
         {/* Community Picks */}
-        <section className="space-y-4">
+        <section className="space-y-4 animate-fade-in">
           <div className="px-6">
-            <h2 className="text-headline">Community Favorites</h2>
+            <h2 className="text-headline flex items-center">
+              Community Favorites
+              <span className="ml-2 px-2 py-1 bg-blitz-secondary/10 text-blitz-secondary text-xs font-bold rounded-full">
+                TOP RATED
+              </span>
+            </h2>
           </div>
           
           {isLoadingCommunity ? (
-            <div className="flex items-center justify-center h-32">
-              <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+            <div className="px-6 space-y-3">
+              {[1, 2].map((i) => (
+                <div key={i} className="h-20 bg-muted/50 rounded-xl loading-shimmer" />
+              ))}
             </div>
           ) : (
             <div className="px-6 space-y-3">
-              {communityPicks.map((place) => (
-                <OutingCard 
-                  key={place.id} 
-                  outing={convertPlaceToOuting(place)} 
-                  showCommunityBadge
-                  onClick={() => handlePlaceClick(place)}
-                />
+              {communityPicks.map((place, index) => (
+                <div key={place.id} className="animate-scale-in" style={{ animationDelay: `${index * 0.15}s` }}>
+                  <OutingCard 
+                    outing={convertPlaceToOuting(place)} 
+                    showCommunityBadge
+                    onClick={() => handlePlaceClick(place)}
+                  />
+                </div>
               ))}
             </div>
           )}
+        </section>
+
+        {/* Call to Action */}
+        <section className="px-6 py-8 animate-bounce-in">
+          <div className="card-hero rounded-2xl p-6 text-center space-y-4">
+            <h3 className="text-title text-gradient">Ready to explore?</h3>
+            <p className="text-caption text-muted-foreground">
+              Join thousands discovering their city's hidden gems
+            </p>
+            <button 
+              onClick={() => navigate('/swipe')}
+              className="btn-secondary rounded-xl px-6 py-3 font-semibold interactive-glow"
+            >
+              Start Swiping 🚀
+            </button>
+          </div>
         </section>
       </main>
       

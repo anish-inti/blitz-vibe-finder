@@ -4,7 +4,7 @@
 
 @layer base {
   :root {
-    /* Apple-inspired color system */
+    /* Shadcn UI variables */
     --background: 0 0% 100%;
     --foreground: 0 0% 3.9%;
     --card: 0 0% 100%;
@@ -26,44 +26,47 @@
     --ring: 0 0% 3.9%;
     --radius: 0.75rem;
 
-    /* Blitz brand colors - refined */
-    --blitz-primary: 315 100% 70%;     /* #ff6ec7 - main brand pink */
-    --blitz-secondary: 0 0% 9%;        /* #171717 - dark gray */
-    --blitz-surface: 0 0% 98%;         /* #fafafa - light surface */
-    --blitz-surface-dark: 0 0% 7%;     /* #121212 - dark surface */
-    --blitz-text: 0 0% 9%;             /* #171717 - primary text */
-    --blitz-text-secondary: 0 0% 45%;  /* #737373 - secondary text */
-    --blitz-border: 0 0% 89%;          /* #e5e5e5 - borders */
-    --blitz-accent: 315 100% 70%;      /* #ff6ec7 - accent color */
+    /* Blitz Brand Colors - Bold & Energetic */
+    --blitz-primary: 15 100% 60%;        /* Bold Orange-Red #FF4E00 */
+    --blitz-secondary: 315 100% 70%;     /* Vibrant Pink #FF66B2 */
+    --blitz-accent: 270 100% 75%;        /* Electric Purple #9B00FF */
+    --blitz-surface: 0 0% 98%;           /* Clean White */
+    --blitz-surface-dark: 240 10% 8%;    /* Deep Dark */
+    --blitz-text: 0 0% 9%;               /* Rich Black */
+    --blitz-text-secondary: 0 0% 45%;    /* Medium Gray */
+    --blitz-border: 0 0% 89%;            /* Light Border */
+    --blitz-success: 120 100% 40%;       /* Success Green */
+    --blitz-warning: 45 100% 50%;        /* Warning Yellow */
+    --blitz-error: 0 100% 60%;           /* Error Red */
   }
 
   .dark {
-    --background: 0 0% 7%;
+    --background: 240 10% 8%;
     --foreground: 0 0% 98%;
-    --card: 0 0% 7%;
+    --card: 240 10% 8%;
     --card-foreground: 0 0% 98%;
-    --popover: 0 0% 7%;
+    --popover: 240 10% 8%;
     --popover-foreground: 0 0% 98%;
     --primary: 0 0% 98%;
     --primary-foreground: 0 0% 9%;
-    --secondary: 0 0% 14.9%;
+    --secondary: 240 3.7% 15.9%;
     --secondary-foreground: 0 0% 98%;
-    --muted: 0 0% 14.9%;
+    --muted: 240 3.7% 15.9%;
     --muted-foreground: 0 0% 63.9%;
-    --accent: 0 0% 14.9%;
+    --accent: 240 3.7% 15.9%;
     --accent-foreground: 0 0% 98%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 14.9%;
-    --input: 0 0% 14.9%;
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
     --ring: 0 0% 83.1%;
 
     /* Dark mode adjustments */
-    --blitz-surface: 0 0% 7%;          /* #121212 - dark surface */
-    --blitz-surface-dark: 0 0% 4%;     /* #0a0a0a - darker surface */
-    --blitz-text: 0 0% 98%;            /* #fafafa - primary text */
-    --blitz-text-secondary: 0 0% 64%;  /* #a3a3a3 - secondary text */
-    --blitz-border: 0 0% 15%;          /* #262626 - borders */
+    --blitz-surface: 240 10% 8%;         /* Deep Dark */
+    --blitz-surface-dark: 240 10% 4%;    /* Darker */
+    --blitz-text: 0 0% 98%;              /* Light Text */
+    --blitz-text-secondary: 0 0% 64%;    /* Secondary Light */
+    --blitz-border: 240 3.7% 15.9%;     /* Dark Border */
   }
 
   * {
@@ -73,66 +76,149 @@
   body {
     @apply bg-background text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
   }
 }
 
-/* Apple-style glass morphism */
+/* Blitz Brand Components */
+.blitz-gradient {
+  background: linear-gradient(135deg, hsl(var(--blitz-primary)) 0%, hsl(var(--blitz-secondary)) 100%);
+}
+
+.blitz-gradient-reverse {
+  background: linear-gradient(135deg, hsl(var(--blitz-secondary)) 0%, hsl(var(--blitz-accent)) 100%);
+}
+
+.blitz-glow {
+  box-shadow: 0 0 20px hsl(var(--blitz-primary) / 0.3);
+}
+
+.blitz-glow-secondary {
+  box-shadow: 0 0 20px hsl(var(--blitz-secondary) / 0.3);
+}
+
+/* Tech-forward glassmorphism */
 .glassmorphism {
-  @apply backdrop-blur-xl bg-white/80 dark:bg-black/20 border border-white/20 dark:border-white/10;
+  @apply backdrop-blur-xl bg-white/10 dark:bg-black/20 border border-white/20 dark:border-white/10;
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
 }
 
-/* Refined button styles */
-.btn-primary {
-  @apply bg-[hsl(var(--blitz-primary))] text-white hover:bg-[hsl(var(--blitz-primary))]/90 
-         active:scale-[0.98] transition-all duration-200 shadow-sm;
+.glassmorphism-strong {
+  @apply backdrop-blur-2xl bg-white/20 dark:bg-black/40 border border-white/30 dark:border-white/20;
+  backdrop-filter: blur(40px);
+  -webkit-backdrop-filter: blur(40px);
 }
 
-.btn-secondary {
-  @apply bg-secondary text-secondary-foreground hover:bg-secondary/80 
+/* Button styles - Bold & Energetic */
+.btn-primary {
+  @apply bg-gradient-to-r from-[hsl(var(--blitz-primary))] to-[hsl(var(--blitz-secondary))] 
+         text-white font-semibold shadow-lg hover:shadow-xl 
          active:scale-[0.98] transition-all duration-200;
 }
 
-/* Card styles */
-.card-elevated {
-  @apply bg-card border border-border shadow-sm hover:shadow-md transition-shadow duration-200;
+.btn-secondary {
+  @apply bg-gradient-to-r from-[hsl(var(--blitz-secondary))] to-[hsl(var(--blitz-accent))] 
+         text-white font-semibold shadow-lg hover:shadow-xl 
+         active:scale-[0.98] transition-all duration-200;
 }
 
-/* Text hierarchy */
+.btn-outline {
+  @apply border-2 border-[hsl(var(--blitz-primary))] text-[hsl(var(--blitz-primary))] 
+         hover:bg-[hsl(var(--blitz-primary))] hover:text-white font-semibold
+         active:scale-[0.98] transition-all duration-200;
+}
+
+/* Card styles - Modern & Clean */
+.card-elevated {
+  @apply bg-card/80 backdrop-blur-xl border border-border/50 shadow-lg hover:shadow-xl 
+         transition-all duration-300 hover:border-[hsl(var(--blitz-primary))]/30;
+}
+
+.card-hero {
+  @apply bg-gradient-to-br from-[hsl(var(--blitz-primary))]/10 to-[hsl(var(--blitz-secondary))]/10 
+         backdrop-blur-xl border border-[hsl(var(--blitz-primary))]/20 shadow-xl;
+}
+
+/* Typography - Bold & Confident */
+.text-hero {
+  @apply text-4xl font-black tracking-tight bg-gradient-to-r from-[hsl(var(--blitz-primary))] 
+         to-[hsl(var(--blitz-secondary))] bg-clip-text text-transparent;
+}
+
 .text-display {
   @apply text-3xl font-bold tracking-tight;
 }
 
 .text-headline {
-  @apply text-xl font-semibold tracking-tight;
+  @apply text-xl font-bold tracking-tight;
 }
 
 .text-title {
-  @apply text-lg font-medium;
+  @apply text-lg font-semibold;
 }
 
 .text-body {
-  @apply text-base;
+  @apply text-base font-medium;
 }
 
 .text-caption {
-  @apply text-sm text-muted-foreground;
+  @apply text-sm text-muted-foreground font-medium;
 }
 
-/* Spacing system */
-.space-xs { @apply space-y-2; }
-.space-sm { @apply space-y-3; }
-.space-md { @apply space-y-4; }
-.space-lg { @apply space-y-6; }
-.space-xl { @apply space-y-8; }
+/* Interactive elements - Smooth & Responsive */
+.interactive {
+  @apply transition-all duration-200 active:scale-[0.98] cursor-pointer;
+}
 
-/* Animations */
+.interactive:hover {
+  @apply shadow-lg;
+}
+
+.interactive-glow:hover {
+  @apply shadow-lg shadow-[hsl(var(--blitz-primary))]/20;
+}
+
+/* Focus styles - Accessible & Branded */
+.focus-ring {
+  @apply focus:outline-none focus:ring-2 focus:ring-[hsl(var(--blitz-primary))] focus:ring-offset-2;
+}
+
+/* Animations - Energetic & Fun */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 20px hsl(var(--blitz-primary) / 0.3);
+  }
+  50% {
+    box-shadow: 0 0 30px hsl(var(--blitz-primary) / 0.6);
+  }
+}
+
+@keyframes gradient-shift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
 @keyframes fade-in {
   from {
     opacity: 0;
-    transform: translateY(8px);
+    transform: translateY(20px);
   }
   to {
     opacity: 1;
@@ -143,7 +229,7 @@
 @keyframes scale-in {
   from {
     opacity: 0;
-    transform: scale(0.96);
+    transform: scale(0.9);
   }
   to {
     opacity: 1;
@@ -154,7 +240,7 @@
 @keyframes slide-up {
   from {
     opacity: 0;
-    transform: translateY(16px);
+    transform: translateY(30px);
   }
   to {
     opacity: 1;
@@ -162,53 +248,84 @@
   }
 }
 
+@keyframes bounce-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  70% {
+    transform: scale(0.9);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Animation classes */
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+.animate-gradient {
+  background-size: 200% 200%;
+  animation: gradient-shift 3s ease infinite;
+}
+
 .animate-fade-in {
-  animation: fade-in 0.4s ease-out;
+  animation: fade-in 0.6s ease-out;
 }
 
 .animate-scale-in {
-  animation: scale-in 0.3s ease-out;
+  animation: scale-in 0.4s ease-out;
 }
 
 .animate-slide-up {
   animation: slide-up 0.5s ease-out;
 }
 
-/* Interactive elements */
-.interactive {
-  @apply transition-all duration-200 active:scale-[0.98];
+.animate-bounce-in {
+  animation: bounce-in 0.6s ease-out;
 }
 
-.interactive:hover {
-  @apply shadow-sm;
-}
-
-/* Focus styles */
-.focus-ring {
-  @apply focus:outline-none focus:ring-2 focus:ring-[hsl(var(--blitz-primary))] focus:ring-offset-2;
-}
-
-/* Swipe card animations */
+/* Swipe card animations - Smooth & Engaging */
 .swipe-card {
   transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s ease-out;
 }
 
 .swipe-card.swiping-left {
-  transform: translateX(-120%) rotate(-5deg);
+  transform: translateX(-120%) rotate(-10deg);
   opacity: 0;
 }
 
 .swipe-card.swiping-right {
-  transform: translateX(120%) rotate(5deg);
+  transform: translateX(120%) rotate(10deg);
   opacity: 0;
 }
 
 .swipe-card.swiping-up {
-  transform: translateY(-120%) scale(0.95);
+  transform: translateY(-120%) scale(0.9);
   opacity: 0;
 }
 
-/* Remove default tap highlights on mobile */
+/* Utility classes */
+.text-gradient {
+  @apply bg-gradient-to-r from-[hsl(var(--blitz-primary))] to-[hsl(var(--blitz-secondary))] 
+         bg-clip-text text-transparent;
+}
+
+.border-gradient {
+  border-image: linear-gradient(135deg, hsl(var(--blitz-primary)), hsl(var(--blitz-secondary))) 1;
+}
+
+/* Remove default tap highlights */
 * {
   -webkit-tap-highlight-color: transparent;
 }
@@ -218,7 +335,7 @@ html {
   scroll-behavior: smooth;
 }
 
-/* Custom scrollbar */
+/* Custom scrollbar - Branded */
 ::-webkit-scrollbar {
   width: 6px;
 }
@@ -228,12 +345,12 @@ html {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: hsl(var(--border));
+  background: hsl(var(--blitz-primary));
   border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: hsl(var(--muted-foreground));
+  background: hsl(var(--blitz-secondary));
 }
 
 /* Line clamp utilities */
@@ -256,4 +373,43 @@ html {
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 3;
+}
+
+/* Loading states */
+.loading-shimmer {
+  background: linear-gradient(90deg, 
+    hsl(var(--muted)) 25%, 
+    hsl(var(--muted-foreground) / 0.1) 50%, 
+    hsl(var(--muted)) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* Youth-focused micro-interactions */
+.bounce-hover:hover {
+  animation: bounce-in 0.3s ease-out;
+}
+
+.glow-hover:hover {
+  animation: pulse-glow 1s ease-in-out;
+}
+
+/* Responsive design helpers */
+@media (max-width: 640px) {
+  .text-hero {
+    @apply text-3xl;
+  }
+  
+  .text-display {
+    @apply text-2xl;
+  }
 }

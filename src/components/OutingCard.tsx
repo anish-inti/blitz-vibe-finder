@@ -1,5 +1,5 @@
 import React from 'react';
-import { Star, Heart, Clock } from 'lucide-react';
+import { Star, Heart, Clock, TrendingUp } from 'lucide-react';
 
 interface Outing {
   id: string;
@@ -30,36 +30,44 @@ const OutingCard: React.FC<OutingCardProps> = ({ outing, showCommunityBadge = fa
   
   return (
     <div 
-      className="flex rounded-xl overflow-hidden bg-card border hover:shadow-md transition-all cursor-pointer interactive"
+      className="flex rounded-2xl overflow-hidden card-elevated hover:shadow-xl transition-all duration-300 cursor-pointer interactive group"
       onClick={onClick}
     >
       <div 
-        className="w-20 h-20 flex-shrink-0 bg-cover bg-center"
+        className="w-20 h-20 flex-shrink-0 bg-cover bg-center relative overflow-hidden"
         style={{ backgroundImage: `url(${outing.image})` }}
-      />
+      >
+        {/* Image overlay effect */}
+        <div className="absolute inset-0 bg-gradient-to-r from-transparent to-blitz-primary/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+      </div>
       
-      <div className="flex-1 p-3 min-w-0">
+      <div className="flex-1 p-4 min-w-0">
         <div className="flex justify-between items-start">
           <div className="min-w-0 flex-1">
-            <h3 className="font-medium text-base line-clamp-1">{outing.name}</h3>
+            <h3 className="font-bold text-base line-clamp-1 group-hover:text-blitz-primary transition-colors duration-300">
+              {outing.name}
+            </h3>
             
             <div className="flex items-center text-xs text-muted-foreground mt-1 space-x-2">
-              <span>{outing.type}</span>
+              <span className="font-medium">{outing.type}</span>
               <span>•</span>
               <div className="flex items-center">
                 <Star className="h-3 w-3 text-yellow-500 mr-1 fill-current" />
-                <span>{outing.rating}</span>
+                <span className="font-semibold">{outing.rating}</span>
               </div>
             </div>
             
             {showCommunityBadge && (
-              <span className="inline-flex items-center mt-1 bg-blitz-primary/10 text-blitz-primary px-2 py-0.5 rounded-full text-xs font-medium">
-                Community Pick
-              </span>
+              <div className="flex items-center mt-2">
+                <span className="inline-flex items-center bg-blitz-secondary/10 text-blitz-secondary px-2 py-1 rounded-full text-xs font-bold">
+                  <TrendingUp className="w-3 h-3 mr-1" />
+                  Community Pick
+                </span>
+              </div>
             )}
             
             {outing.openStatus && (
-              <div className={`flex items-center mt-1 text-xs ${
+              <div className={`flex items-center mt-1 text-xs font-semibold ${
                 outing.openStatus === 'Open' 
                   ? 'text-green-600' 
                   : outing.openStatus === 'Closing Soon' 
@@ -73,14 +81,14 @@ const OutingCard: React.FC<OutingCardProps> = ({ outing, showCommunityBadge = fa
           
           {/* Heart button */}
           <button
-            className={`p-1.5 rounded-full transition-all ml-2 ${
+            className={`p-2 rounded-full transition-all duration-300 ml-3 interactive group/heart ${
               isLiked 
-                ? 'text-blitz-primary' 
-                : 'text-muted-foreground hover:text-foreground'
+                ? 'text-blitz-primary bg-blitz-primary/10' 
+                : 'text-muted-foreground hover:text-blitz-primary hover:bg-blitz-primary/5'
             }`}
             onClick={handleLikeClick}
           >
-            <Heart className={`w-4 h-4 ${isLiked ? 'fill-current' : ''}`} />
+            <Heart className={`w-4 h-4 transition-transform duration-300 group-hover/heart:scale-110 ${isLiked ? 'fill-current' : ''}`} />
           </button>
         </div>
       </div>
