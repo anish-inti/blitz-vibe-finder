@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { UtensilsCrossed, Film, TreePine, Coffee, Music, Sparkles } from 'lucide-react';
 
@@ -11,80 +10,88 @@ interface OutingTypeSelectorProps {
 interface TypeOption {
   id: OutingType;
   label: string;
+  description: string;
   icon: React.ReactNode;
-  color: string;
-  borderColor: string;
+  gradient: string;
 }
 
 const OutingTypeSelector: React.FC<OutingTypeSelectorProps> = ({ onSelect }) => {
   const options: TypeOption[] = [
     {
       id: 'restaurant',
-      label: 'Restaurant',
-      icon: <UtensilsCrossed className="w-8 h-8" />,
-      color: 'text-blitz-neonred',
-      borderColor: 'border-blitz-neonred'
+      label: 'Dining',
+      description: 'Culinary experiences',
+      icon: <UtensilsCrossed className="w-6 h-6" />,
+      gradient: 'from-orange-500 to-red-500'
     },
     {
       id: 'movie',
-      label: 'Movie',
-      icon: <Film className="w-8 h-8" />,
-      color: 'text-blitz-pink',
-      borderColor: 'border-blitz-pink'
+      label: 'Cinema',
+      description: 'Latest films & entertainment',
+      icon: <Film className="w-6 h-6" />,
+      gradient: 'from-purple-500 to-indigo-500'
     },
     {
       id: 'outdoors',
       label: 'Outdoors',
-      icon: <TreePine className="w-8 h-8" />,
-      color: 'text-blitz-purple',
-      borderColor: 'border-blitz-purple'
+      description: 'Nature & fresh air',
+      icon: <TreePine className="w-6 h-6" />,
+      gradient: 'from-green-500 to-emerald-500'
     },
     {
       id: 'cafe',
-      label: 'Cafe',
-      icon: <Coffee className="w-8 h-8" />,
-      color: 'text-blitz-blue',
-      borderColor: 'border-blitz-blue'
+      label: 'Café',
+      description: 'Coffee & conversations',
+      icon: <Coffee className="w-6 h-6" />,
+      gradient: 'from-amber-500 to-yellow-500'
     },
     {
       id: 'nightlife',
       label: 'Nightlife',
-      icon: <Music className="w-8 h-8" />,
-      color: 'text-blitz-neonred',
-      borderColor: 'border-blitz-neonred'
+      description: 'Evening entertainment',
+      icon: <Music className="w-6 h-6" />,
+      gradient: 'from-blitz-primary to-blitz-accent'
     }
   ];
 
   return (
-    <div className="animate-fade-in">
-      <h2 className="text-xl font-semibold mb-6 text-center text-white neon-text">
-        What type of outing?
-      </h2>
-      
-      <div className="grid grid-cols-2 gap-4">
-        {options.map((option) => (
-          <button
-            key={option.id}
-            onClick={() => onSelect(option.id)}
-            className={`
-              flex flex-col items-center justify-center p-5 rounded-xl
-              bg-black/50 border-2 ${option.borderColor} 
-              hover:shadow-lg hover:shadow-${option.borderColor.replace('border-', '')}/30
-              transition-all duration-300 hover:scale-105 group
-            `}
-          >
-            <div className="relative">
-              <div className={`${option.color} group-hover:animate-pulse-glow`}>
+    <div className="grid grid-cols-2 gap-4 animate-fade-in">
+      {options.map((option, index) => (
+        <button
+          key={option.id}
+          onClick={() => onSelect(option.id)}
+          className={`
+            group relative overflow-hidden rounded-2xl p-6 text-left transition-all duration-300
+            bg-gradient-to-br ${option.gradient} hover:shadow-xl
+            hover:scale-105 active:scale-95 interactive
+          `}
+          style={{ animationDelay: `${index * 0.1}s` }}
+        >
+          {/* Background pattern */}
+          <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+          
+          {/* Content */}
+          <div className="relative z-10">
+            <div className="flex items-center justify-between mb-3">
+              <div className="text-white/90 group-hover:text-white transition-colors">
                 {option.icon}
               </div>
-              <Sparkles className="w-3 h-3 text-blitz-stardust absolute -top-1 -right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              <Sparkles className="w-4 h-4 text-white/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 animate-pulse-glow" />
             </div>
-            <span className={`mt-3 font-medium ${option.color}`}>
+            
+            <h3 className="text-white font-bold text-lg mb-1">
               {option.label}
-            </span>
-          </button>
-        ))}
-      </div>
+            </h3>
+            
+            <p className="text-white/80 text-sm leading-relaxed">
+              {option.description}
+            </p>
+          </div>
+
+          {/* Hover glow effect */}
+          <div className="absolute inset-0 bg-gradient-to-br from-white/0 to-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+        </button>
+      ))}
     </div>
   );
 };

@@ -1,6 +1,5 @@
-
 import React from 'react';
-import { Heart, Users, UsersRound, PersonStanding, Sparkles } from 'lucide-react';
+import { Heart, Users, UsersRound, User, Sparkles } from 'lucide-react';
 
 type Occasion = 'romantic' | 'family' | 'friendly' | 'solo' | '';
 
@@ -11,9 +10,9 @@ interface OccasionSelectorProps {
 interface OccasionOption {
   id: Occasion;
   label: string;
+  description: string;
   icon: React.ReactNode;
-  color: string;
-  borderColor: string;
+  gradient: string;
 }
 
 const OccasionSelector: React.FC<OccasionSelectorProps> = ({ onSelect }) => {
@@ -21,63 +20,71 @@ const OccasionSelector: React.FC<OccasionSelectorProps> = ({ onSelect }) => {
     {
       id: 'romantic',
       label: 'Romantic',
-      icon: <Heart className="w-8 h-8" />,
-      color: 'text-blitz-neonred',
-      borderColor: 'border-blitz-neonred'
+      description: 'Intimate moments for two',
+      icon: <Heart className="w-6 h-6" />,
+      gradient: 'from-rose-500 to-pink-500'
     },
     {
       id: 'family',
       label: 'Family',
-      icon: <Users className="w-8 h-8" />,
-      color: 'text-blitz-pink',
-      borderColor: 'border-blitz-pink'
+      description: 'Quality time with loved ones',
+      icon: <Users className="w-6 h-6" />,
+      gradient: 'from-blue-500 to-cyan-500'
     },
     {
       id: 'friendly',
       label: 'Friends',
-      icon: <UsersRound className="w-8 h-8" />,
-      color: 'text-blitz-purple',
-      borderColor: 'border-blitz-purple'
+      description: 'Fun times with your crew',
+      icon: <UsersRound className="w-6 h-6" />,
+      gradient: 'from-blitz-primary to-blitz-accent'
     },
     {
       id: 'solo',
       label: 'Solo',
-      icon: <PersonStanding className="w-8 h-8" />,
-      color: 'text-blitz-blue',
-      borderColor: 'border-blitz-blue'
+      description: 'Me time and self-discovery',
+      icon: <User className="w-6 h-6" />,
+      gradient: 'from-emerald-500 to-teal-500'
     }
   ];
 
   return (
-    <div className="animate-fade-in">
-      <h2 className="text-xl font-semibold mb-6 text-center text-white neon-text">
-        What's the occasion?
-      </h2>
-      
-      <div className="grid grid-cols-2 gap-4">
-        {options.map((option) => (
-          <button
-            key={option.id}
-            onClick={() => onSelect(option.id)}
-            className={`
-              flex flex-col items-center justify-center p-6 rounded-xl
-              bg-black/50 border-2 ${option.borderColor} 
-              hover:shadow-lg hover:shadow-${option.borderColor.replace('border-', '')}/30
-              transition-all duration-300 hover:scale-105 group
-            `}
-          >
-            <div className="relative">
-              <div className={`${option.color} group-hover:animate-pulse-glow`}>
+    <div className="grid grid-cols-2 gap-4 animate-fade-in">
+      {options.map((option, index) => (
+        <button
+          key={option.id}
+          onClick={() => onSelect(option.id)}
+          className={`
+            group relative overflow-hidden rounded-2xl p-6 text-left transition-all duration-300
+            bg-gradient-to-br ${option.gradient} hover:shadow-xl hover:shadow-${option.gradient.split('-')[1]}-500/20
+            hover:scale-105 active:scale-95 interactive
+          `}
+          style={{ animationDelay: `${index * 0.1}s` }}
+        >
+          {/* Background pattern */}
+          <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+          
+          {/* Content */}
+          <div className="relative z-10">
+            <div className="flex items-center justify-between mb-3">
+              <div className="text-white/90 group-hover:text-white transition-colors">
                 {option.icon}
               </div>
-              <Sparkles className="w-3 h-3 text-blitz-stardust absolute -top-1 -right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              <Sparkles className="w-4 h-4 text-white/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 animate-pulse-glow" />
             </div>
-            <span className={`mt-3 font-medium ${option.color}`}>
+            
+            <h3 className="text-white font-bold text-lg mb-1">
               {option.label}
-            </span>
-          </button>
-        ))}
-      </div>
+            </h3>
+            
+            <p className="text-white/80 text-sm leading-relaxed">
+              {option.description}
+            </p>
+          </div>
+
+          {/* Hover glow effect */}
+          <div className="absolute inset-0 bg-gradient-to-br from-white/0 to-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+        </button>
+      ))}
     </div>
   );
 };

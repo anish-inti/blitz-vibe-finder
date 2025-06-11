@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
 import BottomNavigation from '@/components/BottomNavigation';
-import { Zap, MapPin, Loader2, Sparkles, TrendingUp, Users, Coffee, Moon, ShoppingBag, Camera, Play } from 'lucide-react';
+import { Zap, MapPin, Loader2, Sparkles, TrendingUp, Users, Coffee, Moon, ShoppingBag, Camera, Play, Crown } from 'lucide-react';
 import { Carousel, CarouselContent, CarouselItem } from "@/components/ui/carousel";
 import { toast } from "@/components/ui/use-toast";
 import FeaturedPlaceCard from '@/components/FeaturedPlaceCard';
@@ -13,12 +13,12 @@ import { getBlitzRecommendations } from '@/services/googlePlacesService';
 import { Place } from '@/components/SwipeCard';
 
 const QUICK_ACCESS = [
-  { id: '1', name: 'Food', icon: <Coffee className="w-5 h-5" />, gradient: 'from-orange-500 to-red-500' },
+  { id: '1', name: 'Dining', icon: <Coffee className="w-5 h-5" />, gradient: 'from-orange-500 to-red-500' },
   { id: '2', name: 'Nightlife', icon: <Moon className="w-5 h-5" />, gradient: 'from-blitz-primary to-blitz-accent' },
   { id: '3', name: 'Groups', icon: <Users className="w-5 h-5" />, gradient: 'from-blue-500 to-cyan-500' },
   { id: '4', name: 'Shopping', icon: <ShoppingBag className="w-5 h-5" />, gradient: 'from-green-500 to-emerald-500' },
   { id: '5', name: 'Culture', icon: <Camera className="w-5 h-5" />, gradient: 'from-blitz-secondary to-blitz-primary' },
-  { id: '6', name: 'Trending', icon: <TrendingUp className="w-5 h-5" />, gradient: 'from-pink-500 to-rose-500' },
+  { id: '6', name: 'Premium', icon: <Crown className="w-5 h-5" />, gradient: 'from-yellow-500 to-amber-500' },
 ];
 
 const Home: React.FC = () => {
@@ -103,7 +103,6 @@ const Home: React.FC = () => {
     const newFilter = filter === activeFilter ? null : filter;
     setActiveFilter(newFilter);
     
-    // Spotify-style feedback
     toast({
       title: `${filter} mode activated`,
       description: `Finding the best ${filter.toLowerCase()} spots for you...`,
@@ -121,7 +120,7 @@ const Home: React.FC = () => {
     setSelectedLocation(nextLocation);
     
     toast({
-      title: `Welcome to ${nextLocation}!`,
+      title: `Welcome to ${nextLocation}`,
       description: "Discovering amazing places in your new city...",
     });
   };
@@ -141,11 +140,11 @@ const Home: React.FC = () => {
   
   return (
     <div className="min-h-screen bg-background">
-      {/* Subtle floating background elements - Spotify style */}
+      {/* Subtle floating background elements - Luxury style */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-20 left-10 w-32 h-32 bg-blitz-primary/5 rounded-full blur-3xl animate-float" />
-        <div className="absolute top-40 right-20 w-24 h-24 bg-blitz-secondary/5 rounded-full blur-3xl animate-float" style={{ animationDelay: '2s' }} />
-        <div className="absolute bottom-40 left-20 w-40 h-40 bg-blitz-accent/5 rounded-full blur-3xl animate-float" style={{ animationDelay: '4s' }} />
+        <div className="absolute top-20 left-10 w-32 h-32 bg-blitz-primary/3 rounded-full blur-3xl animate-float" />
+        <div className="absolute top-40 right-20 w-24 h-24 bg-blitz-secondary/3 rounded-full blur-3xl animate-float" style={{ animationDelay: '2s' }} />
+        <div className="absolute bottom-40 left-20 w-40 h-40 bg-blitz-accent/3 rounded-full blur-3xl animate-float" style={{ animationDelay: '4s' }} />
       </div>
 
       <Header />
@@ -163,14 +162,14 @@ const Home: React.FC = () => {
           </button>
         </div>
         
-        {/* Hero Section - Spotify-inspired */}
+        {/* Hero Section - Luxury inspired */}
         <section className="px-6 space-y-6">
           <div className="space-y-4 animate-fade-in">
             <h1 className="text-hero">
-              Unlock Your City
+              Discover Excellence
             </h1>
             <p className="text-body text-muted-foreground max-w-md leading-relaxed">
-              Your perfect outing is just a swipe away. Discover, explore, and make memories in {selectedLocation}.
+              Curated experiences that define sophistication. Your perfect outing awaits in {selectedLocation}.
             </p>
           </div>
           
@@ -183,23 +182,23 @@ const Home: React.FC = () => {
               {isButtonLoading ? (
                 <>
                   <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                  Starting your adventure...
+                  Preparing your experience...
                 </>
               ) : (
                 <>
                   <Play className="w-5 h-5 mr-2 group-hover:scale-110 transition-transform" />
-                  Start Blitzing
+                  Begin Your Journey
                 </>
               )}
             </div>
           </button>
         </section>
         
-        {/* Quick Access - Spotify grid style */}
+        {/* Quick Access - Luxury grid style */}
         <section className="space-y-4 animate-slide-up">
           <div className="px-6">
             <h2 className="text-headline flex items-center">
-              Explore by Vibe
+              Explore by Category
               <Sparkles className="w-5 h-5 ml-2 text-blitz-secondary animate-pulse-glow" />
             </h2>
           </div>
@@ -219,11 +218,11 @@ const Home: React.FC = () => {
           </div>
         </section>
         
-        {/* What's Hot Now - Spotify-style */}
+        {/* What's Hot Now - Luxury style */}
         <section className="space-y-4 animate-fade-in">
           <div className="px-6 flex items-center justify-between">
             <h2 className="text-headline flex items-center">
-              🔥 What's Hot
+              Trending Now
               <span className="ml-2 badge-live">
                 LIVE
               </span>
@@ -234,7 +233,7 @@ const Home: React.FC = () => {
             <div className="flex items-center justify-center h-48">
               <div className="flex flex-col items-center space-y-3">
                 <Loader2 className="w-8 h-8 animate-spin text-blitz-primary" />
-                <p className="text-caption text-muted-foreground">Finding the hottest spots...</p>
+                <p className="text-caption text-muted-foreground">Discovering trending spots...</p>
               </div>
             </div>
           ) : (
@@ -260,17 +259,17 @@ const Home: React.FC = () => {
           )}
         </section>
         
-        {/* Curated For You - Spotify list style */}
+        {/* Curated For You - Luxury list style */}
         <section className="space-y-4 animate-slide-up">
           <div className="px-6">
             <h2 className="text-headline flex items-center">
               {activeFilter ? (
                 <>
                   <span className="text-gradient">{activeFilter}</span>
-                  <span className="ml-2">Spots</span>
+                  <span className="ml-2">Collection</span>
                 </>
               ) : (
-                'Made for You'
+                'Curated for You'
               )}
               <TrendingUp className="w-5 h-5 ml-2 text-blitz-accent" />
             </h2>
@@ -296,13 +295,13 @@ const Home: React.FC = () => {
           )}
         </section>
         
-        {/* Community Picks - Spotify-style */}
+        {/* Community Picks - Luxury style */}
         <section className="space-y-4 animate-fade-in">
           <div className="px-6">
             <h2 className="text-headline flex items-center">
               Community Favorites
               <span className="ml-2 badge-trending">
-                TOP RATED
+                FEATURED
               </span>
             </h2>
           </div>
@@ -328,18 +327,18 @@ const Home: React.FC = () => {
           )}
         </section>
 
-        {/* Call to Action - Spotify-inspired */}
+        {/* Call to Action - Luxury inspired */}
         <section className="px-6 py-8 animate-bounce-in">
           <div className="card-hero rounded-2xl p-6 text-center space-y-4">
             <h3 className="text-title text-gradient">Ready to explore?</h3>
             <p className="text-caption text-muted-foreground">
-              Join thousands discovering their city's hidden gems
+              Join thousands discovering their city's finest experiences
             </p>
             <button 
               onClick={() => navigate('/swipe')}
               className="btn-secondary rounded-xl px-6 py-3 font-semibold interactive-glow"
             >
-              Start Swiping 🚀
+              Start Discovering
             </button>
           </div>
         </section>

@@ -1,6 +1,5 @@
-
 import React, { useState } from 'react';
-import { Clock } from 'lucide-react';
+import { Clock, Calendar } from 'lucide-react';
 
 interface TimingSelectorProps {
   onSet: (timing: Date) => void;
@@ -36,53 +35,65 @@ const TimingSelector: React.FC<TimingSelectorProps> = ({ onSet, initialValue }) 
   };
   
   return (
-    <div className="animate-fade-in">
-      <h2 className="text-xl font-semibold mb-6 text-center text-white neon-text">
-        When are you planning to go? <span className="text-sm">(Optional)</span>
-      </h2>
-      
-      <div className="flex flex-col items-center">
-        <div className="w-full mb-6 flex items-center justify-center">
-          <Clock className="text-blitz-pink mr-2 w-6 h-6" />
-          <span className="text-white font-medium">Select Date & Time</span>
+    <div className="animate-fade-in space-y-8">
+      <div className="text-center space-y-4">
+        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-blitz-secondary to-blitz-primary text-white shadow-lg">
+          <Clock className="w-8 h-8" />
         </div>
         
-        <div className="w-full space-y-4">
-          <div className="w-full">
-            <label className="block text-sm text-gray-300 mb-1">Date</label>
-            <input
-              type="date"
-              min={formatDate(today)}
-              value={formatDate(date)}
-              onChange={handleDateChange}
-              className="w-full bg-black/50 border-2 border-blitz-pink/50 rounded-lg p-3 text-white focus:outline-none focus:border-blitz-pink focus:ring-1 focus:ring-blitz-pink/50"
-            />
+        <div>
+          <div className="text-lg font-semibold text-foreground mb-1">
+            When would you like to go?
+          </div>
+          <div className="text-sm text-muted-foreground">
+            This helps us find places that are open
+          </div>
+        </div>
+      </div>
+      
+      <div className="space-y-6">
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-foreground">Date</label>
+            <div className="relative">
+              <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <input
+                type="date"
+                min={formatDate(today)}
+                value={formatDate(date)}
+                onChange={handleDateChange}
+                className="w-full pl-10 pr-4 py-3 bg-background border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-blitz-primary focus:border-transparent transition-all"
+              />
+            </div>
           </div>
           
-          <div className="w-full">
-            <label className="block text-sm text-gray-300 mb-1">Time</label>
-            <input
-              type="time"
-              value={time}
-              onChange={handleTimeChange}
-              className="w-full bg-black/50 border-2 border-blitz-pink/50 rounded-lg p-3 text-white focus:outline-none focus:border-blitz-pink focus:ring-1 focus:ring-blitz-pink/50"
-            />
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-foreground">Time</label>
+            <div className="relative">
+              <Clock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <input
+                type="time"
+                value={time}
+                onChange={handleTimeChange}
+                className="w-full pl-10 pr-4 py-3 bg-background border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-blitz-primary focus:border-transparent transition-all"
+              />
+            </div>
           </div>
         </div>
         
-        <div className="mt-8 flex space-x-4">
+        <div className="flex space-x-3">
           <button 
             onClick={() => onSet(new Date())}
-            className="px-5 py-2 border border-blitz-pink/50 text-blitz-pink rounded-full hover:bg-blitz-pink/10 transition-all"
+            className="flex-1 py-3 px-4 border border-border text-muted-foreground rounded-xl hover:bg-muted/50 transition-all font-medium"
           >
             Skip
           </button>
           
           <button 
             onClick={handleSubmit}
-            className="px-8 py-3 bg-blitz-pink text-white rounded-full shadow-lg shadow-blitz-pink/30 hover:shadow-blitz-pink/50 transition-all hover:scale-105"
+            className="flex-1 btn-primary rounded-xl py-3 font-bold interactive-glow"
           >
-            Confirm
+            Continue
           </button>
         </div>
       </div>

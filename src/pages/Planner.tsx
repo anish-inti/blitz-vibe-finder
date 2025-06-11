@@ -1,9 +1,8 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
 import BottomNavigation from '@/components/BottomNavigation';
-import { Sparkles, Clock, MapPin, ChevronRight } from 'lucide-react';
+import { Sparkles, Clock, MapPin, ChevronRight, Users, Heart, Coffee, TreePine, Film, Music, UtensilsCrossed, Crown } from 'lucide-react';
 import OccasionSelector from '@/components/planner/OccasionSelector';
 import OutingTypeSelector from '@/components/planner/OutingTypeSelector';
 import LocalitySelector from '@/components/planner/LocalitySelector';
@@ -73,21 +72,55 @@ const Planner: React.FC = () => {
   };
   
   const renderStepIndicator = () => (
-    <div className="flex justify-center gap-2 mb-8">
+    <div className="flex justify-center gap-3 mb-8">
       {['occasion', 'type', 'locality', 'timing', 'description'].map((step, index) => (
         <div 
           key={step} 
-          className={`h-2 rounded-full transition-all duration-300 ${
+          className={`h-1.5 rounded-full transition-all duration-500 ${
             currentStep === step 
-              ? 'w-8 bg-blitz-neonred neon-red-glow' 
+              ? 'w-8 bg-gradient-to-r from-blitz-primary to-blitz-accent shadow-lg shadow-blitz-primary/30' 
               : index < ['occasion', 'type', 'locality', 'timing', 'description'].indexOf(currentStep) 
-                ? 'w-6 bg-blitz-pink/70' 
-                : 'w-6 bg-gray-700'
+                ? 'w-6 bg-blitz-primary/70' 
+                : 'w-6 bg-muted'
           }`}
         />
       ))}
     </div>
   );
+
+  const getStepTitle = () => {
+    switch (currentStep) {
+      case 'occasion':
+        return 'What\'s the occasion?';
+      case 'type':
+        return 'What type of experience?';
+      case 'locality':
+        return 'How far are you willing to go?';
+      case 'timing':
+        return 'When are you planning to go?';
+      case 'description':
+        return 'Describe your ideal experience';
+      default:
+        return '';
+    }
+  };
+
+  const getStepSubtitle = () => {
+    switch (currentStep) {
+      case 'occasion':
+        return 'Help us understand the vibe you\'re going for';
+      case 'type':
+        return 'Choose the category that excites you most';
+      case 'locality':
+        return 'Set your preferred travel distance';
+      case 'timing':
+        return 'Optional - helps us find places that are open';
+      case 'description':
+        return 'Optional - tell us more about what you\'re looking for';
+      default:
+        return '';
+    }
+  };
   
   const renderCurrentStep = () => {
     switch (currentStep) {
@@ -101,40 +134,89 @@ const Planner: React.FC = () => {
         return <TimingSelector onSet={handleTimingSet} initialValue={planData.timing} />;
       case 'description':
         return (
-          <div className="animate-fade-in">
-            <h2 className="text-xl font-semibold mb-6 text-center text-white neon-text">
-              Describe your ideal experience <span className="text-sm">(Optional)</span>
-            </h2>
+          <div className="animate-fade-in space-y-6">
             <PromptInput onSubmit={handleDescriptionSubmit} />
-            <button 
-              onClick={() => handleDescriptionSubmit('')}
-              className="mt-4 text-blitz-pink/70 hover:text-blitz-pink text-sm flex items-center justify-center mx-auto"
-            >
-              Skip <ChevronRight className="w-4 h-4 ml-1" />
-            </button>
+            <div className="text-center">
+              <button 
+                onClick={() => handleDescriptionSubmit('')}
+                className="text-muted-foreground hover:text-blitz-primary text-sm flex items-center justify-center mx-auto transition-colors duration-300 group"
+              >
+                Skip this step
+                <ChevronRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
+              </button>
+            </div>
           </div>
         );
     }
   };
   
   return (
-    <div className="min-h-screen flex flex-col relative bg-blitz-black">
-      <div className="cosmic-bg absolute inset-0 z-0"></div>
+    <div className="min-h-screen bg-background">
+      {/* Luxury background elements */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-32 left-8 w-24 h-24 bg-blitz-primary/5 rounded-full blur-2xl animate-float" />
+        <div className="absolute bottom-32 right-8 w-32 h-32 bg-blitz-secondary/5 rounded-full blur-2xl animate-float" style={{ animationDelay: '3s' }} />
+      </div>
       
-      <Header />
+      <Header showBackButton />
       
-      <main className="flex-1 flex flex-col items-center justify-center px-6 pb-20 z-10">
-        <div className="w-full max-w-md mx-auto mt-4">
-          <h1 className="text-2xl font-bold mb-2 text-center text-white neon-text relative">
-            Plan Your Blitz
-            <Sparkles className="absolute -right-6 top-1 w-4 h-4 text-blitz-stardust animate-pulse-glow" />
-          </h1>
+      <main className="relative flex-1 flex flex-col items-center justify-center px-6 pb-20 pt-8">
+        <div className="w-full max-w-md mx-auto">
+          {/* Header Section */}
+          <div className="text-center mb-8 animate-fade-in">
+            <h1 className="text-display mb-2 text-gradient">
+              Plan Your Experience
+            </h1>
+            <p className="text-caption text-muted-foreground">
+              Let's create something memorable together
+            </p>
+          </div>
           
           {renderStepIndicator()}
           
-          <div className="glassmorphism rounded-2xl p-6 border border-blitz-pink/20 backdrop-blur-lg">
-            {renderCurrentStep()}
+          {/* Step Content Card */}
+          <div className="card-hero rounded-3xl p-8 backdrop-blur-xl border border-blitz-primary/10 shadow-2xl">
+            {/* Step Header */}
+            <div className="text-center mb-8 space-y-2">
+              <h2 className="text-headline text-foreground">
+                {getStepTitle()}
+              </h2>
+              <p className="text-caption text-muted-foreground">
+                {getStepSubtitle()}
+              </p>
+            </div>
+            
+            {/* Step Content */}
+            <div className="animate-scale-in">
+              {renderCurrentStep()}
+            </div>
           </div>
+
+          {/* Progress Summary */}
+          {currentStep !== 'occasion' && (
+            <div className="mt-6 p-4 card-spotify rounded-2xl animate-slide-up">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">Your selections:</span>
+                <div className="flex items-center space-x-2">
+                  {planData.occasion && (
+                    <span className="px-2 py-1 bg-blitz-primary/10 text-blitz-primary rounded-full text-xs font-medium">
+                      {planData.occasion}
+                    </span>
+                  )}
+                  {planData.outingType && (
+                    <span className="px-2 py-1 bg-blitz-secondary/10 text-blitz-secondary rounded-full text-xs font-medium">
+                      {planData.outingType}
+                    </span>
+                  )}
+                  {planData.locality && currentStep !== 'locality' && (
+                    <span className="px-2 py-1 bg-blitz-accent/10 text-blitz-accent rounded-full text-xs font-medium">
+                      {planData.locality}km
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </main>
       
