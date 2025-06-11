@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
 import BottomNavigation from '@/components/BottomNavigation';
-import { Sparkles, Clock, MapPin, ChevronRight, Users, Heart, Coffee, TreePine, Film, Music, UtensilsCrossed, Crown } from 'lucide-react';
+import { Sparkles, ChevronRight } from 'lucide-react';
 import OccasionSelector from '@/components/planner/OccasionSelector';
 import OutingTypeSelector from '@/components/planner/OutingTypeSelector';
 import LocalitySelector from '@/components/planner/LocalitySelector';
@@ -11,7 +11,7 @@ import PromptInput from '@/components/PromptInput';
 
 // Types
 type Occasion = 'romantic' | 'family' | 'friendly' | 'solo' | '';
-type OutingType = 'restaurant' | 'movie' | 'outdoors' | 'cafe' | 'nightlife' | '';
+type OutingType = 'restaurant' | 'outdoors' | 'cafe' | 'nightlife' | 'shopping' | '';
 type PlannerStep = 'occasion' | 'type' | 'locality' | 'timing' | 'description';
 
 const Planner: React.FC = () => {
@@ -67,8 +67,10 @@ const Planner: React.FC = () => {
   };
   
   const handleDescriptionSubmit = (description: string) => {
-    setPlanData(prev => ({ ...prev, description }));
-    goToNextStep();
+    const updatedPlanData = { ...planData, description };
+    setPlanData(updatedPlanData);
+    // Navigate immediately with the updated data
+    navigate('/swipe', { state: updatedPlanData });
   };
   
   const renderStepIndicator = () => (
@@ -135,7 +137,10 @@ const Planner: React.FC = () => {
       case 'description':
         return (
           <div className="animate-fade-in space-y-6">
-            <PromptInput onSubmit={handleDescriptionSubmit} />
+            <PromptInput 
+              onSubmit={handleDescriptionSubmit}
+              placeholder="e.g., We're 4 people looking for rooftop vibes under ₹500 per person"
+            />
             <div className="text-center">
               <button 
                 onClick={() => handleDescriptionSubmit('')}

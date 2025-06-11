@@ -1,7 +1,7 @@
 import React from 'react';
-import { UtensilsCrossed, Film, TreePine, Coffee, Music, Sparkles } from 'lucide-react';
+import { UtensilsCrossed, TreePine, Coffee, Music, Sparkles, ShoppingBag } from 'lucide-react';
 
-type OutingType = 'restaurant' | 'movie' | 'outdoors' | 'cafe' | 'nightlife' | '';
+type OutingType = 'restaurant' | 'outdoors' | 'cafe' | 'nightlife' | 'shopping' | '';
 
 interface OutingTypeSelectorProps {
   onSelect: (type: OutingType) => void;
@@ -25,11 +25,11 @@ const OutingTypeSelector: React.FC<OutingTypeSelectorProps> = ({ onSelect }) => 
       gradient: 'from-orange-500 to-red-500'
     },
     {
-      id: 'movie',
-      label: 'Cinema',
-      description: 'Latest films & entertainment',
-      icon: <Film className="w-6 h-6" />,
-      gradient: 'from-purple-500 to-indigo-500'
+      id: 'cafe',
+      label: 'Café',
+      description: 'Coffee & conversations',
+      icon: <Coffee className="w-6 h-6" />,
+      gradient: 'from-amber-500 to-yellow-500'
     },
     {
       id: 'outdoors',
@@ -39,18 +39,18 @@ const OutingTypeSelector: React.FC<OutingTypeSelectorProps> = ({ onSelect }) => 
       gradient: 'from-green-500 to-emerald-500'
     },
     {
-      id: 'cafe',
-      label: 'Café',
-      description: 'Coffee & conversations',
-      icon: <Coffee className="w-6 h-6" />,
-      gradient: 'from-amber-500 to-yellow-500'
-    },
-    {
       id: 'nightlife',
       label: 'Nightlife',
       description: 'Evening entertainment',
       icon: <Music className="w-6 h-6" />,
       gradient: 'from-blitz-primary to-blitz-accent'
+    },
+    {
+      id: 'shopping',
+      label: 'Shopping',
+      description: 'Retail therapy',
+      icon: <ShoppingBag className="w-6 h-6" />,
+      gradient: 'from-blue-500 to-cyan-500'
     }
   ];
 

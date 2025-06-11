@@ -5,7 +5,6 @@ import { toast } from "@/hooks/use-toast";
 import { fetchChennaiPlaces } from "@/utils/fetchPlaces";
 import { FilterParams } from "@/components/SearchFilters";
 import { simulateGoogleSearch } from "@/services/searchSimulationService";
-import { getMoviePlaces } from "@/services/moviesService";
 import { parseAndFilterPlaces } from "@/utils/promptParser";
 import { getBlitzRecommendations } from "@/services/googlePlacesService";
 
@@ -33,22 +32,6 @@ export function useSwipePlaces(planData: PlanData, initialFilters: FilterParams)
     setError(null);
     
     try {
-      // Check if this is a movie request
-      if (filters.type === "movie_theater" || 
-          planData.outingType === "movie" || 
-          planData.outingType === "cinema" ||
-          planData.occasion.toLowerCase().includes("movie")) {
-            
-        const moviePlaces = getMoviePlaces();
-        if (moviePlaces.length > 0) {
-          setPlaces(moviePlaces);
-          setAllPlaces(moviePlaces);
-          setError(null);
-          setIsLoading(false);
-          return;
-        }
-      }
-
       let fetchedPlaces: Place[] = [];
 
       if (useGoogleAPI) {
@@ -62,7 +45,7 @@ export function useSwipePlaces(planData: PlanData, initialFilters: FilterParams)
             // Build prompt from plan data
             const parts = [];
             if (planData.occasion) parts.push(planData.occasion);
-            if (planData.outingType) parts.push(planData.outingType);
+            if (planData.outingType && planData.outingType !== 'movie') parts.push(planData.outingType);
             parts.push('places in Chennai');
             if (filters.keyword) parts.push(filters.keyword);
             prompt = parts.join(' ');
@@ -70,6 +53,14 @@ export function useSwipePlaces(planData: PlanData, initialFilters: FilterParams)
 
           console.log('Fetching from Google Places API with prompt:', prompt);
           fetchedPlaces = await getBlitzRecommendations(prompt);
+          
+          // Filter out any movie-related places
+          fetchedPlaces = fetchedPlaces.filter(place => 
+            !place.category?.toLowerCase().includes('movie') &&
+            !place.category?.toLowerCase().includes('cinema') &&
+            !place.name?.toLowerCase().includes('cinema') &&
+            !place.name?.toLowerCase().includes('theater')
+          );
           
           if (fetchedPlaces.length > 0) {
             console.log('Successfully fetched from Google Places API:', fetchedPlaces);
@@ -101,14 +92,19 @@ export function useSwipePlaces(planData: PlanData, initialFilters: FilterParams)
       const { places: dbPlaces, error: dbError } = await fetchChennaiPlaces({ planData, filters });
       
       if (!dbError && dbPlaces.length > 0) {
-        const enhancedPlaces = dbPlaces.map(place => ({
-          ...place,
-          tags: place.category ? [place.category.toLowerCase(), ...getRandomTags()] : getRandomTags(),
-          budget: Math.floor(Math.random() * 500) + 100,
-          maxGroupSize: Math.floor(Math.random() * 10) + 1,
-          time: getRandomTime(),
-          hours: getRandomHours(),
-        }));
+        const enhancedPlaces = dbPlaces
+          .filter(place => 
+            !place.category?.toLowerCase().includes('movie') &&
+            !place.category?.toLowerCase().includes('cinema')
+          )
+          .map(place => ({
+            ...place,
+            tags: place.category ? [place.category.toLowerCase(), ...getRandomTags()] : getRandomTags(),
+            budget: Math.floor(Math.random() * 500) + 100,
+            maxGroupSize: Math.floor(Math.random() * 10) + 1,
+            time: getRandomTime(),
+            hours: getRandomHours(),
+          }));
         
         setPlaces(enhancedPlaces);
         setAllPlaces(enhancedPlaces);
@@ -129,14 +125,19 @@ export function useSwipePlaces(planData: PlanData, initialFilters: FilterParams)
           setPlaces([]);
           setAllPlaces([]);
         } else {
-          const enhancedPlaces = simulatedPlaces.map(place => ({
-            ...place,
-            tags: place.category ? [place.category.toLowerCase(), ...getRandomTags()] : getRandomTags(),
-            budget: Math.floor(Math.random() * 500) + 100,
-            maxGroupSize: Math.floor(Math.random() * 10) + 1,
-            time: getRandomTime(),
-            hours: getRandomHours(),
-          }));
+          const enhancedPlaces = simulatedPlaces
+            .filter(place => 
+              !place.category?.toLowerCase().includes('movie') &&
+              !place.category?.toLowerCase().includes('cinema')
+            )
+            .map(place => ({
+              ...place,
+              tags: place.category ? [place.category.toLowerCase(), ...getRandomTags()] : getRandomTags(),
+              budget: Math.floor(Math.random() * 500) + 100,
+              maxGroupSize: Math.floor(Math.random() * 10) + 1,
+              time: getRandomTime(),
+              hours: getRandomHours(),
+            }));
           
           setPlaces(enhancedPlaces);
           setAllPlaces(enhancedPlaces);
@@ -191,11 +192,19 @@ export function useSwipePlaces(planData: PlanData, initialFilters: FilterParams)
       // Use Google Places API for prompt-based search
       if (useGoogleAPI) {
         const results = await getBlitzRecommendations(prompt);
-        if (results.length > 0) {
-          setPlaces(results);
+        // Filter out movie-related places
+        const filteredResults = results.filter(place => 
+          !place.category?.toLowerCase().includes('movie') &&
+          !place.category?.toLowerCase().includes('cinema') &&
+          !place.name?.toLowerCase().includes('cinema') &&
+          !place.name?.toLowerCase().includes('theater')
+        );
+        
+        if (filteredResults.length > 0) {
+          setPlaces(filteredResults);
           toast({
             title: "Places found",
-            description: `Found ${results.length} places matching your criteria.`
+            description: `Found ${filteredResults.length} places matching your criteria.`
           });
         } else {
           // Fallback to filtering existing places
@@ -255,17 +264,10 @@ export function useSwipePlaces(planData: PlanData, initialFilters: FilterParams)
       setLikedPlaces(prev => [...prev, currentPlace]);
 
       if (direction === 'up') {
-        if ('isMovie' in currentPlace && currentPlace.isMovie) {
-          toast({
-            title: 'Movie selected',
-            description: `Opening booking options for ${currentPlace.name}...`,
-          });
-        } else {
-          toast({
-            title: 'Booking in progress',
-            description: `Booking ${currentPlace.name}...`,
-          });
-        }
+        toast({
+          title: 'Booking in progress',
+          description: `Booking ${currentPlace.name}...`,
+        });
       } else {
         toast({
           title: 'Place liked',
