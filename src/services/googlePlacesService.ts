@@ -1,4 +1,3 @@
-
 import { toast } from '@/hooks/use-toast';
 
 // Define the interface for place details
@@ -7,6 +6,7 @@ export interface GooglePlace {
   name: string;
   types: string[];
   vicinity: string;
+  formatted_address?: string;
   rating?: number;
   user_ratings_total?: number;
   price_level?: number;
@@ -36,22 +36,31 @@ interface PlacesResponse {
 
 // Interface for nearby search parameters
 export interface NearbySearchParams {
-  latitude: number;
-  longitude: number;
+  latitude?: number;
+  longitude?: number;
   radius?: number; // meters, max 50000
   type?: string; // restaurant, cafe, park, etc.
   keyword?: string; // free text search
   minprice?: number; // 0 to 4
   maxprice?: number; // 0 to 4
   opennow?: boolean;
+  query?: string; // text search query
+}
+
+// Interface for parsed prompt data
+export interface ParsedPromptData {
+  people: number | null;
+  budget: number | null;
+  vibe: string | null;
+  location: string;
 }
 
 // Convert from GooglePlace to our app's Place interface
 export const mapGooglePlaceToPlace = (place: GooglePlace): any => {
   // Get image URL from photo reference or use a placeholder
   const imageUrl = place.photos && place.photos.length > 0
-    ? `https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=${place.photos[0].photo_reference}&key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY}`
-    : '/placeholder.svg';
+    ? getPhotoUrl(place.photos[0].photo_reference)
+    : 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&h=600&fit=crop';
   
   // Get primary type for category
   const primaryType = place.types && place.types.length > 0 
@@ -59,9 +68,10 @@ export const mapGooglePlaceToPlace = (place: GooglePlace): any => {
     : 'place';
   
   // Parse vicinity to get location and country (simplified)
-  const locationParts = place.vicinity ? place.vicinity.split(', ') : ['Unknown'];
+  const address = place.formatted_address || place.vicinity || 'Unknown';
+  const locationParts = address.split(', ');
   const location = locationParts[0] || 'Unknown';
-  const country = locationParts.length > 1 ? locationParts[locationParts.length - 1] : 'Unknown';
+  const country = locationParts.length > 1 ? locationParts[locationParts.length - 1] : 'India';
 
   return {
     id: place.place_id,
@@ -76,28 +86,58 @@ export const mapGooglePlaceToPlace = (place: GooglePlace): any => {
     category: primaryType,
     latitude: place.geometry.location.lat,
     longitude: place.geometry.location.lng,
+    description: `A ${primaryType} in ${location}`,
   };
 };
 
-// Function to search for nearby places
-export const searchNearbyPlaces = async (params: NearbySearchParams): Promise<any[]> => {
+// Function to get photo URL from photo reference
+export const getPhotoUrl = (photoReference: string, maxwidth: number = 800): string => {
+  const apiKey = import.meta.env.VITE_GOOGLE_PLACES_API_KEY;
+  return `https://maps.googleapis.com/maps/api/place/photo?maxwidth=${maxwidth}&photoreference=${photoReference}&key=${apiKey}`;
+};
+
+// Function to parse user prompt
+export const parsePrompt = (prompt: string): ParsedPromptData => {
+  const peopleMatch = prompt.match(/(\d+)\s+(of\s+us|people|friends|guys)/i);
+  const budgetMatch = prompt.match(/₹?(\d+)/);
+  const vibeMatch = prompt.match(/(rooftop|outdoor|romantic|adventure|café|cafe|restaurant|park|nightlife|club|bar|beach|mall|shopping|movie|cinema)/i);
+  
+  return {
+    people: peopleMatch ? parseInt(peopleMatch[1]) : null,
+    budget: budgetMatch ? parseInt(budgetMatch[1]) : null,
+    vibe: vibeMatch ? vibeMatch[1].toLowerCase() : null,
+    location: "Chennai, India" // Default location
+  };
+};
+
+// Function to search for places using text search
+export const searchPlaces = async (params: NearbySearchParams): Promise<any[]> => {
   try {
-    // Create and validate parameters for the API
-    if (!params.latitude || !params.longitude) {
-      throw new Error("Location coordinates are required");
-    }
-
-    // Create URL with parameters
-    const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+    const apiKey = import.meta.env.VITE_GOOGLE_PLACES_API_KEY;
     if (!apiKey) {
-      throw new Error("Google Maps API key is missing");
+      throw new Error("Google Places API key is missing. Please add VITE_GOOGLE_PLACES_API_KEY to your .env file");
     }
 
+    // Build query parameters
     const queryParams = new URLSearchParams({
-      location: `${params.latitude},${params.longitude}`,
-      radius: `${params.radius || 5000}`, // Default 5km
       key: apiKey,
     });
+
+    // Use text search if query is provided, otherwise use nearby search
+    let endpoint = 'textsearch';
+    
+    if (params.query) {
+      queryParams.append('query', params.query);
+    } else {
+      endpoint = 'nearbysearch';
+      if (params.latitude && params.longitude) {
+        queryParams.append('location', `${params.latitude},${params.longitude}`);
+      } else {
+        // Default to Chennai coordinates
+        queryParams.append('location', '13.0827,80.2707');
+      }
+      queryParams.append('radius', `${params.radius || 5000}`);
+    }
 
     if (params.type) queryParams.append('type', params.type);
     if (params.keyword) queryParams.append('keyword', params.keyword);
@@ -105,10 +145,12 @@ export const searchNearbyPlaces = async (params: NearbySearchParams): Promise<an
     if (params.maxprice !== undefined) queryParams.append('maxprice', params.maxprice.toString());
     if (params.opennow) queryParams.append('opennow', 'true');
 
-    const url = `https://cors-anywhere.herokuapp.com/https://maps.googleapis.com/maps/api/place/nearbysearch/json?${queryParams.toString()}`;
+    const url = `https://maps.googleapis.com/maps/api/place/${endpoint}/json?${queryParams.toString()}`;
 
-    // Make request to Google Places API
-    const response = await fetch(url, {
+    // Use a CORS proxy for development
+    const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
+
+    const response = await fetch(proxyUrl, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -126,7 +168,7 @@ export const searchNearbyPlaces = async (params: NearbySearchParams): Promise<an
     }
 
     // Map Google Places to our app format
-    const places = data.results.map(mapGooglePlaceToPlace);
+    const places = data.results.slice(0, 10).map(mapGooglePlaceToPlace);
     
     return places;
   } catch (error) {
@@ -140,7 +182,108 @@ export const searchNearbyPlaces = async (params: NearbySearchParams): Promise<an
   }
 };
 
-// Function to parse user preferences from free text
+// Main function to get recommendations based on user prompt
+export const getBlitzRecommendations = async (prompt: string): Promise<any[]> => {
+  try {
+    const parsed = parsePrompt(prompt);
+    
+    // Build search query based on parsed data
+    let query = '';
+    if (parsed.vibe) {
+      query = `${parsed.vibe} places in ${parsed.location}`;
+    } else {
+      query = `best hangout spots in ${parsed.location}`;
+    }
+    
+    // Add budget context if available
+    if (parsed.budget) {
+      if (parsed.budget <= 200) {
+        query += ' budget friendly';
+      } else if (parsed.budget >= 1000) {
+        query += ' premium luxury';
+      }
+    }
+
+    const searchParams: NearbySearchParams = {
+      query,
+      radius: 10000, // 10km radius
+      opennow: true,
+    };
+
+    // Add price level based on budget
+    if (parsed.budget) {
+      if (parsed.budget <= 200) {
+        searchParams.maxprice = 1;
+      } else if (parsed.budget <= 500) {
+        searchParams.maxprice = 2;
+      } else if (parsed.budget <= 1000) {
+        searchParams.maxprice = 3;
+      } else {
+        searchParams.maxprice = 4;
+      }
+    }
+
+    const places = await searchPlaces(searchParams);
+    
+    // Add some synthetic properties for better UX
+    return places.map(place => ({
+      ...place,
+      tags: generateTags(place, parsed),
+      budget: parsed.budget || Math.floor(Math.random() * 500) + 100,
+      maxGroupSize: parsed.people || Math.floor(Math.random() * 8) + 2,
+      time: getTimeFromVibe(parsed.vibe),
+      hours: generateHours(),
+    }));
+  } catch (error) {
+    console.error('Error getting recommendations:', error);
+    return [];
+  }
+};
+
+// Helper function to generate tags based on place and parsed data
+const generateTags = (place: any, parsed: ParsedPromptData): string[] => {
+  const tags: string[] = [];
+  
+  if (parsed.vibe) tags.push(parsed.vibe);
+  if (place.category) tags.push(place.category.toLowerCase());
+  if (place.priceLevel <= 1) tags.push('budget');
+  if (place.priceLevel >= 3) tags.push('premium');
+  if (place.rating >= 4.5) tags.push('highly rated');
+  
+  // Add some random relevant tags
+  const possibleTags = ['cozy', 'trendy', 'family-friendly', 'instagram-worthy', 'peaceful'];
+  const randomTag = possibleTags[Math.floor(Math.random() * possibleTags.length)];
+  tags.push(randomTag);
+  
+  return tags;
+};
+
+// Helper function to get time based on vibe
+const getTimeFromVibe = (vibe: string | null): string => {
+  if (!vibe) return 'any time';
+  
+  const timeMap: Record<string, string> = {
+    'nightlife': 'night',
+    'club': 'night',
+    'bar': 'evening',
+    'cafe': 'morning',
+    'restaurant': 'evening',
+    'park': 'morning',
+    'outdoor': 'afternoon',
+  };
+  
+  return timeMap[vibe] || 'any time';
+};
+
+// Helper function to generate realistic hours
+const generateHours = (): string => {
+  const openHour = Math.floor(Math.random() * 4) + 8; // 8-11 AM
+  const closeHour = Math.floor(Math.random() * 4) + 20; // 8-11 PM
+  
+  return `${openHour}:00 AM - ${closeHour > 12 ? closeHour - 12 : closeHour}:00 ${closeHour >= 12 ? 'PM' : 'AM'}`;
+};
+
+// Function to parse user preferences from free text (enhanced version)
 export const parseUserPreferences = (text: string): {
   type?: string;
   keyword?: string;

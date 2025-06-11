@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { Place } from "@/components/SwipeCard";
 import { toast } from "@/hooks/use-toast";
@@ -8,6 +7,7 @@ import { FilterParams } from "@/components/SearchFilters";
 import { simulateGoogleSearch } from "@/services/searchSimulationService";
 import { getMoviePlaces } from "@/services/moviesService";
 import { parseAndFilterPlaces } from "@/utils/promptParser";
+import { getBlitzRecommendations } from "@/services/googlePlacesService";
 
 interface PlanData {
   occasion: string;
@@ -25,24 +25,15 @@ export function useSwipePlaces(planData: PlanData, initialFilters: FilterParams)
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [filters, setFilters] = useState<FilterParams>(initialFilters);
-  const [useSimulation, setUseSimulation] = useState(false);
+  const [useGoogleAPI, setUseGoogleAPI] = useState(true);
   const navigate = useNavigate();
 
-  const handleSupabaseError = (error: any, defaultMessage = "An error occurred") => {
-    console.error(error);
-    if (error?.message) {
-      setError(`Error: ${error.message}`);
-    } else {
-      setError(defaultMessage);
-    }
-  };
-  
-  const fetchDatabasePlaces = async () => {
+  const fetchPlaces = async () => {
     setIsLoading(true);
     setError(null);
     
     try {
-      // If outingType is "movie" or "cinema", fetch movie data
+      // Check if this is a movie request
       if (filters.type === "movie_theater" || 
           planData.outingType === "movie" || 
           planData.outingType === "cinema" ||
@@ -57,9 +48,72 @@ export function useSwipePlaces(planData: PlanData, initialFilters: FilterParams)
           return;
         }
       }
-    
-      if (useSimulation) {
-        // If user has explicitly chosen to use simulated data
+
+      let fetchedPlaces: Place[] = [];
+
+      if (useGoogleAPI) {
+        // Try Google Places API first
+        try {
+          // Build a comprehensive prompt for Google Places API
+          let prompt = '';
+          if (planData.description) {
+            prompt = planData.description;
+          } else {
+            prompt = `${planData.occasion} ${planData.outingType} places in Chennai`;
+            if (filters.keyword) prompt += ` ${filters.keyword}`;
+          }
+
+          console.log('Fetching from Google Places API with prompt:', prompt);
+          fetchedPlaces = await getBlitzRecommendations(prompt);
+          
+          if (fetchedPlaces.length > 0) {
+            console.log('Successfully fetched from Google Places API:', fetchedPlaces);
+            setPlaces(fetchedPlaces);
+            setAllPlaces(fetchedPlaces);
+            setError(null);
+            setIsLoading(false);
+            
+            toast({
+              title: "Places loaded",
+              description: `Found ${fetchedPlaces.length} places using Google Places API`,
+            });
+            return;
+          }
+        } catch (apiError) {
+          console.error('Google Places API failed:', apiError);
+          toast({
+            title: "API Error",
+            description: "Google Places API failed, trying alternative sources...",
+            variant: "destructive",
+          });
+        }
+      }
+
+      // Fallback to database
+      console.log("Trying database fallback...");
+      const { places: dbPlaces, error: dbError } = await fetchChennaiPlaces({ planData, filters });
+      
+      if (!dbError && dbPlaces.length > 0) {
+        const enhancedPlaces = dbPlaces.map(place => ({
+          ...place,
+          tags: place.category ? [place.category.toLowerCase(), ...getRandomTags()] : getRandomTags(),
+          budget: Math.floor(Math.random() * 500) + 100,
+          maxGroupSize: Math.floor(Math.random() * 10) + 1,
+          time: getRandomTime(),
+          hours: getRandomHours(),
+        }));
+        
+        setPlaces(enhancedPlaces);
+        setAllPlaces(enhancedPlaces);
+        setError(null);
+        
+        toast({
+          title: "Places loaded from database",
+          description: `Found ${enhancedPlaces.length} places`,
+        });
+      } else {
+        // Final fallback to simulation
+        console.log("Database failed, using simulation...");
         const { places: simulatedPlaces, error: simulationError } = 
           await simulateGoogleSearch("Chennai, India", filters);
         
@@ -68,7 +122,6 @@ export function useSwipePlaces(planData: PlanData, initialFilters: FilterParams)
           setPlaces([]);
           setAllPlaces([]);
         } else {
-          // Add fake props for simulation
           const enhancedPlaces = simulatedPlaces.map(place => ({
             ...place,
             tags: place.category ? [place.category.toLowerCase(), ...getRandomTags()] : getRandomTags(),
@@ -81,55 +134,11 @@ export function useSwipePlaces(planData: PlanData, initialFilters: FilterParams)
           setPlaces(enhancedPlaces);
           setAllPlaces(enhancedPlaces);
           setError(null);
-        }
-      } else {
-        // Default: try database first
-        const { places: dbPlaces, error: dbError } = await fetchChennaiPlaces({ planData, filters });
-        
-        if (dbError || dbPlaces.length === 0) {
-          console.log("Database fetch failed or returned no results, falling back to search simulation");
-          const { places: simulatedPlaces, error: simulationError } = 
-            await simulateGoogleSearch("Chennai, India", filters);
           
-          if (simulationError) {
-            setError(simulationError);
-            setPlaces([]);
-            setAllPlaces([]);
-          } else {
-            // Add fake props for simulation
-            const enhancedPlaces = simulatedPlaces.map(place => ({
-              ...place,
-              tags: place.category ? [place.category.toLowerCase(), ...getRandomTags()] : getRandomTags(),
-              budget: Math.floor(Math.random() * 500) + 100,
-              maxGroupSize: Math.floor(Math.random() * 10) + 1,
-              time: getRandomTime(),
-              hours: getRandomHours(),
-            }));
-            
-            setPlaces(enhancedPlaces);
-            setAllPlaces(enhancedPlaces);
-            setError(null);
-            toast({
-              title: "Using simulated search results",
-              description: "We're showing you simulated search results as no database results were found."
-            });
-          }
-        } else {
-          console.log("Successfully fetched places from database:", dbPlaces);
-          
-          // Add fake props for database places if they don't have them
-          const enhancedPlaces = dbPlaces.map(place => ({
-            ...place,
-            tags: place.category ? [place.category.toLowerCase(), ...getRandomTags()] : getRandomTags(),
-            budget: Math.floor(Math.random() * 500) + 100,
-            maxGroupSize: Math.floor(Math.random() * 10) + 1,
-            time: getRandomTime(),
-            hours: getRandomHours(),
-          }));
-          
-          setPlaces(enhancedPlaces);
-          setAllPlaces(enhancedPlaces);
-          setError(null);
+          toast({
+            title: "Using simulated results",
+            description: "Showing simulated search results",
+          });
         }
       }
     } catch (err) {
@@ -160,9 +169,9 @@ export function useSwipePlaces(planData: PlanData, initialFilters: FilterParams)
   };
 
   useEffect(() => {
-    fetchDatabasePlaces();
+    fetchPlaces();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [planData.occasion, planData.outingType, planData.locality, filters, useSimulation]);
+  }, [planData.occasion, planData.outingType, planData.locality, filters, useGoogleAPI]);
 
   const handleApplyFilters = (newFilters: FilterParams) => {
     setFilters(newFilters);
@@ -171,27 +180,59 @@ export function useSwipePlaces(planData: PlanData, initialFilters: FilterParams)
   const handleFilterByPrompt = (prompt: string) => {
     setIsLoading(true);
     
-    // Use the original places array for filtering
-    if (prompt && allPlaces.length > 0) {
-      const filteredPlaces = parseAndFilterPlaces(prompt, allPlaces);
-      
-      if (filteredPlaces.length === 0) {
-        toast({
-          title: "No matching places",
-          description: "No places match your criteria. Try a different search."
-        });
-        // Keep the current places
-      } else {
-        setPlaces(filteredPlaces);
+    // Use Google Places API for prompt-based search
+    if (useGoogleAPI) {
+      getBlitzRecommendations(prompt).then(results => {
+        if (results.length > 0) {
+          setPlaces(results);
+          toast({
+            title: "Places found",
+            description: `Found ${results.length} places matching your criteria.`
+          });
+        } else {
+          // Fallback to filtering existing places
+          if (prompt && allPlaces.length > 0) {
+            const filteredPlaces = parseAndFilterPlaces(prompt, allPlaces);
+            
+            if (filteredPlaces.length === 0) {
+              toast({
+                title: "No matching places",
+                description: "No places match your criteria. Try a different search."
+              });
+            } else {
+              setPlaces(filteredPlaces);
+              toast({
+                title: "Places filtered",
+                description: `Found ${filteredPlaces.length} places matching your criteria.`
+              });
+            }
+          }
+        }
+        setIsLoading(false);
+      }).catch(error => {
+        console.error('Error with prompt search:', error);
+        setIsLoading(false);
+      });
+    } else {
+      // Use local filtering
+      if (prompt && allPlaces.length > 0) {
+        const filteredPlaces = parseAndFilterPlaces(prompt, allPlaces);
         
-        toast({
-          title: "Places filtered",
-          description: `Found ${filteredPlaces.length} places matching your criteria.`
-        });
+        if (filteredPlaces.length === 0) {
+          toast({
+            title: "No matching places",
+            description: "No places match your criteria. Try a different search."
+          });
+        } else {
+          setPlaces(filteredPlaces);
+          toast({
+            title: "Places filtered",
+            description: `Found ${filteredPlaces.length} places matching your criteria.`
+          });
+        }
       }
+      setIsLoading(false);
     }
-    
-    setIsLoading(false);
   };
 
   const handleSwipe = async (direction: 'left' | 'right' | 'up') => {
@@ -201,40 +242,23 @@ export function useSwipePlaces(planData: PlanData, initialFilters: FilterParams)
     if (direction === 'right' || direction === 'up') {
       setLikedPlaces(prev => [...prev, currentPlace]);
 
-      // Only save to database if it's not a simulated place ID or movie
-      if (!currentPlace.id.toString().startsWith('sim-') && !('isMovie' in currentPlace)) {
-        try {
-          const { error } = await supabase
-            .from('liked_places')
-            .insert({ place_id: currentPlace.id });
-
-          if (error) {
-            handleSupabaseError(error, 'Could not save your like. Please try again.');
-          }
-        } catch (error) {
-          console.error('Error in saving liked place:', error);
-        }
-      } else {
-        // For simulated places or movies, just show a toast that it was saved locally
-        toast({
-          title: 'Place liked',
-          description: `${currentPlace.name} added to your favorites`,
-        });
-      }
-
       if (direction === 'up') {
         if ('isMovie' in currentPlace && currentPlace.isMovie) {
           toast({
             title: 'Movie selected',
             description: `Opening booking options for ${currentPlace.name}...`,
           });
-          // The MovieCard component will handle booking links display
         } else {
           toast({
             title: 'Booking in progress',
             description: `Booking ${currentPlace.name}...`,
           });
         }
+      } else {
+        toast({
+          title: 'Place liked',
+          description: `${currentPlace.name} added to your favorites`,
+        });
       }
     }
 
@@ -256,22 +280,22 @@ export function useSwipePlaces(planData: PlanData, initialFilters: FilterParams)
   };
 
   const handleRetry = () => {
-    fetchDatabasePlaces();
+    fetchPlaces();
   };
 
   const handleToggleDataSource = () => {
-    setUseSimulation(!useSimulation);
+    setUseGoogleAPI(!useGoogleAPI);
     setIsLoading(true);
     
     setTimeout(() => {
-      fetchDatabasePlaces();
+      fetchPlaces();
     }, 500);
     
     toast({
-      title: useSimulation ? "Using database results" : "Using simulated results",
-      description: useSimulation 
-        ? "Switching to database results for places in Chennai." 
-        : "Switching to simulated search results for places in Chennai."
+      title: useGoogleAPI ? "Using local data" : "Using Google Places API",
+      description: useGoogleAPI 
+        ? "Switching to local database and simulated results." 
+        : "Switching to Google Places API for real-time data."
     });
   };
 
@@ -282,7 +306,7 @@ export function useSwipePlaces(planData: PlanData, initialFilters: FilterParams)
     isLoading,
     error,
     filters,
-    useSimulation,
+    useSimulation: !useGoogleAPI,
     handleApplyFilters,
     handleFilterByPrompt,
     handleSwipe,

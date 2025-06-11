@@ -9,58 +9,7 @@ import { Place } from '@/components/SwipeCard';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ParsedFilters, parseUserPrompt } from '@/utils/promptParser';
-
-// Mock data
-const MOCK_PLACES: Place[] = [
-  {
-    id: '1',
-    name: 'VM Food Street',
-    location: 'Chennai',
-    country: 'India',
-    image: '/lovable-uploads/b752b4f7-2a81-4715-a676-9c7bd1f9c93c.png',
-    tags: ['street food', 'outdoor', 'budget'],
-    budget: 150,
-    maxGroupSize: 6,
-    time: 'evening',
-    hours: '11:00 AM - 10:00 PM',
-  },
-  {
-    id: '2',
-    name: 'Neon Club',
-    location: 'Miami',
-    country: 'USA',
-    image: '/lovable-uploads/0d66895e-8267-4c1f-9e27-62c8bff7d8d1.png',
-    tags: ['club', 'nightlife', 'premium'],
-    budget: 500,
-    maxGroupSize: 10,
-    time: 'night',
-    hours: '8:00 PM - 2:00 AM',
-  },
-  {
-    id: '3',
-    name: 'Starlight Rooftop',
-    location: 'New York',
-    country: 'USA',
-    image: '/lovable-uploads/338fb7a8-90b8-400c-a1a7-b1f2af04f5bf.png',
-    tags: ['rooftop', 'aesthetic', 'romantic'],
-    budget: 400,
-    maxGroupSize: 4,
-    time: 'evening',
-    hours: '5:00 PM - 11:00 PM',
-  },
-  {
-    id: '4',
-    name: 'Luna Lounge',
-    location: 'Los Angeles',
-    country: 'USA',
-    image: '/lovable-uploads/02972e2d-092f-4952-88c5-fcf4ee6acc82.png',
-    tags: ['lounge', 'chill', 'aesthetic'],
-    budget: 350,
-    maxGroupSize: 6,
-    time: 'night',
-    hours: '6:00 PM - 12:00 AM',
-  },
-];
+import { getBlitzRecommendations } from '@/services/googlePlacesService';
 
 const Places: React.FC = () => {
   const { darkMode } = useTheme();
@@ -72,14 +21,27 @@ const Places: React.FC = () => {
   const [showPromptInput, setShowPromptInput] = useState<boolean>(false);
   
   useEffect(() => {
-    // Simulate fetching data from an API
-    setIsLoading(true);
-    setTimeout(() => {
-      setPlaces(MOCK_PLACES);
-      setAllPlaces(MOCK_PLACES);
-      setIsLoading(false);
-    }, 800);
+    // Load initial places
+    loadInitialPlaces();
   }, []);
+
+  const loadInitialPlaces = async () => {
+    setIsLoading(true);
+    try {
+      const initialPlaces = await getBlitzRecommendations("best hangout spots in Chennai");
+      setPlaces(initialPlaces);
+      setAllPlaces(initialPlaces);
+    } catch (error) {
+      console.error('Error loading initial places:', error);
+      toast({
+        title: "Error loading places",
+        description: "Could not load places. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
   
   const handleSwipe = (direction: 'left' | 'right' | 'up') => {
     const newPlaces = [...places];
@@ -97,46 +59,56 @@ const Places: React.FC = () => {
         description: `Opening booking options for ${removed?.name}...`,
       });
     }
+
+    // Load more places if running low
+    if (newPlaces.length <= 2) {
+      loadMorePlaces();
+    }
+  };
+
+  const loadMorePlaces = async () => {
+    try {
+      const morePlaces = await getBlitzRecommendations("more places to visit in Chennai");
+      setPlaces(prev => [...prev, ...morePlaces]);
+      setAllPlaces(prev => [...prev, ...morePlaces]);
+    } catch (error) {
+      console.error('Error loading more places:', error);
+    }
   };
   
-  const handlePromptSearch = () => {
+  const handlePromptSearch = async () => {
     if (!userPrompt.trim()) return;
     
+    setIsLoading(true);
     const filters = parseUserPrompt(userPrompt);
     setPromptFilters(filters);
     
-    if (filters && allPlaces.length > 0) {
-      setIsLoading(true);
+    try {
+      const searchResults = await getBlitzRecommendations(userPrompt);
       
-      // Filter the places based on the prompt
-      const filteredPlaces = allPlaces.filter(place => {
-        const budgetMatch = filters.budget ? (place.budget ? place.budget <= filters.budget : true) : true;
-        const groupMatch = filters.groupSize ? (place.maxGroupSize ? place.maxGroupSize >= filters.groupSize : true) : true;
-        const timeMatch = filters.time ? (place.time === filters.time || (place.hours?.toLowerCase()?.includes(filters.time || '') ?? false)) : true;
-        const vibeMatch = filters.vibes.length > 0 ? (place.tags ? filters.vibes.some(v => place.tags?.includes(v)) : false) : true;
-        
-        return budgetMatch && groupMatch && timeMatch && vibeMatch;
+      if (searchResults.length === 0) {
+        toast({
+          title: "No matches found",
+          description: "Try a different search criteria.",
+        });
+      } else {
+        setPlaces(searchResults);
+        toast({
+          title: "Places found",
+          description: `Found ${searchResults.length} places matching your criteria.`,
+        });
+      }
+    } catch (error) {
+      console.error('Error searching places:', error);
+      toast({
+        title: "Search error",
+        description: "Could not search places. Please try again.",
+        variant: "destructive",
       });
-      
-      setTimeout(() => {
-        if (filteredPlaces.length === 0) {
-          toast({
-            title: "No matches found",
-            description: "Try a different search criteria.",
-          });
-          // Keep existing places
-        } else {
-          setPlaces(filteredPlaces);
-          toast({
-            title: "Places filtered",
-            description: `Found ${filteredPlaces.length} places matching your criteria.`,
-          });
-        }
-        setIsLoading(false);
-      }, 500);
+    } finally {
+      setIsLoading(false);
+      setShowPromptInput(false);
     }
-    
-    setShowPromptInput(false);
   };
   
   return (
@@ -171,6 +143,7 @@ const Places: React.FC = () => {
                   placeholder="e.g., We're 4 people, ₹300 per person, looking for rooftop cafes"
                   value={userPrompt}
                   onChange={(e) => setUserPrompt(e.target.value)}
+                  onKeyPress={(e) => e.key === 'Enter' && handlePromptSearch()}
                   className={darkMode ? "bg-transparent border-blitz-gray text-white" : "bg-white text-gray-900"}
                 />
                 <Button 
