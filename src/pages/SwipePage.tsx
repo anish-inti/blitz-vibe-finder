@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useLocation as useRouterLocation } from 'react-router-dom';
 import Header from '@/components/Header';
@@ -13,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { ParsedFilters, parseUserPrompt } from '@/utils/promptParser';
 import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
 
 interface PlanData {
   occasion: string;
@@ -120,7 +120,7 @@ const SwipePage: React.FC = () => {
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p>{useSimulation ? "Using simulated search data" : "Using database data"}</p>
+                    <p>{useSimulation ? "Using simulated search data" : "Using Google Places API"}</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
@@ -135,6 +135,7 @@ const SwipePage: React.FC = () => {
                   placeholder="e.g., We're 4 people, ₹300 per person, looking for rooftop cafes in the evening"
                   value={userPrompt}
                   onChange={(e) => setUserPrompt(e.target.value)}
+                  onKeyPress={(e) => e.key === 'Enter' && handlePromptSearch()}
                   className="bg-transparent border-blitz-gray text-white"
                 />
                 <Button 

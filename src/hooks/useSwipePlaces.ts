@@ -56,11 +56,16 @@ export function useSwipePlaces(planData: PlanData, initialFilters: FilterParams)
         try {
           // Build a comprehensive prompt for Google Places API
           let prompt = '';
-          if (planData.description) {
+          if (planData.description && planData.description.trim()) {
             prompt = planData.description;
           } else {
-            prompt = `${planData.occasion} ${planData.outingType} places in Chennai`;
-            if (filters.keyword) prompt += ` ${filters.keyword}`;
+            // Build prompt from plan data
+            const parts = [];
+            if (planData.occasion) parts.push(planData.occasion);
+            if (planData.outingType) parts.push(planData.outingType);
+            parts.push('places in Chennai');
+            if (filters.keyword) parts.push(filters.keyword);
+            prompt = parts.join(' ');
           }
 
           console.log('Fetching from Google Places API with prompt:', prompt);
@@ -78,6 +83,8 @@ export function useSwipePlaces(planData: PlanData, initialFilters: FilterParams)
               description: `Found ${fetchedPlaces.length} places using Google Places API`,
             });
             return;
+          } else {
+            console.log('No places returned from Google Places API');
           }
         } catch (apiError) {
           console.error('Google Places API failed:', apiError);
@@ -177,12 +184,13 @@ export function useSwipePlaces(planData: PlanData, initialFilters: FilterParams)
     setFilters(newFilters);
   };
 
-  const handleFilterByPrompt = (prompt: string) => {
+  const handleFilterByPrompt = async (prompt: string) => {
     setIsLoading(true);
     
-    // Use Google Places API for prompt-based search
-    if (useGoogleAPI) {
-      getBlitzRecommendations(prompt).then(results => {
+    try {
+      // Use Google Places API for prompt-based search
+      if (useGoogleAPI) {
+        const results = await getBlitzRecommendations(prompt);
         if (results.length > 0) {
           setPlaces(results);
           toast({
@@ -208,29 +216,33 @@ export function useSwipePlaces(planData: PlanData, initialFilters: FilterParams)
             }
           }
         }
-        setIsLoading(false);
-      }).catch(error => {
-        console.error('Error with prompt search:', error);
-        setIsLoading(false);
-      });
-    } else {
-      // Use local filtering
-      if (prompt && allPlaces.length > 0) {
-        const filteredPlaces = parseAndFilterPlaces(prompt, allPlaces);
-        
-        if (filteredPlaces.length === 0) {
-          toast({
-            title: "No matching places",
-            description: "No places match your criteria. Try a different search."
-          });
-        } else {
-          setPlaces(filteredPlaces);
-          toast({
-            title: "Places filtered",
-            description: `Found ${filteredPlaces.length} places matching your criteria.`
-          });
+      } else {
+        // Use local filtering
+        if (prompt && allPlaces.length > 0) {
+          const filteredPlaces = parseAndFilterPlaces(prompt, allPlaces);
+          
+          if (filteredPlaces.length === 0) {
+            toast({
+              title: "No matching places",
+              description: "No places match your criteria. Try a different search."
+            });
+          } else {
+            setPlaces(filteredPlaces);
+            toast({
+              title: "Places filtered",
+              description: `Found ${filteredPlaces.length} places matching your criteria.`
+            });
+          }
         }
       }
+    } catch (error) {
+      console.error('Error with prompt search:', error);
+      toast({
+        title: "Search error",
+        description: "Could not search places. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
       setIsLoading(false);
     }
   };
