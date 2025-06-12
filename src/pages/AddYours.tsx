@@ -14,6 +14,7 @@ import TagSelector from "@/components/AddYours/TagSelector";
 import ImageUploader from "@/components/AddYours/ImageUploader";
 import VenueTypeSelector from "@/components/AddYours/VenueTypeSelector";
 import TimeSelector from "@/components/AddYours/TimeSelector";
+import Header from "@/components/Header";
 
 type FormValues = {
   name: string;
