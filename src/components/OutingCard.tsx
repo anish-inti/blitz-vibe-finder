@@ -34,7 +34,7 @@ const OutingCard: React.FC<OutingCardProps> = ({ outing, showCommunityBadge = fa
       onClick={onClick}
     >
       <div 
-        className="w-20 h-20 flex-shrink-0 bg-cover bg-center relative overflow-hidden rounded-l-2xl"
+        className="w-20 h-20 flex-shrink-0 bg-cover bg-center relative overflow-hidden rounded-l-2xl border-r-2 border-border"
         style={{ backgroundImage: `url(${outing.image})` }}
       >
         {/* Subtle image overlay effect */}
@@ -44,28 +44,28 @@ const OutingCard: React.FC<OutingCardProps> = ({ outing, showCommunityBadge = fa
       <div className="flex-1 p-4 min-w-0">
         <div className="flex justify-between items-start">
           <div className="min-w-0 flex-1">
-            <h3 className="font-bold text-base line-clamp-1 group-hover:text-primary transition-colors duration-300">
+            <h3 className="font-bold text-base line-clamp-1 group-hover:text-primary transition-colors duration-300 text-foreground">
               {outing.name}
             </h3>
             
-            <div className="flex items-center text-xs text-muted-foreground mt-1 space-x-2">
-              <span className="font-medium">{outing.type}</span>
+            <div className="flex items-center text-sm text-muted-foreground mt-1 space-x-2 font-semibold">
+              <span>{outing.type}</span>
               <span>•</span>
               <div className="flex items-center">
                 <Star className="h-3 w-3 text-yellow-500 mr-1 fill-current" />
-                <span className="font-semibold">{outing.rating}</span>
+                <span className="font-bold text-foreground">{outing.rating}</span>
               </div>
             </div>
             
-            {/* Community engagement */}
-            <div className="flex items-center mt-2 space-x-3 text-xs text-muted-foreground">
-              <div className="flex items-center space-x-1">
+            {/* Community engagement with better contrast */}
+            <div className="flex items-center mt-2 space-x-3 text-xs">
+              <div className="flex items-center space-x-1 text-muted-foreground">
                 <Users className="w-3 h-3" />
-                <span>{Math.floor(Math.random() * 100) + 20} visits</span>
+                <span className="font-semibold">{Math.floor(Math.random() * 100) + 20} visits</span>
               </div>
-              <div className="flex items-center space-x-1">
+              <div className="flex items-center space-x-1 text-muted-foreground">
                 <MessageCircle className="w-3 h-3" />
-                <span>{Math.floor(Math.random() * 20) + 5} reviews</span>
+                <span className="font-semibold">{Math.floor(Math.random() * 20) + 5} reviews</span>
               </div>
             </div>
             
@@ -78,7 +78,7 @@ const OutingCard: React.FC<OutingCardProps> = ({ outing, showCommunityBadge = fa
             )}
             
             {outing.openStatus && (
-              <div className={`flex items-center mt-1 text-xs font-semibold ${
+              <div className={`flex items-center mt-1 text-xs font-bold ${
                 outing.openStatus === 'Open' 
                   ? 'text-green-600' 
                   : outing.openStatus === 'Closing Soon' 
@@ -90,12 +90,12 @@ const OutingCard: React.FC<OutingCardProps> = ({ outing, showCommunityBadge = fa
             )}
           </div>
           
-          {/* Heart button - Spotify style */}
+          {/* Heart button with better contrast */}
           <button
-            className={`p-2 rounded-full transition-all duration-300 ml-3 interactive group/heart ${
+            className={`p-2 rounded-full transition-all duration-300 ml-3 interactive group/heart border-2 ${
               isLiked 
-                ? 'text-[hsl(var(--blitz-primary))] bg-[hsl(var(--blitz-primary))]/10' 
-                : 'text-muted-foreground hover:text-[hsl(var(--blitz-primary))] hover:bg-[hsl(var(--blitz-primary))]/5'
+                ? 'text-[hsl(var(--blitz-primary))] bg-[hsl(var(--blitz-primary))]/10 border-[hsl(var(--blitz-primary))]/30' 
+                : 'text-muted-foreground hover:text-[hsl(var(--blitz-primary))] hover:bg-[hsl(var(--blitz-primary))]/5 border-transparent hover:border-[hsl(var(--blitz-primary))]/20'
             }`}
             onClick={handleLikeClick}
           >

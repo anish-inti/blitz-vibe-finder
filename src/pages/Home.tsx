@@ -22,9 +22,9 @@ const QUICK_ACCESS = [
 ];
 
 const COMMUNITY_STATS = [
-  { label: 'Active Users', value: '12.5K', icon: Users, color: 'text-blue-500' },
-  { label: 'Places Shared', value: '3.2K', icon: MapPin, color: 'text-green-500' },
-  { label: 'Reviews Today', value: '847', icon: MessageCircle, color: 'text-purple-500' },
+  { label: 'Active Users', value: '12.5K', icon: Users, color: 'text-blue-600' },
+  { label: 'Places Shared', value: '3.2K', icon: MapPin, color: 'text-green-600' },
+  { label: 'Reviews Today', value: '847', icon: MessageCircle, color: 'text-purple-600' },
 ];
 
 const Home: React.FC = () => {
@@ -149,18 +149,18 @@ const Home: React.FC = () => {
       <Header />
       
       <main className="relative pb-24 space-y-8">
-        {/* Location Selector */}
+        {/* Location Selector with better contrast */}
         <div className="px-6 pt-4">
           <button 
             onClick={handleLocationClick}
-            className="flex items-center text-muted-foreground hover:text-primary transition-all duration-300 interactive group"
+            className="flex items-center text-muted-foreground hover:text-primary transition-all duration-300 interactive group border-2 border-transparent hover:border-primary/20 rounded-lg px-3 py-2"
           >
             <MapPin className="w-4 h-4 mr-2 group-hover:scale-110 transition-transform" />
-            <span className="font-semibold">{selectedLocation}</span>
+            <span className="font-bold">{selectedLocation}</span>
           </button>
         </div>
         
-        {/* Hero Section - Clean & Bold */}
+        {/* Hero Section - High Contrast */}
         <section className="px-6 space-y-6">
           <div className="space-y-4 animate-fade-in">
             <h1 className="text-hero">
@@ -192,10 +192,10 @@ const Home: React.FC = () => {
           </button>
         </section>
 
-        {/* Community Stats */}
+        {/* Community Stats with better contrast */}
         <section className="px-6 animate-slide-up">
           <div className="card-spotify rounded-2xl p-6">
-            <h3 className="text-headline mb-4 flex items-center">
+            <h3 className="text-headline mb-4 flex items-center text-foreground">
               <Users className="w-5 h-5 mr-2 text-community" />
               Community Activity
             </h3>
@@ -204,44 +204,40 @@ const Home: React.FC = () => {
                 <div key={index} className="text-center">
                   <stat.icon className={`w-6 h-6 mx-auto mb-2 ${stat.color}`} />
                   <div className="text-xl font-bold text-foreground">{stat.value}</div>
-                  <div className="text-xs text-muted-foreground">{stat.label}</div>
+                  <div className="text-xs text-muted-foreground font-semibold">{stat.label}</div>
                 </div>
               ))}
             </div>
           </div>
         </section>
         
-        {/* Quick Access - Solid Colors */}
+        {/* Quick Access with better contrast */}
         <section className="space-y-4 animate-slide-up">
           <div className="px-6">
-            <h2 className="text-headline flex items-center">
+            <h2 className="text-headline flex items-center text-foreground">
               Explore Categories
             </h2>
           </div>
           <div className="px-6">
             <div className="grid grid-cols-3 gap-3">
               {QUICK_ACCESS.map((item) => (
-                <button
+                <QuickAccessButton
                   key={item.id}
+                  name={item.name}
+                  icon={item.icon}
+                  isActive={activeFilter === item.name}
                   onClick={() => handleQuickAccessClick(item.name)}
-                  className={`flex flex-col items-center justify-center p-4 rounded-2xl transition-all duration-300 interactive ${
-                    activeFilter === item.name 
-                      ? `${item.color} text-white shadow-lg` 
-                      : 'card-spotify hover:shadow-lg'
-                  }`}
-                >
-                  <div className="text-xl mb-2">{item.icon}</div>
-                  <span className="text-xs font-bold">{item.name}</span>
-                </button>
+                  color={item.color}
+                />
               ))}
             </div>
           </div>
         </section>
         
-        {/* What's Hot Now */}
+        {/* What's Hot Now with better contrast */}
         <section className="space-y-4 animate-fade-in">
           <div className="px-6 flex items-center justify-between">
-            <h2 className="text-headline flex items-center">
+            <h2 className="text-headline flex items-center text-foreground">
               Trending Now
               <span className="ml-2 badge-trending">
                 HOT
@@ -279,10 +275,10 @@ const Home: React.FC = () => {
           )}
         </section>
         
-        {/* Community Picks - Enhanced */}
+        {/* Community Picks with better contrast */}
         <section className="space-y-4 animate-fade-in">
           <div className="px-6">
-            <h2 className="text-headline flex items-center">
+            <h2 className="text-headline flex items-center text-foreground">
               Community Favorites
               <span className="ml-2 badge-community">
                 COMMUNITY
@@ -305,29 +301,29 @@ const Home: React.FC = () => {
                       <img 
                         src={place.image} 
                         alt={place.name} 
-                        className="w-12 h-12 rounded-xl object-cover" 
+                        className="w-12 h-12 rounded-xl object-cover border-2 border-border" 
                       />
                       <div className="flex-1 min-w-0">
-                        <h3 className="font-semibold text-foreground line-clamp-1">{place.name}</h3>
+                        <h3 className="font-bold text-foreground line-clamp-1">{place.name}</h3>
                         <div className="flex items-center space-x-2 mt-1">
                           <div className="flex items-center space-x-1">
                             <MapPin className="w-3 h-3 text-muted-foreground" />
-                            <span className="text-xs text-muted-foreground">{place.location}</span>
+                            <span className="text-xs text-muted-foreground font-semibold">{place.location}</span>
                           </div>
                           <span className="text-muted-foreground">•</span>
                           <div className="flex items-center space-x-1">
                             <Star className="w-3 h-3 text-yellow-500 fill-current" />
-                            <span className="text-xs font-medium">{place.rating}</span>
+                            <span className="text-xs font-bold text-foreground">{place.rating}</span>
                           </div>
                           <span className="text-muted-foreground">•</span>
                           <div className="flex items-center space-x-1">
                             <Heart className="w-3 h-3 text-red-500" />
-                            <span className="text-xs font-medium">{Math.floor(Math.random() * 100) + 50}</span>
+                            <span className="text-xs font-bold text-foreground">{Math.floor(Math.random() * 100) + 50}</span>
                           </div>
                         </div>
                       </div>
-                      <button className="p-2 rounded-full hover:bg-background/50 transition-colors">
-                        <Share2 className="w-4 h-4 text-muted-foreground" />
+                      <button className="p-2 rounded-full hover:bg-background/50 transition-colors border-2 border-transparent hover:border-primary/20">
+                        <Share2 className="w-4 h-4 text-muted-foreground hover:text-primary transition-colors" />
                       </button>
                     </div>
                   </div>
@@ -337,10 +333,10 @@ const Home: React.FC = () => {
           )}
         </section>
         
-        {/* Curated For You */}
+        {/* Curated For You with better contrast */}
         <section className="space-y-4 animate-slide-up">
           <div className="px-6">
-            <h2 className="text-headline flex items-center">
+            <h2 className="text-headline flex items-center text-foreground">
               {activeFilter ? (
                 <>
                   <span className="text-primary">{activeFilter}</span>
@@ -373,10 +369,10 @@ const Home: React.FC = () => {
           )}
         </section>
 
-        {/* Community Call to Action */}
+        {/* Community Call to Action with better contrast */}
         <section className="px-6 py-8 animate-bounce-in">
           <div className="card-community rounded-2xl p-6 text-center space-y-4">
-            <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-[hsl(var(--blitz-community))] text-white mb-4">
+            <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-[hsl(var(--blitz-community))] text-white mb-4 border-2 border-white/20">
               <Users className="w-6 h-6" />
             </div>
             <h3 className="text-title text-community">Join the Community</h3>

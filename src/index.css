@@ -67,7 +67,7 @@
 
 @layer base {
   :root {
-    /* Shadcn UI variables */
+    /* Shadcn UI variables with better contrast */
     --background: 0 0% 100%;
     --foreground: 0 0% 3.9%;
     --card: 0 0% 100%;
@@ -79,7 +79,7 @@
     --secondary: 0 0% 96.1%;
     --secondary-foreground: 0 0% 9%;
     --muted: 0 0% 96.1%;
-    --muted-foreground: 0 0% 45.1%;
+    --muted-foreground: 0 0% 35.1%; /* Darker for better readability */
     --accent: 0 0% 96.1%;
     --accent-foreground: 0 0% 9%;
     --destructive: 0 84.2% 60.2%;
@@ -89,62 +89,67 @@
     --ring: 0 0% 3.9%;
     --radius: 0.75rem;
 
-    /* Spotify-Inspired Brand Colors - Solid & Dynamic */
-    --blitz-primary: 315 100% 70%;        /* Vibrant Pink #FF1DB4 */
-    --blitz-secondary: 270 91% 65%;       /* Deep Purple #8B5CF6 */
-    --blitz-accent: 195 100% 50%;         /* Electric Blue #00BFFF */
-    --blitz-success: 142 76% 36%;         /* Success Green */
-    --blitz-warning: 45 93% 47%;          /* Warning Orange */
-    --blitz-error: 0 84% 60%;             /* Error Red */
+    /* Spotify-Inspired Brand Colors - High Contrast */
+    --blitz-primary: 315 100% 55%;        /* Darker Pink #E6007A for better contrast */
+    --blitz-secondary: 270 91% 55%;       /* Darker Purple #7C3AED */
+    --blitz-accent: 195 100% 45%;         /* Darker Blue #0099CC */
+    --blitz-success: 142 76% 30%;         /* Darker Green */
+    --blitz-warning: 45 93% 40%;          /* Darker Orange */
+    --blitz-error: 0 84% 50%;             /* Darker Red */
     
-    /* Spotify-style neutrals with more contrast */
-    --blitz-surface: 0 0% 98%;            /* Clean White */
+    /* High contrast surfaces */
+    --blitz-surface: 0 0% 100%;           /* Pure White */
     --blitz-surface-dark: 240 10% 3%;     /* Deep Black */
-    --blitz-surface-elevated: 240 6% 6%;  /* Elevated Dark */
+    --blitz-surface-elevated: 240 6% 8%;  /* Elevated Dark */
     --blitz-text: 0 0% 9%;                /* Rich Black */
-    --blitz-text-secondary: 0 0% 45%;     /* Medium Gray */
-    --blitz-border: 0 0% 89%;             /* Light Border */
+    --blitz-text-secondary: 0 0% 35%;     /* Darker Gray for better readability */
+    --blitz-border: 0 0% 85%;             /* Darker Border */
     
-    /* Community & Social Colors */
-    --blitz-community: 280 100% 70%;      /* Community Purple */
-    --blitz-trending: 25 95% 53%;         /* Trending Orange */
-    --blitz-featured: 142 76% 36%;        /* Featured Green */
-    --blitz-live: 0 84% 60%;              /* Live Red */
+    /* Community & Social Colors - High Contrast */
+    --blitz-community: 280 100% 55%;      /* Darker Community Purple */
+    --blitz-trending: 25 95% 45%;         /* Darker Trending Orange */
+    --blitz-featured: 142 76% 30%;        /* Darker Featured Green */
+    --blitz-live: 0 84% 50%;              /* Darker Live Red */
     
     /* Dynamic color variations */
-    --blitz-primary-hover: 315 100% 65%;
-    --blitz-primary-active: 315 100% 60%;
-    --blitz-secondary-hover: 270 91% 60%;
-    --blitz-secondary-active: 270 91% 55%;
+    --blitz-primary-hover: 315 100% 50%;
+    --blitz-primary-active: 315 100% 45%;
+    --blitz-secondary-hover: 270 91% 50%;
+    --blitz-secondary-active: 270 91% 45%;
   }
 
   .dark {
     --background: 240 10% 3%;
     --foreground: 0 0% 98%;
-    --card: 240 10% 3%;
+    --card: 240 10% 6%;
     --card-foreground: 0 0% 98%;
     --popover: 240 10% 3%;
     --popover-foreground: 0 0% 98%;
     --primary: 0 0% 98%;
     --primary-foreground: 0 0% 9%;
-    --secondary: 240 6% 6%;
+    --secondary: 240 6% 10%;
     --secondary-foreground: 0 0% 98%;
-    --muted: 240 6% 6%;
-    --muted-foreground: 0 0% 63.9%;
-    --accent: 240 6% 6%;
+    --muted: 240 6% 10%;
+    --muted-foreground: 0 0% 70%; /* Lighter for better readability in dark mode */
+    --accent: 240 6% 10%;
     --accent-foreground: 0 0% 98%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
-    --border: 240 6% 6%;
-    --input: 240 6% 6%;
+    --border: 240 6% 12%;
+    --input: 240 6% 10%;
     --ring: 0 0% 83.1%;
 
-    /* Dark mode adjustments */
+    /* Dark mode adjustments - Higher contrast */
     --blitz-surface: 240 10% 3%;          /* Deep Black */
-    --blitz-surface-elevated: 240 6% 6%;  /* Elevated Dark */
-    --blitz-text: 0 0% 98%;               /* Light Text */
-    --blitz-text-secondary: 0 0% 64%;     /* Secondary Light */
-    --blitz-border: 240 6% 6%;            /* Dark Border */
+    --blitz-surface-elevated: 240 6% 8%;  /* Elevated Dark */
+    --blitz-text: 0 0% 98%;               /* Pure White */
+    --blitz-text-secondary: 0 0% 70%;     /* Lighter Secondary */
+    --blitz-border: 240 6% 12%;           /* Lighter Dark Border */
+    
+    /* Brighter colors for dark mode */
+    --blitz-primary: 315 100% 70%;        /* Brighter Pink */
+    --blitz-secondary: 270 91% 70%;       /* Brighter Purple */
+    --blitz-accent: 195 100% 55%;         /* Brighter Blue */
   }
 
   * {
@@ -172,80 +177,83 @@
   }
 }
 
-/* Spotify-Inspired Solid Color Components */
+/* High Contrast Button Styles */
 .btn-primary {
   @apply bg-[hsl(var(--blitz-primary))] hover:bg-[hsl(var(--blitz-primary-hover))] 
-         active:bg-[hsl(var(--blitz-primary-active))] text-white font-semibold 
-         shadow-lg hover:shadow-xl active:scale-[0.98] transition-all duration-200;
+         active:bg-[hsl(var(--blitz-primary-active))] text-white font-bold 
+         shadow-lg hover:shadow-xl active:scale-[0.98] transition-all duration-200
+         border-2 border-transparent;
 }
 
 .btn-secondary {
   @apply bg-[hsl(var(--blitz-secondary))] hover:bg-[hsl(var(--blitz-secondary-hover))] 
-         active:bg-[hsl(var(--blitz-secondary-active))] text-white font-semibold 
-         shadow-lg hover:shadow-xl active:scale-[0.98] transition-all duration-200;
+         active:bg-[hsl(var(--blitz-secondary-active))] text-white font-bold 
+         shadow-lg hover:shadow-xl active:scale-[0.98] transition-all duration-200
+         border-2 border-transparent;
 }
 
 .btn-accent {
   @apply bg-[hsl(var(--blitz-accent))] hover:brightness-110 active:brightness-90 
-         text-white font-semibold shadow-lg hover:shadow-xl 
-         active:scale-[0.98] transition-all duration-200;
+         text-white font-bold shadow-lg hover:shadow-xl 
+         active:scale-[0.98] transition-all duration-200
+         border-2 border-transparent;
 }
 
 .btn-outline {
   @apply border-2 border-[hsl(var(--blitz-primary))] text-[hsl(var(--blitz-primary))] 
-         hover:bg-[hsl(var(--blitz-primary))] hover:text-white font-semibold
-         active:scale-[0.98] transition-all duration-200;
+         hover:bg-[hsl(var(--blitz-primary))] hover:text-white font-bold
+         active:scale-[0.98] transition-all duration-200 bg-background;
 }
 
 .btn-ghost {
-  @apply text-muted-foreground hover:text-[hsl(var(--blitz-primary))] 
+  @apply text-foreground hover:text-[hsl(var(--blitz-primary))] 
          hover:bg-[hsl(var(--blitz-primary))]/10 active:scale-[0.98] 
-         transition-all duration-200 font-medium;
+         transition-all duration-200 font-semibold bg-background/50;
 }
 
-/* Spotify-style Cards with Solid Colors */
+/* High Contrast Card Styles */
 .card-spotify {
-  @apply bg-card/80 backdrop-blur-sm border border-border/50 shadow-md hover:shadow-lg 
-         transition-all duration-300 hover:bg-card/90;
+  @apply bg-card border-2 border-border shadow-md hover:shadow-lg 
+         transition-all duration-300 hover:bg-card hover:border-[hsl(var(--blitz-primary))]/30;
 }
 
 .card-elevated {
-  @apply bg-[hsl(var(--blitz-surface-elevated))] border border-border/30 shadow-lg hover:shadow-xl 
-         transition-all duration-300 hover:border-[hsl(var(--blitz-primary))]/20;
+  @apply bg-card border-2 border-border/50 shadow-lg hover:shadow-xl 
+         transition-all duration-300 hover:border-[hsl(var(--blitz-primary))]/40;
 }
 
 .card-community {
-  @apply bg-[hsl(var(--blitz-community))]/10 border border-[hsl(var(--blitz-community))]/20 
-         hover:bg-[hsl(var(--blitz-community))]/15 transition-all duration-300;
+  @apply bg-[hsl(var(--blitz-community))]/5 border-2 border-[hsl(var(--blitz-community))]/30 
+         hover:bg-[hsl(var(--blitz-community))]/10 transition-all duration-300;
 }
 
 .card-trending {
-  @apply bg-[hsl(var(--blitz-trending))]/10 border border-[hsl(var(--blitz-trending))]/20 
-         hover:bg-[hsl(var(--blitz-trending))]/15 transition-all duration-300;
+  @apply bg-[hsl(var(--blitz-trending))]/5 border-2 border-[hsl(var(--blitz-trending))]/30 
+         hover:bg-[hsl(var(--blitz-trending))]/10 transition-all duration-300;
 }
 
-/* Community & Social Badges */
+/* High Contrast Community & Social Badges */
 .badge-community {
-  @apply bg-[hsl(var(--blitz-community))] text-white px-3 py-1 rounded-full text-xs font-bold
-         shadow-md hover:shadow-lg transition-all duration-200;
+  @apply bg-[hsl(var(--blitz-community))] text-white px-3 py-1.5 rounded-full text-xs font-bold
+         shadow-md hover:shadow-lg transition-all duration-200 border-2 border-white/20;
 }
 
 .badge-trending {
-  @apply bg-[hsl(var(--blitz-trending))] text-white px-3 py-1 rounded-full text-xs font-bold
-         shadow-md hover:shadow-lg transition-all duration-200 animate-pulse;
+  @apply bg-[hsl(var(--blitz-trending))] text-white px-3 py-1.5 rounded-full text-xs font-bold
+         shadow-md hover:shadow-lg transition-all duration-200 animate-pulse border-2 border-white/20;
 }
 
 .badge-featured {
-  @apply bg-[hsl(var(--blitz-featured))] text-white px-3 py-1 rounded-full text-xs font-bold
-         shadow-md hover:shadow-lg transition-all duration-200;
+  @apply bg-[hsl(var(--blitz-featured))] text-white px-3 py-1.5 rounded-full text-xs font-bold
+         shadow-md hover:shadow-lg transition-all duration-200 border-2 border-white/20;
 }
 
 .badge-live {
-  @apply bg-[hsl(var(--blitz-live))] text-white px-3 py-1 rounded-full text-xs font-bold
-         shadow-md hover:shadow-lg transition-all duration-200 animate-pulse;
+  @apply bg-[hsl(var(--blitz-live))] text-white px-3 py-1.5 rounded-full text-xs font-bold
+         shadow-md hover:shadow-lg transition-all duration-200 animate-pulse border-2 border-white/20;
 }
 
-/* Typography - Clean & Bold */
+/* High Contrast Typography */
 .text-hero {
   @apply text-4xl font-black tracking-tight text-foreground;
 }
@@ -259,54 +267,54 @@
 }
 
 .text-title {
-  @apply text-lg font-semibold text-foreground;
+  @apply text-lg font-bold text-foreground; /* Made bolder */
 }
 
 .text-body {
-  @apply text-base font-medium text-foreground;
+  @apply text-base font-semibold text-foreground; /* Made bolder */
 }
 
 .text-caption {
-  @apply text-sm text-muted-foreground font-medium;
+  @apply text-sm text-muted-foreground font-semibold; /* Made bolder */
 }
 
-/* Accent text colors */
+/* High contrast accent text colors */
 .text-primary {
-  @apply text-[hsl(var(--blitz-primary))];
+  @apply text-[hsl(var(--blitz-primary))] font-bold;
 }
 
 .text-secondary {
-  @apply text-[hsl(var(--blitz-secondary))];
+  @apply text-[hsl(var(--blitz-secondary))] font-bold;
 }
 
 .text-accent {
-  @apply text-[hsl(var(--blitz-accent))];
+  @apply text-[hsl(var(--blitz-accent))] font-bold;
 }
 
 .text-community {
-  @apply text-[hsl(var(--blitz-community))];
+  @apply text-[hsl(var(--blitz-community))] font-bold;
 }
 
-/* Interactive elements - Spotify-style */
+/* Interactive elements with better visibility */
 .interactive {
   @apply transition-all duration-200 active:scale-[0.98] cursor-pointer;
 }
 
 .interactive:hover {
-  @apply shadow-md;
+  @apply shadow-lg;
 }
 
 .interactive-primary:hover {
-  @apply shadow-lg shadow-[hsl(var(--blitz-primary))]/20;
+  @apply shadow-lg shadow-[hsl(var(--blitz-primary))]/30;
 }
 
 .interactive-secondary:hover {
-  @apply shadow-lg shadow-[hsl(var(--blitz-secondary))]/20;
+  @apply shadow-lg shadow-[hsl(var(--blitz-secondary))]/30;
 }
 
-/* Focus styles - Accessible & Branded */
+/* High contrast focus styles */
 .focus-ring {
-  @apply focus:outline-none focus:ring-2 focus:ring-[hsl(var(--blitz-primary))] focus:ring-offset-2;
+  @apply focus:outline-none focus:ring-4 focus:ring-[hsl(var(--blitz-primary))]/50 focus:ring-offset-2;
 }
 
 /* Animations - Smooth & Professional */
@@ -321,10 +329,10 @@
 
 @keyframes pulse-community {
   0%, 100% {
-    box-shadow: 0 0 15px hsl(var(--blitz-community) / 0.3);
+    box-shadow: 0 0 15px hsl(var(--blitz-community) / 0.4);
   }
   50% {
-    box-shadow: 0 0 25px hsl(var(--blitz-community) / 0.5);
+    box-shadow: 0 0 25px hsl(var(--blitz-community) / 0.6);
   }
 }
 
@@ -412,7 +420,7 @@
 .animate-shimmer {
   background: linear-gradient(90deg, 
     hsl(var(--muted)) 25%, 
-    hsl(var(--muted-foreground) / 0.1) 50%, 
+    hsl(var(--muted-foreground) / 0.2) 50%, 
     hsl(var(--muted)) 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
@@ -438,14 +446,14 @@
   opacity: 0;
 }
 
-/* Community-focused elements */
+/* High contrast community-focused elements */
 .community-indicator {
   @apply relative;
 }
 
 .community-indicator::after {
   content: '';
-  @apply absolute -top-1 -right-1 w-3 h-3 bg-[hsl(var(--blitz-community))] rounded-full animate-pulse;
+  @apply absolute -top-1 -right-1 w-3 h-3 bg-[hsl(var(--blitz-community))] rounded-full animate-pulse border-2 border-white;
 }
 
 .trending-indicator {
@@ -454,7 +462,7 @@
 
 .trending-indicator::after {
   content: '';
-  @apply absolute -top-1 -right-1 w-3 h-3 bg-[hsl(var(--blitz-trending))] rounded-full animate-pulse;
+  @apply absolute -top-1 -right-1 w-3 h-3 bg-[hsl(var(--blitz-trending))] rounded-full animate-pulse border-2 border-white;
 }
 
 /* Remove default tap highlights */
@@ -467,22 +475,23 @@ html {
   scroll-behavior: smooth;
 }
 
-/* Custom scrollbar - Spotify-inspired */
+/* High contrast custom scrollbar */
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 12px;
 }
 
 ::-webkit-scrollbar-track {
-  background: transparent;
+  background: hsl(var(--muted));
 }
 
 ::-webkit-scrollbar-thumb {
-  background: hsl(var(--blitz-primary) / 0.6);
-  border-radius: 4px;
+  background: hsl(var(--blitz-primary));
+  border-radius: 6px;
+  border: 2px solid hsl(var(--background));
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: hsl(var(--blitz-primary) / 0.8);
+  background: hsl(var(--blitz-primary-hover));
 }
 
 /* Line clamp utilities */
@@ -512,15 +521,39 @@ html {
   touch-action: manipulation;
 }
 
-/* Glassmorphism - More subtle for Spotify style */
+/* High contrast glassmorphism */
 .glassmorphism {
-  @apply backdrop-blur-md bg-background/80 border border-border/20;
+  @apply backdrop-blur-md bg-background/90 border-2 border-border/30;
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
 }
 
 .glassmorphism-strong {
-  @apply backdrop-blur-xl bg-background/90 border border-border/30;
+  @apply backdrop-blur-xl bg-background/95 border-2 border-border/40;
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
+}
+
+/* High contrast input styles */
+input, textarea, select {
+  @apply bg-background border-2 border-border text-foreground placeholder:text-muted-foreground;
+}
+
+input:focus, textarea:focus, select:focus {
+  @apply border-[hsl(var(--blitz-primary))] ring-4 ring-[hsl(var(--blitz-primary))]/20;
+}
+
+/* Better contrast for disabled elements */
+button:disabled, input:disabled, textarea:disabled, select:disabled {
+  @apply opacity-60 cursor-not-allowed bg-muted text-muted-foreground;
+}
+
+/* High contrast loading states */
+.loading-shimmer {
+  background: linear-gradient(90deg, 
+    hsl(var(--muted)) 25%, 
+    hsl(var(--muted-foreground) / 0.3) 50%, 
+    hsl(var(--muted)) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
 }

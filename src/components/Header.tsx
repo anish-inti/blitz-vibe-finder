@@ -23,16 +23,16 @@ const Header: React.FC<HeaderProps> = ({
   };
   
   return (
-    <header className="sticky top-0 z-50 w-full glassmorphism-strong border-b border-border/20">
+    <header className="sticky top-0 z-50 w-full glassmorphism-strong border-b-2 border-border/30">
       <div className="flex h-16 items-center justify-between px-6">
         <div className="flex items-center">
           {showBackButton ? (
             <button 
               onClick={handleBack}
-              className="mr-3 p-2 -ml-2 rounded-full hover:bg-[hsl(var(--blitz-primary))]/10 transition-all duration-300 interactive group"
+              className="mr-3 p-2 -ml-2 rounded-full hover:bg-[hsl(var(--blitz-primary))]/10 transition-all duration-300 interactive group border-2 border-transparent hover:border-[hsl(var(--blitz-primary))]/20"
               aria-label="Go back"
             >
-              <ChevronLeft className="w-5 h-5 group-hover:text-[hsl(var(--blitz-primary))] transition-colors" />
+              <ChevronLeft className="w-5 h-5 group-hover:text-[hsl(var(--blitz-primary))] transition-colors text-foreground" />
             </button>
           ) : (
             <Link to="/" className="flex items-center group">
@@ -55,15 +55,15 @@ const Header: React.FC<HeaderProps> = ({
         <div className="flex items-center space-x-2">
           <LocationAccess showDebug={showLocationDebug} />
           
-          {/* Notifications */}
-          <button className="p-2 rounded-full hover:bg-[hsl(var(--blitz-primary))]/10 transition-all duration-300 interactive group relative">
-            <Bell className="w-5 h-5 group-hover:text-[hsl(var(--blitz-primary))] transition-colors" />
-            <div className="absolute -top-1 -right-1 w-3 h-3 bg-[hsl(var(--blitz-live))] rounded-full animate-pulse" />
+          {/* Notifications with better contrast */}
+          <button className="p-2 rounded-full hover:bg-[hsl(var(--blitz-primary))]/10 transition-all duration-300 interactive group relative border-2 border-transparent hover:border-[hsl(var(--blitz-primary))]/20">
+            <Bell className="w-5 h-5 group-hover:text-[hsl(var(--blitz-primary))] transition-colors text-foreground" />
+            <div className="absolute -top-1 -right-1 w-3 h-3 bg-[hsl(var(--blitz-live))] rounded-full animate-pulse border-2 border-white" />
           </button>
           
           {showMenu && (
-            <button className="p-2 rounded-full hover:bg-[hsl(var(--blitz-primary))]/10 transition-all duration-300 interactive group">
-              <MoreHorizontal className="w-5 h-5 group-hover:text-[hsl(var(--blitz-primary))] transition-colors" />
+            <button className="p-2 rounded-full hover:bg-[hsl(var(--blitz-primary))]/10 transition-all duration-300 interactive group border-2 border-transparent hover:border-[hsl(var(--blitz-primary))]/20">
+              <MoreHorizontal className="w-5 h-5 group-hover:text-[hsl(var(--blitz-primary))] transition-colors text-foreground" />
             </button>
           )}
         </div>
