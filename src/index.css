@@ -232,7 +232,7 @@
          hover:bg-[hsl(var(--blitz-trending))]/10 transition-all duration-300;
 }
 
-/* High Contrast Community & Social Badges */
+/* High Contrast Community & Social Badges - NO GLITCHY ANIMATIONS */
 .badge-community {
   @apply bg-[hsl(var(--blitz-community))] text-white px-3 py-1.5 rounded-full text-xs font-bold
          shadow-md hover:shadow-lg transition-all duration-200 border-2 border-white/20;
@@ -240,7 +240,8 @@
 
 .badge-trending {
   @apply bg-[hsl(var(--blitz-trending))] text-white px-3 py-1.5 rounded-full text-xs font-bold
-         shadow-md hover:shadow-lg transition-all duration-200 animate-pulse border-2 border-white/20;
+         shadow-md hover:shadow-lg transition-all duration-200 border-2 border-white/20;
+  /* Removed animate-pulse to prevent glitching */
 }
 
 .badge-featured {
@@ -250,7 +251,9 @@
 
 .badge-live {
   @apply bg-[hsl(var(--blitz-live))] text-white px-3 py-1.5 rounded-full text-xs font-bold
-         shadow-md hover:shadow-lg transition-all duration-200 animate-pulse border-2 border-white/20;
+         shadow-md hover:shadow-lg transition-all duration-200 border-2 border-white/20;
+  /* Stable glow instead of glitchy pulse */
+  box-shadow: 0 0 10px hsl(var(--blitz-live) / 0.4);
 }
 
 /* High Contrast Typography */
@@ -317,7 +320,7 @@
   @apply focus:outline-none focus:ring-4 focus:ring-[hsl(var(--blitz-primary))]/50 focus:ring-offset-2;
 }
 
-/* Animations - Smooth & Professional */
+/* Animations - Smooth & Professional - NO GLITCHY ONES */
 @keyframes float {
   0%, 100% {
     transform: translateY(0px);
@@ -327,12 +330,12 @@
   }
 }
 
-@keyframes pulse-community {
+@keyframes stable-glow {
   0%, 100% {
-    box-shadow: 0 0 15px hsl(var(--blitz-community) / 0.4);
+    box-shadow: 0 0 10px hsl(var(--blitz-community) / 0.3);
   }
   50% {
-    box-shadow: 0 0 25px hsl(var(--blitz-community) / 0.6);
+    box-shadow: 0 0 15px hsl(var(--blitz-community) / 0.5);
   }
 }
 
@@ -392,13 +395,13 @@
   }
 }
 
-/* Animation classes */
+/* Animation classes - STABLE VERSIONS */
 .animate-float {
   animation: float 4s ease-in-out infinite;
 }
 
-.animate-pulse-community {
-  animation: pulse-community 3s ease-in-out infinite;
+.animate-stable-glow {
+  animation: stable-glow 3s ease-in-out infinite;
 }
 
 .animate-fade-in {
@@ -453,7 +456,8 @@
 
 .community-indicator::after {
   content: '';
-  @apply absolute -top-1 -right-1 w-3 h-3 bg-[hsl(var(--blitz-community))] rounded-full animate-pulse border-2 border-white;
+  @apply absolute -top-1 -right-1 w-3 h-3 bg-[hsl(var(--blitz-community))] rounded-full border-2 border-white;
+  /* Removed animate-pulse to prevent glitching */
 }
 
 .trending-indicator {
@@ -462,7 +466,9 @@
 
 .trending-indicator::after {
   content: '';
-  @apply absolute -top-1 -right-1 w-3 h-3 bg-[hsl(var(--blitz-trending))] rounded-full animate-pulse border-2 border-white;
+  @apply absolute -top-1 -right-1 w-3 h-3 bg-[hsl(var(--blitz-trending))] rounded-full border-2 border-white;
+  /* Stable glow instead of glitchy pulse */
+  box-shadow: 0 0 8px hsl(var(--blitz-trending) / 0.6);
 }
 
 /* Remove default tap highlights */

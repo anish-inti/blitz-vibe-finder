@@ -34,7 +34,7 @@ const FeaturedPlaceCard: React.FC<FeaturedPlaceCardProps> = ({ place, onClick })
       {/* High contrast overlay */}
       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
       
-      {/* Community indicators with better contrast */}
+      {/* Community indicators with better contrast - FIXED TRENDING BADGE */}
       <div className="absolute top-4 left-4 flex space-x-2">
         <div className="badge-trending">
           TRENDING

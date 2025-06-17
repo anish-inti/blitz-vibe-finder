@@ -234,7 +234,7 @@ const Home: React.FC = () => {
           </div>
         </section>
         
-        {/* What's Hot Now with better contrast */}
+        {/* What's Hot Now - FIXED TRENDING BADGE */}
         <section className="space-y-4 animate-fade-in">
           <div className="px-6 flex items-center justify-between">
             <h2 className="text-headline flex items-center text-foreground">
