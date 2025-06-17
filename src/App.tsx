@@ -5,6 +5,11 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { LocationProvider } from "@/contexts/LocationContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
+import { useEffect } from "react";
+import { Capacitor } from "@capacitor/core";
+import { SplashScreen } from "@capacitor/splash-screen";
+import { StatusBar, Style } from "@capacitor/status-bar";
+import SafeAreaWrapper from "@/components/MobileOptimized/SafeAreaWrapper";
 
 // Pages
 import Home from "./pages/Home";
@@ -19,31 +24,54 @@ import AddYours from "./pages/AddYours";
 
 const queryClient = new QueryClient();
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <ThemeProvider>
-        <LocationProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/places" element={<Places />} />
-              <Route path="/places/:id" element={<Places />} />
-              <Route path="/search" element={<Search />} />
-              <Route path="/favorites" element={<Favorites />} />
-              <Route path="/profile" element={<Profile />} />
-              <Route path="/planner" element={<Planner />} />
-              <Route path="/swipe" element={<SwipePage />} />
-              <Route path="/add" element={<AddYours />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </BrowserRouter>
-        </LocationProvider>
-      </ThemeProvider>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+const App = () => {
+  useEffect(() => {
+    const initializeApp = async () => {
+      if (Capacitor.isNativePlatform()) {
+        // Hide splash screen after app loads
+        await SplashScreen.hide();
+        
+        // Set status bar style
+        if (Capacitor.getPlatform() === 'ios') {
+          await StatusBar.setStyle({ style: Style.Dark });
+        }
+        
+        // Add capacitor-app class for native-specific styles
+        document.body.classList.add('capacitor-app');
+      }
+    };
+
+    initializeApp();
+  }, []);
+
+  return (
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <ThemeProvider>
+          <LocationProvider>
+            <SafeAreaWrapper>
+              <Toaster />
+              <Sonner />
+              <BrowserRouter>
+                <Routes>
+                  <Route path="/" element={<Home />} />
+                  <Route path="/places" element={<Places />} />
+                  <Route path="/places/:id" element={<Places />} />
+                  <Route path="/search" element={<Search />} />
+                  <Route path="/favorites" element={<Favorites />} />
+                  <Route path="/profile" element={<Profile />} />
+                  <Route path="/planner" element={<Planner />} />
+                  <Route path="/swipe" element={<SwipePage />} />
+                  <Route path="/add" element={<AddYours />} />
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </BrowserRouter>
+            </SafeAreaWrapper>
+          </LocationProvider>
+        </ThemeProvider>
+      </TooltipProvider>
+    </QueryClientProvider>
+  );
+};
 
 export default App;

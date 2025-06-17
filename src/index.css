@@ -2,6 +2,69 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Safe area support for iOS */
+@supports (padding-top: env(safe-area-inset-top)) {
+  .pt-safe-top {
+    padding-top: env(safe-area-inset-top);
+  }
+  
+  .pb-safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  
+  .pl-safe-left {
+    padding-left: env(safe-area-inset-left);
+  }
+  
+  .pr-safe-right {
+    padding-right: env(safe-area-inset-right);
+  }
+}
+
+/* Mobile-specific optimizations */
+@media (max-width: 768px) {
+  /* Prevent zoom on input focus */
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="number"],
+  input[type="tel"],
+  input[type="url"],
+  input[type="search"],
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
+  
+  /* Better touch targets */
+  button,
+  [role="button"],
+  input[type="submit"],
+  input[type="button"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+/* Capacitor specific styles */
+.capacitor-app {
+  /* Prevent overscroll bounce on iOS */
+  overscroll-behavior: none;
+  
+  /* Prevent pull-to-refresh */
+  overscroll-behavior-y: contain;
+}
+
+/* Hide scrollbars in native apps */
+.capacitor-app ::-webkit-scrollbar {
+  display: none;
+}
+
+.capacitor-app {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
 @layer base {
   :root {
     /* Shadcn UI variables */
@@ -89,6 +152,20 @@
     @apply bg-background text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+    
+    /* Mobile optimizations */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    
+    /* Prevent text size adjustment on iOS */
+    -webkit-text-size-adjust: 100%;
+    
+    /* Prevent tap highlight on mobile */
+    -webkit-tap-highlight-color: transparent;
+    
+    /* Better touch scrolling on iOS */
+    -webkit-overflow-scrolling: touch;
   }
 }
 
@@ -488,4 +565,9 @@ html {
 
 .light .card-spotify {
   @apply bg-white/60 border-black/10;
+}
+
+/* Touch manipulation for better mobile performance */
+.touch-manipulation {
+  touch-action: manipulation;
 }
