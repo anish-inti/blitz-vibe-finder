@@ -15,6 +15,9 @@ import ImageUploader from "@/components/AddYours/ImageUploader";
 import VenueTypeSelector from "@/components/AddYours/VenueTypeSelector";
 import TimeSelector from "@/components/AddYours/TimeSelector";
 import Header from "@/components/Header";
+import { usePlaces } from "@/hooks/use-places";
+import { useAuth } from "@/contexts/AuthContext";
+import AuthModal from "@/components/Auth/AuthModal";
 
 type FormValues = {
   name: string;
@@ -31,7 +34,10 @@ type FormValues = {
 const AddYours: React.FC = () => {
   const navigate = useNavigate();
   const { darkMode } = useTheme();
+  const { profile } = useAuth();
+  const { addPlace, loading } = usePlaces();
   const [showSuccessDialog, setShowSuccessDialog] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
 
   const form = useForm<FormValues>({
     defaultValues: {
@@ -47,14 +53,39 @@ const AddYours: React.FC = () => {
     },
   });
 
-  const onSubmit = (data: FormValues) => {
-    console.log("Form submitted:", data);
-    setShowSuccessDialog(true);
-    
-    setTimeout(() => {
-      setShowSuccessDialog(false);
-      navigate(-1);
-    }, 2000);
+  const onSubmit = async (data: FormValues) => {
+    if (!profile) {
+      setShowAuthModal(true);
+      return;
+    }
+
+    // Convert budget to price level
+    const priceLevel = data.budget === 'budget' ? 1 : data.budget === 'premium' ? 4 : 2;
+
+    // In a real app, you would upload images to a storage service first
+    const imageUrls = data.images.map(file => URL.createObjectURL(file));
+
+    const { error } = await addPlace({
+      name: data.name,
+      address: data.address,
+      category: data.type,
+      description: data.description,
+      tags: data.tags,
+      price_level: priceLevel,
+      images: imageUrls,
+      opening_hours: {
+        open: data.openingHours,
+        close: data.closingHours,
+      },
+    });
+
+    if (!error) {
+      setShowSuccessDialog(true);
+      setTimeout(() => {
+        setShowSuccessDialog(false);
+        navigate(-1);
+      }, 2000);
+    }
   };
 
   return (
@@ -79,7 +110,7 @@ const AddYours: React.FC = () => {
               Share Your Discovery
             </h1>
             <p className="text-caption text-muted-foreground">
-              Help others discover amazing places
+              Help others discover amazing places in your community
             </p>
           </div>
         </div>
@@ -282,8 +313,9 @@ const AddYours: React.FC = () => {
             className="w-full max-w-md px-10 py-4 rounded-2xl font-bold text-lg"
             showSparkle
             onClick={form.handleSubmit(onSubmit)}
+            disabled={loading}
           >
-            Submit Your Spot
+            {loading ? 'Adding Place...' : 'Submit Your Spot'}
           </GlowButton>
         </div>
       </main>
@@ -297,11 +329,14 @@ const AddYours: React.FC = () => {
               <PlusCircle className="h-8 w-8" />
             </div>
             <p className="text-center text-muted-foreground">
-              Thank you for contributing to Blitz! You've earned 50 Blitz Points.
+              Thank you for contributing to the community! Your place will be reviewed and published soon.
             </p>
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Auth Modal */}
+      <AuthModal open={showAuthModal} onOpenChange={setShowAuthModal} />
     </div>
   );
 };

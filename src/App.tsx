@@ -23,6 +23,7 @@ import Planner from "./pages/Planner";
 import SwipePage from "./pages/SwipePage";
 import AddYours from "./pages/AddYours";
 import SharedPlan from "./pages/SharedPlan";
+import PlaceDetail from "./pages/PlaceDetail";
 
 const queryClient = new QueryClient();
 
@@ -59,7 +60,7 @@ const App = () => {
                   <Routes>
                     <Route path="/" element={<Home />} />
                     <Route path="/places" element={<Places />} />
-                    <Route path="/places/:id" element={<Places />} />
+                    <Route path="/places/:id" element={<PlaceDetail />} />
                     <Route path="/search" element={<Search />} />
                     <Route path="/favorites" element={<Favorites />} />
                     <Route path="/profile" element={<Profile />} />
