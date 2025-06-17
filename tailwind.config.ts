@@ -52,33 +52,34 @@ export default {
 					DEFAULT: 'hsl(var(--card))',
 					foreground: 'hsl(var(--card-foreground))'
 				},
-				// Blitz Brand Colors - Spotify-Inspired Deep Purple
+				// Blitz Brand Colors - Spotify-Inspired Solid Colors
 				blitz: {
-					primary: 'hsl(var(--blitz-primary))',      // Deep Purple #8B5CF6
-					secondary: 'hsl(var(--blitz-secondary))',  // Vibrant Pink #FF66B2
-					accent: 'hsl(var(--blitz-accent))',        // Electric Purple #C084FC
-					surface: 'hsl(var(--blitz-surface))',
-					'surface-dark': 'hsl(var(--blitz-surface-dark))',
-					text: 'hsl(var(--blitz-text))',
-					'text-secondary': 'hsl(var(--blitz-text-secondary))',
-					border: 'hsl(var(--blitz-border))',
+					primary: 'hsl(var(--blitz-primary))',        // Vibrant Pink #FF1DB4
+					secondary: 'hsl(var(--blitz-secondary))',    // Deep Purple #8B5CF6
+					accent: 'hsl(var(--blitz-accent))',          // Electric Blue #00BFFF
 					success: 'hsl(var(--blitz-success))',
 					warning: 'hsl(var(--blitz-warning))',
 					error: 'hsl(var(--blitz-error))',
 					
-					// Spotify-inspired neutral scale
-					neutral: {
-						50: 'hsl(var(--blitz-neutral-50))',
-						100: 'hsl(var(--blitz-neutral-100))',
-						200: 'hsl(var(--blitz-neutral-200))',
-						300: 'hsl(var(--blitz-neutral-300))',
-						400: 'hsl(var(--blitz-neutral-400))',
-						500: 'hsl(var(--blitz-neutral-500))',
-						600: 'hsl(var(--blitz-neutral-600))',
-						700: 'hsl(var(--blitz-neutral-700))',
-						800: 'hsl(var(--blitz-neutral-800))',
-						900: 'hsl(var(--blitz-neutral-900))',
-					}
+					// Community & Social Colors
+					community: 'hsl(var(--blitz-community))',    // Community Purple
+					trending: 'hsl(var(--blitz-trending))',      // Trending Orange
+					featured: 'hsl(var(--blitz-featured))',      // Featured Green
+					live: 'hsl(var(--blitz-live))',              // Live Red
+					
+					// Surface colors
+					surface: 'hsl(var(--blitz-surface))',
+					'surface-dark': 'hsl(var(--blitz-surface-dark))',
+					'surface-elevated': 'hsl(var(--blitz-surface-elevated))',
+					text: 'hsl(var(--blitz-text))',
+					'text-secondary': 'hsl(var(--blitz-text-secondary))',
+					border: 'hsl(var(--blitz-border))',
+					
+					// Dynamic variations
+					'primary-hover': 'hsl(var(--blitz-primary-hover))',
+					'primary-active': 'hsl(var(--blitz-primary-active))',
+					'secondary-hover': 'hsl(var(--blitz-secondary-hover))',
+					'secondary-active': 'hsl(var(--blitz-secondary-active))',
 				}
 			},
 			borderRadius: {
@@ -105,8 +106,6 @@ export default {
 			backgroundImage: {
 				'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
 				'gradient-conic': 'conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))',
-				'blitz-gradient': 'linear-gradient(135deg, hsl(var(--blitz-primary)) 0%, hsl(var(--blitz-accent)) 100%)',
-				'blitz-gradient-reverse': 'linear-gradient(135deg, hsl(var(--blitz-secondary)) 0%, hsl(var(--blitz-primary)) 100%)',
 			},
 			keyframes: {
 				'accordion-down': {
@@ -138,14 +137,9 @@ export default {
 					'0%, 100%': { transform: 'translateY(0px)' },
 					'50%': { transform: 'translateY(-8px)' }
 				},
-				'pulse-glow': {
-					'0%, 100%': { boxShadow: '0 0 15px hsl(var(--blitz-primary) / 0.2)' },
-					'50%': { boxShadow: '0 0 25px hsl(var(--blitz-primary) / 0.4)' }
-				},
-				'gradient-shift': {
-					'0%': { backgroundPosition: '0% 50%' },
-					'50%': { backgroundPosition: '100% 50%' },
-					'100%': { backgroundPosition: '0% 50%' }
+				'pulse-community': {
+					'0%, 100%': { boxShadow: '0 0 15px hsl(var(--blitz-community) / 0.3)' },
+					'50%': { boxShadow: '0 0 25px hsl(var(--blitz-community) / 0.5)' }
 				},
 				'shimmer': {
 					'0%': { backgroundPosition: '-200% 0' },
@@ -160,8 +154,7 @@ export default {
 				'slide-up': 'slide-up 0.6s ease-out',
 				'bounce-in': 'bounce-in 0.5s ease-out',
 				'float': 'float 4s ease-in-out infinite',
-				'pulse-glow': 'pulse-glow 3s ease-in-out infinite',
-				'gradient': 'gradient-shift 4s ease infinite',
+				'pulse-community': 'pulse-community 3s ease-in-out infinite',
 				'shimmer': 'shimmer 1.5s infinite'
 			}
 		}

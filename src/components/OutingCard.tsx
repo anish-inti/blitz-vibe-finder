@@ -1,5 +1,5 @@
 import React from 'react';
-import { Star, Heart, Clock, TrendingUp } from 'lucide-react';
+import { Star, Heart, Clock, TrendingUp, Users, MessageCircle } from 'lucide-react';
 
 interface Outing {
   id: string;
@@ -38,13 +38,13 @@ const OutingCard: React.FC<OutingCardProps> = ({ outing, showCommunityBadge = fa
         style={{ backgroundImage: `url(${outing.image})` }}
       >
         {/* Subtle image overlay effect */}
-        <div className="absolute inset-0 bg-gradient-to-r from-transparent to-blitz-primary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+        <div className="absolute inset-0 bg-gradient-to-r from-transparent to-primary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
       </div>
       
       <div className="flex-1 p-4 min-w-0">
         <div className="flex justify-between items-start">
           <div className="min-w-0 flex-1">
-            <h3 className="font-bold text-base line-clamp-1 group-hover:text-blitz-primary transition-colors duration-300">
+            <h3 className="font-bold text-base line-clamp-1 group-hover:text-primary transition-colors duration-300">
               {outing.name}
             </h3>
             
@@ -57,10 +57,21 @@ const OutingCard: React.FC<OutingCardProps> = ({ outing, showCommunityBadge = fa
               </div>
             </div>
             
+            {/* Community engagement */}
+            <div className="flex items-center mt-2 space-x-3 text-xs text-muted-foreground">
+              <div className="flex items-center space-x-1">
+                <Users className="w-3 h-3" />
+                <span>{Math.floor(Math.random() * 100) + 20} visits</span>
+              </div>
+              <div className="flex items-center space-x-1">
+                <MessageCircle className="w-3 h-3" />
+                <span>{Math.floor(Math.random() * 20) + 5} reviews</span>
+              </div>
+            </div>
+            
             {showCommunityBadge && (
               <div className="flex items-center mt-2">
-                <span className="inline-flex items-center badge-trending">
-                  <TrendingUp className="w-3 h-3 mr-1" />
+                <span className="badge-community">
                   Community Pick
                 </span>
               </div>
@@ -83,8 +94,8 @@ const OutingCard: React.FC<OutingCardProps> = ({ outing, showCommunityBadge = fa
           <button
             className={`p-2 rounded-full transition-all duration-300 ml-3 interactive group/heart ${
               isLiked 
-                ? 'text-blitz-primary bg-blitz-primary/10' 
-                : 'text-muted-foreground hover:text-blitz-primary hover:bg-blitz-primary/5'
+                ? 'text-[hsl(var(--blitz-primary))] bg-[hsl(var(--blitz-primary))]/10' 
+                : 'text-muted-foreground hover:text-[hsl(var(--blitz-primary))] hover:bg-[hsl(var(--blitz-primary))]/5'
             }`}
             onClick={handleLikeClick}
           >

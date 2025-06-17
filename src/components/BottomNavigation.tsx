@@ -37,7 +37,7 @@ const BottomNavigation: React.FC = () => {
   ];
   
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 glassmorphism-strong border-t border-white/5">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 glassmorphism-strong border-t border-border/20">
       <div className="flex items-center justify-around px-6 py-3">
         {navItems.map(({ path, icon: Icon, label }) => (
           <Link 
@@ -45,8 +45,8 @@ const BottomNavigation: React.FC = () => {
             to={path} 
             className={`flex flex-col items-center py-2 px-3 rounded-xl transition-all duration-300 interactive group ${
               isActive(path) 
-                ? 'text-blitz-primary bg-blitz-primary/10' 
-                : 'text-muted-foreground hover:text-blitz-primary hover:bg-blitz-primary/5'
+                ? 'text-[hsl(var(--blitz-primary))] bg-[hsl(var(--blitz-primary))]/10' 
+                : 'text-muted-foreground hover:text-[hsl(var(--blitz-primary))] hover:bg-[hsl(var(--blitz-primary))]/5'
             }`}
             aria-label={label}
           >
@@ -58,11 +58,11 @@ const BottomNavigation: React.FC = () => {
                 />
               )}
               {isActive(path) && (
-                <div className="absolute inset-0 bg-blitz-primary/20 rounded-full animate-pulse-glow" />
+                <div className="absolute inset-0 bg-[hsl(var(--blitz-primary))]/20 rounded-full animate-pulse" />
               )}
             </div>
             <span className={`text-xs mt-1 font-semibold transition-all duration-300 ${
-              isActive(path) ? 'text-blitz-primary' : 'group-hover:text-blitz-primary'
+              isActive(path) ? 'text-[hsl(var(--blitz-primary))]' : 'group-hover:text-[hsl(var(--blitz-primary))]'
             }`}>
               {label}
             </span>

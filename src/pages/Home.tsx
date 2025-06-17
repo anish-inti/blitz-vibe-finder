@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
 import BottomNavigation from '@/components/BottomNavigation';
-import { Zap, MapPin, Loader2, Sparkles, TrendingUp, Users, Coffee, Moon, ShoppingBag, Camera, Play, Crown } from 'lucide-react';
+import { Zap, MapPin, Loader2, Users, Coffee, Moon, ShoppingBag, Camera, Play, Crown, TrendingUp, Heart, Star, MessageCircle, Share2 } from 'lucide-react';
 import { Carousel, CarouselContent, CarouselItem } from "@/components/ui/carousel";
 import { toast } from "@/components/ui/use-toast";
 import FeaturedPlaceCard from '@/components/FeaturedPlaceCard';
@@ -13,12 +13,18 @@ import { getBlitzRecommendations } from '@/services/googlePlacesService';
 import { Place } from '@/components/SwipeCard';
 
 const QUICK_ACCESS = [
-  { id: '1', name: 'Dining', icon: <Coffee className="w-5 h-5" />, gradient: 'from-orange-500 to-red-500' },
-  { id: '2', name: 'Nightlife', icon: <Moon className="w-5 h-5" />, gradient: 'from-blitz-primary to-blitz-accent' },
-  { id: '3', name: 'Groups', icon: <Users className="w-5 h-5" />, gradient: 'from-blue-500 to-cyan-500' },
-  { id: '4', name: 'Shopping', icon: <ShoppingBag className="w-5 h-5" />, gradient: 'from-green-500 to-emerald-500' },
-  { id: '5', name: 'Culture', icon: <Camera className="w-5 h-5" />, gradient: 'from-blitz-secondary to-blitz-primary' },
-  { id: '6', name: 'Premium', icon: <Crown className="w-5 h-5" />, gradient: 'from-yellow-500 to-amber-500' },
+  { id: '1', name: 'Dining', icon: <Coffee className="w-5 h-5" />, color: 'bg-orange-500' },
+  { id: '2', name: 'Nightlife', icon: <Moon className="w-5 h-5" />, color: 'bg-purple-600' },
+  { id: '3', name: 'Groups', icon: <Users className="w-5 h-5" />, color: 'bg-blue-500' },
+  { id: '4', name: 'Shopping', icon: <ShoppingBag className="w-5 h-5" />, color: 'bg-green-500' },
+  { id: '5', name: 'Culture', icon: <Camera className="w-5 h-5" />, color: 'bg-pink-500' },
+  { id: '6', name: 'Premium', icon: <Crown className="w-5 h-5" />, color: 'bg-yellow-500' },
+];
+
+const COMMUNITY_STATS = [
+  { label: 'Active Users', value: '12.5K', icon: Users, color: 'text-blue-500' },
+  { label: 'Places Shared', value: '3.2K', icon: MapPin, color: 'text-green-500' },
+  { label: 'Reviews Today', value: '847', icon: MessageCircle, color: 'text-purple-500' },
 ];
 
 const Home: React.FC = () => {
@@ -140,13 +146,6 @@ const Home: React.FC = () => {
   
   return (
     <div className="min-h-screen bg-background">
-      {/* Subtle floating background elements - Luxury style */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-20 left-10 w-32 h-32 bg-blitz-primary/3 rounded-full blur-3xl animate-float" />
-        <div className="absolute top-40 right-20 w-24 h-24 bg-blitz-secondary/3 rounded-full blur-3xl animate-float" style={{ animationDelay: '2s' }} />
-        <div className="absolute bottom-40 left-20 w-40 h-40 bg-blitz-accent/3 rounded-full blur-3xl animate-float" style={{ animationDelay: '4s' }} />
-      </div>
-
       <Header />
       
       <main className="relative pb-24 space-y-8">
@@ -154,22 +153,21 @@ const Home: React.FC = () => {
         <div className="px-6 pt-4">
           <button 
             onClick={handleLocationClick}
-            className="flex items-center text-muted-foreground hover:text-blitz-primary transition-all duration-300 interactive group"
+            className="flex items-center text-muted-foreground hover:text-primary transition-all duration-300 interactive group"
           >
             <MapPin className="w-4 h-4 mr-2 group-hover:scale-110 transition-transform" />
             <span className="font-semibold">{selectedLocation}</span>
-            <Sparkles className="w-3 h-3 ml-1 opacity-0 group-hover:opacity-100 transition-opacity" />
           </button>
         </div>
         
-        {/* Hero Section - Luxury inspired */}
+        {/* Hero Section - Clean & Bold */}
         <section className="px-6 space-y-6">
           <div className="space-y-4 animate-fade-in">
             <h1 className="text-hero">
-              Discover Excellence
+              Discover <span className="text-primary">Together</span>
             </h1>
             <p className="text-body text-muted-foreground max-w-md leading-relaxed">
-              Curated experiences that define sophistication. Your perfect outing awaits in {selectedLocation}.
+              Join thousands exploring {selectedLocation}'s best spots. Your community-driven discovery starts here.
             </p>
           </div>
           
@@ -187,44 +185,66 @@ const Home: React.FC = () => {
               ) : (
                 <>
                   <Play className="w-5 h-5 mr-2 group-hover:scale-110 transition-transform" />
-                  Begin Your Journey
+                  Start Exploring
                 </>
               )}
             </div>
           </button>
         </section>
-        
-        {/* Quick Access - Luxury grid style */}
-        <section className="space-y-4 animate-slide-up">
-          <div className="px-6">
-            <h2 className="text-headline flex items-center">
-              Explore by Category
-              <Sparkles className="w-5 h-5 ml-2 text-blitz-secondary animate-pulse-glow" />
-            </h2>
-          </div>
-          <div className="px-6">
-            <div className="grid grid-cols-3 gap-3">
-              {QUICK_ACCESS.map((item) => (
-                <QuickAccessButton
-                  key={item.id}
-                  name={item.name}
-                  icon={item.icon}
-                  isActive={activeFilter === item.name}
-                  onClick={() => handleQuickAccessClick(item.name)}
-                  gradient={item.gradient}
-                />
+
+        {/* Community Stats */}
+        <section className="px-6 animate-slide-up">
+          <div className="card-spotify rounded-2xl p-6">
+            <h3 className="text-headline mb-4 flex items-center">
+              <Users className="w-5 h-5 mr-2 text-community" />
+              Community Activity
+            </h3>
+            <div className="grid grid-cols-3 gap-4">
+              {COMMUNITY_STATS.map((stat, index) => (
+                <div key={index} className="text-center">
+                  <stat.icon className={`w-6 h-6 mx-auto mb-2 ${stat.color}`} />
+                  <div className="text-xl font-bold text-foreground">{stat.value}</div>
+                  <div className="text-xs text-muted-foreground">{stat.label}</div>
+                </div>
               ))}
             </div>
           </div>
         </section>
         
-        {/* What's Hot Now - Luxury style */}
+        {/* Quick Access - Solid Colors */}
+        <section className="space-y-4 animate-slide-up">
+          <div className="px-6">
+            <h2 className="text-headline flex items-center">
+              Explore Categories
+            </h2>
+          </div>
+          <div className="px-6">
+            <div className="grid grid-cols-3 gap-3">
+              {QUICK_ACCESS.map((item) => (
+                <button
+                  key={item.id}
+                  onClick={() => handleQuickAccessClick(item.name)}
+                  className={`flex flex-col items-center justify-center p-4 rounded-2xl transition-all duration-300 interactive ${
+                    activeFilter === item.name 
+                      ? `${item.color} text-white shadow-lg` 
+                      : 'card-spotify hover:shadow-lg'
+                  }`}
+                >
+                  <div className="text-xl mb-2">{item.icon}</div>
+                  <span className="text-xs font-bold">{item.name}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </section>
+        
+        {/* What's Hot Now */}
         <section className="space-y-4 animate-fade-in">
           <div className="px-6 flex items-center justify-between">
             <h2 className="text-headline flex items-center">
               Trending Now
-              <span className="ml-2 badge-live">
-                LIVE
+              <span className="ml-2 badge-trending">
+                HOT
               </span>
             </h2>
           </div>
@@ -232,7 +252,7 @@ const Home: React.FC = () => {
           {isLoadingHotNow ? (
             <div className="flex items-center justify-center h-48">
               <div className="flex flex-col items-center space-y-3">
-                <Loader2 className="w-8 h-8 animate-spin text-blitz-primary" />
+                <Loader2 className="w-8 h-8 animate-spin text-primary" />
                 <p className="text-caption text-muted-foreground">Discovering trending spots...</p>
               </div>
             </div>
@@ -259,19 +279,77 @@ const Home: React.FC = () => {
           )}
         </section>
         
-        {/* Curated For You - Luxury list style */}
+        {/* Community Picks - Enhanced */}
+        <section className="space-y-4 animate-fade-in">
+          <div className="px-6">
+            <h2 className="text-headline flex items-center">
+              Community Favorites
+              <span className="ml-2 badge-community">
+                COMMUNITY
+              </span>
+            </h2>
+          </div>
+          
+          {isLoadingCommunity ? (
+            <div className="px-6 space-y-3">
+              {[1, 2].map((i) => (
+                <div key={i} className="h-20 bg-muted/30 rounded-xl animate-shimmer" />
+              ))}
+            </div>
+          ) : (
+            <div className="px-6 space-y-3">
+              {communityPicks.map((place, index) => (
+                <div key={place.id} className="animate-scale-in" style={{ animationDelay: `${index * 0.15}s` }}>
+                  <div className="card-community rounded-2xl p-4">
+                    <div className="flex items-center space-x-4">
+                      <img 
+                        src={place.image} 
+                        alt={place.name} 
+                        className="w-12 h-12 rounded-xl object-cover" 
+                      />
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-semibold text-foreground line-clamp-1">{place.name}</h3>
+                        <div className="flex items-center space-x-2 mt-1">
+                          <div className="flex items-center space-x-1">
+                            <MapPin className="w-3 h-3 text-muted-foreground" />
+                            <span className="text-xs text-muted-foreground">{place.location}</span>
+                          </div>
+                          <span className="text-muted-foreground">•</span>
+                          <div className="flex items-center space-x-1">
+                            <Star className="w-3 h-3 text-yellow-500 fill-current" />
+                            <span className="text-xs font-medium">{place.rating}</span>
+                          </div>
+                          <span className="text-muted-foreground">•</span>
+                          <div className="flex items-center space-x-1">
+                            <Heart className="w-3 h-3 text-red-500" />
+                            <span className="text-xs font-medium">{Math.floor(Math.random() * 100) + 50}</span>
+                          </div>
+                        </div>
+                      </div>
+                      <button className="p-2 rounded-full hover:bg-background/50 transition-colors">
+                        <Share2 className="w-4 h-4 text-muted-foreground" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+        
+        {/* Curated For You */}
         <section className="space-y-4 animate-slide-up">
           <div className="px-6">
             <h2 className="text-headline flex items-center">
               {activeFilter ? (
                 <>
-                  <span className="text-gradient">{activeFilter}</span>
+                  <span className="text-primary">{activeFilter}</span>
                   <span className="ml-2">Collection</span>
                 </>
               ) : (
                 'Curated for You'
               )}
-              <TrendingUp className="w-5 h-5 ml-2 text-blitz-accent" />
+              <TrendingUp className="w-5 h-5 ml-2 text-accent" />
             </h2>
           </div>
           
@@ -294,52 +372,31 @@ const Home: React.FC = () => {
             </div>
           )}
         </section>
-        
-        {/* Community Picks - Luxury style */}
-        <section className="space-y-4 animate-fade-in">
-          <div className="px-6">
-            <h2 className="text-headline flex items-center">
-              Community Favorites
-              <span className="ml-2 badge-trending">
-                FEATURED
-              </span>
-            </h2>
-          </div>
-          
-          {isLoadingCommunity ? (
-            <div className="px-6 space-y-3">
-              {[1, 2].map((i) => (
-                <div key={i} className="h-20 bg-muted/30 rounded-xl animate-shimmer" />
-              ))}
-            </div>
-          ) : (
-            <div className="px-6 space-y-3">
-              {communityPicks.map((place, index) => (
-                <div key={place.id} className="animate-scale-in" style={{ animationDelay: `${index * 0.15}s` }}>
-                  <OutingCard 
-                    outing={convertPlaceToOuting(place)} 
-                    showCommunityBadge
-                    onClick={() => handlePlaceClick(place)}
-                  />
-                </div>
-              ))}
-            </div>
-          )}
-        </section>
 
-        {/* Call to Action - Luxury inspired */}
+        {/* Community Call to Action */}
         <section className="px-6 py-8 animate-bounce-in">
-          <div className="card-hero rounded-2xl p-6 text-center space-y-4">
-            <h3 className="text-title text-gradient">Ready to explore?</h3>
+          <div className="card-community rounded-2xl p-6 text-center space-y-4">
+            <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-[hsl(var(--blitz-community))] text-white mb-4">
+              <Users className="w-6 h-6" />
+            </div>
+            <h3 className="text-title text-community">Join the Community</h3>
             <p className="text-caption text-muted-foreground">
-              Join thousands discovering their city's finest experiences
+              Share your discoveries and help others find amazing places
             </p>
-            <button 
-              onClick={() => navigate('/swipe')}
-              className="btn-secondary rounded-xl px-6 py-3 font-semibold interactive-glow"
-            >
-              Start Discovering
-            </button>
+            <div className="flex space-x-3">
+              <button 
+                onClick={() => navigate('/add')}
+                className="flex-1 btn-secondary rounded-xl px-6 py-3 font-semibold interactive-secondary"
+              >
+                Add a Place
+              </button>
+              <button 
+                onClick={() => navigate('/swipe')}
+                className="flex-1 btn-primary rounded-xl px-6 py-3 font-semibold interactive-primary"
+              >
+                Start Exploring
+              </button>
+            </div>
           </div>
         </section>
       </main>

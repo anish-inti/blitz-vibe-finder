@@ -1,5 +1,5 @@
 import React from 'react';
-import { Heart, Sparkles } from 'lucide-react';
+import { Heart, Users, Star, MapPin } from 'lucide-react';
 
 interface Place {
   id: string;
@@ -23,7 +23,7 @@ const FeaturedPlaceCard: React.FC<FeaturedPlaceCardProps> = ({ place, onClick })
 
   return (
     <div 
-      className="relative rounded-2xl overflow-hidden h-48 group cursor-pointer interactive-glow"
+      className="relative rounded-2xl overflow-hidden h-48 group cursor-pointer interactive"
       onClick={onClick}
     >
       <div 
@@ -31,19 +31,21 @@ const FeaturedPlaceCard: React.FC<FeaturedPlaceCardProps> = ({ place, onClick })
         style={{ backgroundImage: `url(${place.image})` }}
       />
       
-      {/* Gradient overlay - Spotify style */}
+      {/* Clean overlay */}
       <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
       
-      {/* Subtle sparkles */}
-      <div className="absolute top-4 left-4 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-        <Sparkles className="w-4 h-4 text-blitz-secondary animate-pulse-glow" />
+      {/* Community indicators */}
+      <div className="absolute top-4 left-4 flex space-x-2">
+        <div className="badge-trending">
+          TRENDING
+        </div>
       </div>
       
       {/* Heart button - Spotify style */}
       <button 
-        className={`absolute top-3 right-3 p-2.5 rounded-full backdrop-blur-md transition-all duration-300 interactive group/heart ${
+        className={`absolute top-4 right-4 p-2.5 rounded-full backdrop-blur-md transition-all duration-300 interactive group/heart ${
           isLiked 
-            ? 'bg-blitz-primary text-white shadow-lg shadow-blitz-primary/30' 
+            ? 'bg-[hsl(var(--blitz-primary))] text-white shadow-lg' 
             : 'bg-white/10 text-white hover:bg-white/20'
         }`}
         onClick={handleLikeClick}
@@ -53,16 +55,29 @@ const FeaturedPlaceCard: React.FC<FeaturedPlaceCardProps> = ({ place, onClick })
       
       {/* Content */}
       <div className="absolute bottom-0 left-0 right-0 p-5 text-white">
-        <h3 className="font-bold text-lg mb-2 line-clamp-1 group-hover:text-blitz-secondary transition-colors duration-300">
+        <h3 className="font-bold text-lg mb-2 line-clamp-1 group-hover:text-white transition-colors duration-300">
           {place.name}
         </h3>
-        <p className="text-sm text-white/90 line-clamp-2 group-hover:text-white transition-colors duration-300">
+        <p className="text-sm text-white/90 line-clamp-2 group-hover:text-white transition-colors duration-300 mb-3">
           {place.description}
         </p>
+        
+        {/* Community stats */}
+        <div className="flex items-center space-x-4 text-xs text-white/80">
+          <div className="flex items-center space-x-1">
+            <Star className="w-3 h-3 text-yellow-400 fill-current" />
+            <span>{(Math.random() * 2 + 3).toFixed(1)}</span>
+          </div>
+          <div className="flex items-center space-x-1">
+            <Users className="w-3 h-3" />
+            <span>{Math.floor(Math.random() * 100) + 50} visits</span>
+          </div>
+          <div className="flex items-center space-x-1">
+            <Heart className="w-3 h-3 text-red-400" />
+            <span>{Math.floor(Math.random() * 50) + 20}</span>
+          </div>
+        </div>
       </div>
-
-      {/* Subtle hover glow effect */}
-      <div className="absolute inset-0 bg-gradient-to-t from-blitz-primary/0 to-blitz-primary/0 group-hover:from-blitz-primary/5 group-hover:to-blitz-secondary/5 transition-all duration-500 pointer-events-none" />
     </div>
   );
 };

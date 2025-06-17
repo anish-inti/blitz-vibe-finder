@@ -1,5 +1,5 @@
 import React from 'react';
-import { ChevronLeft, MoreHorizontal, Sparkles } from 'lucide-react';
+import { ChevronLeft, MoreHorizontal, Bell } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { LocationAccess } from './LocationAccess';
 
@@ -23,16 +23,16 @@ const Header: React.FC<HeaderProps> = ({
   };
   
   return (
-    <header className="sticky top-0 z-50 w-full glassmorphism-strong border-b border-white/5">
+    <header className="sticky top-0 z-50 w-full glassmorphism-strong border-b border-border/20">
       <div className="flex h-16 items-center justify-between px-6">
         <div className="flex items-center">
           {showBackButton ? (
             <button 
               onClick={handleBack}
-              className="mr-3 p-2 -ml-2 rounded-full hover:bg-blitz-primary/10 transition-all duration-300 interactive group"
+              className="mr-3 p-2 -ml-2 rounded-full hover:bg-[hsl(var(--blitz-primary))]/10 transition-all duration-300 interactive group"
               aria-label="Go back"
             >
-              <ChevronLeft className="w-5 h-5 group-hover:text-blitz-primary transition-colors" />
+              <ChevronLeft className="w-5 h-5 group-hover:text-[hsl(var(--blitz-primary))] transition-colors" />
             </button>
           ) : (
             <Link to="/" className="flex items-center group">
@@ -41,13 +41,13 @@ const Header: React.FC<HeaderProps> = ({
                 alt="Blitz" 
                 className="h-8 w-auto group-hover:scale-105 transition-transform duration-300"
               />
-              <Sparkles className="w-4 h-4 ml-2 text-blitz-secondary opacity-0 group-hover:opacity-100 transition-opacity animate-pulse-glow" />
+              <span className="ml-2 text-xl font-black text-[hsl(var(--blitz-primary))]">Blitz</span>
             </Link>
           )}
         </div>
         
         {title && (
-          <h1 className="absolute left-1/2 transform -translate-x-1/2 text-lg font-bold text-gradient">
+          <h1 className="absolute left-1/2 transform -translate-x-1/2 text-lg font-bold text-foreground">
             {title}
           </h1>
         )}
@@ -55,9 +55,15 @@ const Header: React.FC<HeaderProps> = ({
         <div className="flex items-center space-x-2">
           <LocationAccess showDebug={showLocationDebug} />
           
+          {/* Notifications */}
+          <button className="p-2 rounded-full hover:bg-[hsl(var(--blitz-primary))]/10 transition-all duration-300 interactive group relative">
+            <Bell className="w-5 h-5 group-hover:text-[hsl(var(--blitz-primary))] transition-colors" />
+            <div className="absolute -top-1 -right-1 w-3 h-3 bg-[hsl(var(--blitz-live))] rounded-full animate-pulse" />
+          </button>
+          
           {showMenu && (
-            <button className="p-2 rounded-full hover:bg-blitz-primary/10 transition-all duration-300 interactive group">
-              <MoreHorizontal className="w-5 h-5 group-hover:text-blitz-primary transition-colors" />
+            <button className="p-2 rounded-full hover:bg-[hsl(var(--blitz-primary))]/10 transition-all duration-300 interactive group">
+              <MoreHorizontal className="w-5 h-5 group-hover:text-[hsl(var(--blitz-primary))] transition-colors" />
             </button>
           )}
         </div>
