@@ -34,6 +34,8 @@ export const useUserActions = () => {
 
     setLoading(true);
     try {
+      console.log('Recording action:', { placeId, actionType, userId: profile.id });
+      
       // Check if action already exists
       const { data: existingAction } = await supabase
         .from('user_actions')
@@ -44,14 +46,22 @@ export const useUserActions = () => {
         .single();
 
       if (existingAction) {
+        console.log('Action already exists, updating metadata');
         // Update existing action
         const { error } = await supabase
           .from('user_actions')
           .update({ metadata })
           .eq('id', existingAction.id);
 
+        if (error) {
+          console.error('Error updating action:', error);
+        } else {
+          console.log('Action updated successfully');
+        }
+
         return { error };
       } else {
+        console.log('Creating new action');
         // Create new action
         const { error } = await supabase
           .from('user_actions')
@@ -64,7 +74,16 @@ export const useUserActions = () => {
             },
           ]);
 
-        if (!error) {
+        if (error) {
+          console.error('Error creating action:', error);
+          toast({
+            title: 'Action failed',
+            description: error.message,
+            variant: 'destructive',
+          });
+        } else {
+          console.log('Action recorded successfully');
+          
           // Update user stats
           const newStats = { ...profile.stats };
           if (actionType === 'save') newStats.places_saved++;
@@ -75,11 +94,26 @@ export const useUserActions = () => {
             .from('users')
             .update({ stats: newStats })
             .eq('id', profile.id);
+
+          // Show success message
+          const actionMessages = {
+            like: 'Place liked!',
+            save: 'Place saved to your favorites!',
+            visit: 'Visit recorded!',
+            share: 'Place shared!',
+            review: 'Review submitted!'
+          };
+
+          toast({
+            title: actionMessages[actionType],
+            description: 'Your action has been recorded.',
+          });
         }
 
         return { error };
       }
     } catch (error) {
+      console.error('Exception recording action:', error);
       return { error };
     } finally {
       setLoading(false);
@@ -91,6 +125,8 @@ export const useUserActions = () => {
 
     setLoading(true);
     try {
+      console.log('Removing action:', { placeId, actionType, userId: profile.id });
+      
       const { error } = await supabase
         .from('user_actions')
         .delete()
@@ -98,7 +134,16 @@ export const useUserActions = () => {
         .eq('place_id', placeId)
         .eq('action_type', actionType);
 
-      if (!error) {
+      if (error) {
+        console.error('Error removing action:', error);
+        toast({
+          title: 'Action failed',
+          description: error.message,
+          variant: 'destructive',
+        });
+      } else {
+        console.log('Action removed successfully');
+        
         // Update user stats
         const newStats = { ...profile.stats };
         if (actionType === 'save' && newStats.places_saved > 0) newStats.places_saved--;
@@ -109,10 +154,25 @@ export const useUserActions = () => {
           .from('users')
           .update({ stats: newStats })
           .eq('id', profile.id);
+
+        // Show success message
+        const actionMessages = {
+          like: 'Like removed',
+          save: 'Removed from favorites',
+          visit: 'Visit removed',
+          share: 'Share removed',
+          review: 'Review removed'
+        };
+
+        toast({
+          title: actionMessages[actionType],
+          description: 'Your action has been removed.',
+        });
       }
 
       return { error };
     } catch (error) {
+      console.error('Exception removing action:', error);
       return { error };
     } finally {
       setLoading(false);
@@ -122,32 +182,50 @@ export const useUserActions = () => {
   const getUserActions = useCallback(async (actionType?: ActionType) => {
     if (!profile) return { data: [], error: new Error('User not authenticated') };
 
-    let query = supabase
-      .from('user_actions')
-      .select('*')
-      .eq('user_id', profile.id)
-      .order('created_at', { ascending: false });
+    try {
+      console.log('Fetching user actions:', { userId: profile.id, actionType });
+      
+      let query = supabase
+        .from('user_actions')
+        .select('*')
+        .eq('user_id', profile.id)
+        .order('created_at', { ascending: false });
 
-    if (actionType) {
-      query = query.eq('action_type', actionType);
+      if (actionType) {
+        query = query.eq('action_type', actionType);
+      }
+
+      const { data, error } = await query;
+      
+      if (error) {
+        console.error('Error fetching user actions:', error);
+      } else {
+        console.log('User actions fetched:', data?.length || 0);
+      }
+      
+      return { data: data || [], error };
+    } catch (error) {
+      console.error('Exception fetching user actions:', error);
+      return { data: [], error };
     }
-
-    const { data, error } = await query;
-    return { data: data || [], error };
   }, [profile]);
 
   const checkUserAction = useCallback(async (placeId: string, actionType: ActionType) => {
     if (!profile) return { exists: false, error: null };
 
-    const { data, error } = await supabase
-      .from('user_actions')
-      .select('id')
-      .eq('user_id', profile.id)
-      .eq('place_id', placeId)
-      .eq('action_type', actionType)
-      .single();
+    try {
+      const { data, error } = await supabase
+        .from('user_actions')
+        .select('id')
+        .eq('user_id', profile.id)
+        .eq('place_id', placeId)
+        .eq('action_type', actionType)
+        .single();
 
-    return { exists: !!data, error };
+      return { exists: !!data, error };
+    } catch (error) {
+      return { exists: false, error };
+    }
   }, [profile]);
 
   return {

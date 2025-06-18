@@ -9,8 +9,9 @@ import FeaturedPlaceCard from '@/components/FeaturedPlaceCard';
 import OutingCard from '@/components/OutingCard';
 import QuickAccessButton from '@/components/QuickAccessButton';
 import { useTheme } from '@/contexts/ThemeContext';
-import { getBlitzRecommendations } from '@/services/googlePlacesService';
-import { Place } from '@/components/SwipeCard';
+import { usePlaces } from '@/hooks/use-places';
+import { useAuth } from '@/contexts/AuthContext';
+import AuthModal from '@/components/Auth/AuthModal';
 
 const QUICK_ACCESS = [
   { id: '1', name: 'Dining', icon: <Coffee className="w-5 h-5" />, color: 'bg-orange-500' },
@@ -30,61 +31,84 @@ const COMMUNITY_STATS = [
 const Home: React.FC = () => {
   const navigate = useNavigate();
   const { darkMode } = useTheme();
+  const { profile } = useAuth();
+  const { getPlaces, getTrendingPlaces, getCommunityFavorites } = usePlaces();
+  
   const [activeFilter, setActiveFilter] = useState<string | null>(null);
   const [isButtonLoading, setIsButtonLoading] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState("Chennai");
+  const [showAuthModal, setShowAuthModal] = useState(false);
   
   // API-driven state
-  const [hotNowPlaces, setHotNowPlaces] = useState<Place[]>([]);
-  const [curatedOutings, setCuratedOutings] = useState<Place[]>([]);
-  const [communityPicks, setCommunityPicks] = useState<Place[]>([]);
+  const [hotNowPlaces, setHotNowPlaces] = useState<any[]>([]);
+  const [curatedOutings, setCuratedOutings] = useState<any[]>([]);
+  const [communityPicks, setCommunityPicks] = useState<any[]>([]);
   const [isLoadingHotNow, setIsLoadingHotNow] = useState(true);
   const [isLoadingCurated, setIsLoadingCurated] = useState(true);
   const [isLoadingCommunity, setIsLoadingCommunity] = useState(true);
 
-  // Fetch "What's Hot Now" places
+  // Fetch trending places
   const fetchHotNowPlaces = useCallback(async () => {
     setIsLoadingHotNow(true);
     try {
-      const places = await getBlitzRecommendations(`trending popular places in ${selectedLocation}`);
-      setHotNowPlaces(places.slice(0, 6));
+      console.log('Fetching trending places...');
+      const { data, error } = await getTrendingPlaces(6);
+      if (error) {
+        console.error('Error fetching trending places:', error);
+      } else {
+        console.log('Trending places loaded:', data.length);
+        setHotNowPlaces(data);
+      }
     } catch (error) {
-      console.error('Failed to fetch hot places:', error);
+      console.error('Exception fetching trending places:', error);
     } finally {
       setIsLoadingHotNow(false);
     }
-  }, [selectedLocation]);
+  }, [getTrendingPlaces]);
 
   // Fetch curated outings based on active filter
   const fetchCuratedOutings = useCallback(async () => {
     setIsLoadingCurated(true);
     try {
-      let query = `best places to visit in ${selectedLocation}`;
+      console.log('Fetching curated places with filter:', activeFilter);
+      const filters: any = { limit: 6 };
+      
       if (activeFilter) {
-        query = `${activeFilter.toLowerCase()} places in ${selectedLocation}`;
+        filters.category = activeFilter.toLowerCase();
       }
       
-      const places = await getBlitzRecommendations(query);
-      setCuratedOutings(places.slice(0, 6));
+      const { data, error } = await getPlaces(filters);
+      if (error) {
+        console.error('Error fetching curated places:', error);
+      } else {
+        console.log('Curated places loaded:', data.length);
+        setCuratedOutings(data);
+      }
     } catch (error) {
-      console.error('Failed to fetch curated places:', error);
+      console.error('Exception fetching curated places:', error);
     } finally {
       setIsLoadingCurated(false);
     }
-  }, [selectedLocation, activeFilter]);
+  }, [getPlaces, activeFilter]);
 
   // Fetch community picks
   const fetchCommunityPicks = useCallback(async () => {
     setIsLoadingCommunity(true);
     try {
-      const places = await getBlitzRecommendations(`highly rated places in ${selectedLocation}`);
-      setCommunityPicks(places.slice(0, 3));
+      console.log('Fetching community favorites...');
+      const { data, error } = await getCommunityFavorites(3);
+      if (error) {
+        console.error('Error fetching community favorites:', error);
+      } else {
+        console.log('Community favorites loaded:', data.length);
+        setCommunityPicks(data);
+      }
     } catch (error) {
-      console.error('Failed to fetch community picks:', error);
+      console.error('Exception fetching community favorites:', error);
     } finally {
       setIsLoadingCommunity(false);
     }
-  }, [selectedLocation]);
+  }, [getCommunityFavorites]);
 
   // Load data on mount and when location changes
   useEffect(() => {
@@ -98,6 +122,11 @@ const Home: React.FC = () => {
   }, [fetchCuratedOutings]);
 
   const handleStartBlitz = () => {
+    if (!profile) {
+      setShowAuthModal(true);
+      return;
+    }
+    
     setIsButtonLoading(true);
     setTimeout(() => {
       navigate('/planner');
@@ -115,7 +144,8 @@ const Home: React.FC = () => {
     });
   };
 
-  const handlePlaceClick = (place: Place) => {
+  const handlePlaceClick = (place: any) => {
+    console.log('Navigating to place:', place.id);
     navigate(`/places/${place.id}`);
   };
 
@@ -132,16 +162,16 @@ const Home: React.FC = () => {
   };
 
   // Convert Place to OutingCard format
-  const convertPlaceToOuting = (place: Place) => ({
+  const convertPlaceToOuting = (place: any) => ({
     id: place.id,
     name: place.name,
     type: place.category || 'Place',
-    rating: place.rating || 4.0,
-    reviews: place.reviewCount || 0,
+    rating: place.average_rating || 4.0,
+    reviews: place.review_count || 0,
     tags: place.tags || [],
-    image: place.image,
+    image: place.images?.[0] || 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&h=600&fit=crop',
     category: place.category,
-    openStatus: place.isOpen ? 'Open' : 'Closed' as const,
+    openStatus: 'Open' as const,
   });
   
   return (
@@ -234,7 +264,7 @@ const Home: React.FC = () => {
           </div>
         </section>
         
-        {/* What's Hot Now - FIXED TRENDING BADGE */}
+        {/* What's Hot Now */}
         <section className="space-y-4 animate-fade-in">
           <div className="px-6 flex items-center justify-between">
             <h2 className="text-headline flex items-center text-foreground">
@@ -252,7 +282,7 @@ const Home: React.FC = () => {
                 <p className="text-caption text-muted-foreground">Discovering trending spots...</p>
               </div>
             </div>
-          ) : (
+          ) : hotNowPlaces.length > 0 ? (
             <Carousel className="w-full">
               <CarouselContent className="ml-6">
                 {hotNowPlaces.map((place, index) => (
@@ -262,8 +292,8 @@ const Home: React.FC = () => {
                         place={{
                           id: place.id,
                           name: place.name,
-                          description: place.description || `${place.category} in ${place.location}`,
-                          image: place.image,
+                          description: place.description || `${place.category} in ${selectedLocation}`,
+                          image: place.images?.[0] || 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&h=600&fit=crop',
                         }} 
                         onClick={() => handlePlaceClick(place)} 
                       />
@@ -272,6 +302,13 @@ const Home: React.FC = () => {
                 ))}
               </CarouselContent>
             </Carousel>
+          ) : (
+            <div className="px-6">
+              <div className="card-spotify rounded-2xl p-6 text-center">
+                <TrendingUp className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+                <p className="text-muted-foreground">No trending places yet. Be the first to add some!</p>
+              </div>
+            </div>
           )}
         </section>
         
@@ -292,14 +329,14 @@ const Home: React.FC = () => {
                 <div key={i} className="h-20 bg-muted/30 rounded-xl animate-shimmer" />
               ))}
             </div>
-          ) : (
+          ) : communityPicks.length > 0 ? (
             <div className="px-6 space-y-3">
               {communityPicks.map((place, index) => (
                 <div key={place.id} className="animate-scale-in" style={{ animationDelay: `${index * 0.15}s` }}>
-                  <div className="card-community rounded-2xl p-4">
+                  <div className="card-community rounded-2xl p-4 cursor-pointer" onClick={() => handlePlaceClick(place)}>
                     <div className="flex items-center space-x-4">
                       <img 
-                        src={place.image} 
+                        src={place.images?.[0] || 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&h=600&fit=crop'} 
                         alt={place.name} 
                         className="w-12 h-12 rounded-xl object-cover border-2 border-border" 
                       />
@@ -308,17 +345,17 @@ const Home: React.FC = () => {
                         <div className="flex items-center space-x-2 mt-1">
                           <div className="flex items-center space-x-1">
                             <MapPin className="w-3 h-3 text-muted-foreground" />
-                            <span className="text-xs text-muted-foreground font-semibold">{place.location}</span>
+                            <span className="text-xs text-muted-foreground font-semibold">{place.address}</span>
                           </div>
                           <span className="text-muted-foreground">•</span>
                           <div className="flex items-center space-x-1">
                             <Star className="w-3 h-3 text-yellow-500 fill-current" />
-                            <span className="text-xs font-bold text-foreground">{place.rating}</span>
+                            <span className="text-xs font-bold text-foreground">{place.average_rating || 4.0}</span>
                           </div>
                           <span className="text-muted-foreground">•</span>
                           <div className="flex items-center space-x-1">
                             <Heart className="w-3 h-3 text-red-500" />
-                            <span className="text-xs font-bold text-foreground">{Math.floor(Math.random() * 100) + 50}</span>
+                            <span className="text-xs font-bold text-foreground">{place.like_count || 0}</span>
                           </div>
                         </div>
                       </div>
@@ -329,6 +366,13 @@ const Home: React.FC = () => {
                   </div>
                 </div>
               ))}
+            </div>
+          ) : (
+            <div className="px-6">
+              <div className="card-spotify rounded-2xl p-6 text-center">
+                <Heart className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+                <p className="text-muted-foreground">No community favorites yet. Start exploring and rating places!</p>
+              </div>
             </div>
           )}
         </section>
@@ -355,7 +399,7 @@ const Home: React.FC = () => {
                 <div key={i} className="h-20 bg-muted/30 rounded-xl animate-shimmer" />
               ))}
             </div>
-          ) : (
+          ) : curatedOutings.length > 0 ? (
             <div className="px-6 space-y-3">
               {curatedOutings.slice(0, 4).map((place, index) => (
                 <div key={place.id} className="animate-fade-in" style={{ animationDelay: `${index * 0.1}s` }}>
@@ -365,6 +409,18 @@ const Home: React.FC = () => {
                   />
                 </div>
               ))}
+            </div>
+          ) : (
+            <div className="px-6">
+              <div className="card-spotify rounded-2xl p-6 text-center">
+                <Coffee className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+                <p className="text-muted-foreground">
+                  {activeFilter 
+                    ? `No ${activeFilter.toLowerCase()} places found. Try a different category!`
+                    : 'No places found. Start by adding some amazing spots!'
+                  }
+                </p>
+              </div>
             </div>
           )}
         </section>
@@ -398,6 +454,9 @@ const Home: React.FC = () => {
       </main>
       
       <BottomNavigation />
+      
+      {/* Auth Modal */}
+      <AuthModal open={showAuthModal} onOpenChange={setShowAuthModal} />
     </div>
   );
 };

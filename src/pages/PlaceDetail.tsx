@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Star, Heart, Share2, MapPin, Clock, DollarSign, MessageCircle, Plus } from 'lucide-react';
+import { Star, Heart, Share2, MapPin, Clock, DollarSign, MessageCircle, Plus, ExternalLink } from 'lucide-react';
 import Header from '@/components/Header';
 import { Button } from '@/components/ui/button';
 import { usePlaces } from '@/hooks/use-places';
@@ -37,8 +37,10 @@ const PlaceDetail: React.FC = () => {
   const loadPlaceData = async () => {
     if (!id) return;
     
+    console.log('Loading place data for ID:', id);
     const { data, error } = await getPlaceById(id);
     if (error || !data) {
+      console.error('Place not found:', error);
       toast({
         title: 'Place not found',
         description: 'This place may have been removed.',
@@ -46,6 +48,7 @@ const PlaceDetail: React.FC = () => {
       });
       navigate('/');
     } else {
+      console.log('Place loaded:', data);
       setPlace(data);
     }
     setLoading(false);
@@ -54,25 +57,37 @@ const PlaceDetail: React.FC = () => {
   const loadReviews = async () => {
     if (!id) return;
     
+    console.log('Loading reviews for place:', id);
     const { data } = await getReviewsForPlace(id);
+    console.log('Reviews loaded:', data?.length || 0);
     setReviews(data || []);
   };
 
   const checkUserActions = async () => {
     if (!id || !profile) return;
     
+    console.log('Checking user actions for place:', id);
     const [likeResult, saveResult] = await Promise.all([
       checkUserAction(id, 'like'),
       checkUserAction(id, 'save'),
     ]);
     
+    console.log('User actions:', { liked: likeResult.exists, saved: saveResult.exists });
     setIsLiked(likeResult.exists);
     setIsSaved(saveResult.exists);
   };
 
   const handleLike = async () => {
-    if (!profile || !place) return;
+    if (!profile || !place) {
+      toast({
+        title: 'Sign in required',
+        description: 'Please sign in to like places.',
+        variant: 'destructive',
+      });
+      return;
+    }
 
+    console.log('Toggling like for place:', place.id);
     if (isLiked) {
       await removeAction(place.id, 'like');
       setIsLiked(false);
@@ -83,8 +98,16 @@ const PlaceDetail: React.FC = () => {
   };
 
   const handleSave = async () => {
-    if (!profile || !place) return;
+    if (!profile || !place) {
+      toast({
+        title: 'Sign in required',
+        description: 'Please sign in to save places.',
+        variant: 'destructive',
+      });
+      return;
+    }
 
+    console.log('Toggling save for place:', place.id);
     if (isSaved) {
       await removeAction(place.id, 'save');
       setIsSaved(false);
@@ -97,43 +120,76 @@ const PlaceDetail: React.FC = () => {
   const handleShare = async () => {
     if (!place) return;
     
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: place.name,
-          text: place.description || `Check out ${place.name} on Blitz!`,
-          url: window.location.href,
+    console.log('Sharing place:', place.name);
+    const shareData = {
+      title: place.name,
+      text: place.description || `Check out ${place.name} on Blitz!`,
+      url: window.location.href,
+    };
+
+    try {
+      if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
+        await navigator.share(shareData);
+        console.log('Native share successful');
+        
+        if (profile) {
+          await recordAction(place.id, 'share');
+        }
+      } else {
+        // Fallback to clipboard
+        await navigator.clipboard.writeText(window.location.href);
+        console.log('Copied to clipboard');
+        toast({
+          title: 'Link copied!',
+          description: 'Place link has been copied to your clipboard.',
         });
         
         if (profile) {
           await recordAction(place.id, 'share');
         }
-      } catch (error) {
-        // User cancelled sharing
       }
-    } else {
-      navigator.clipboard.writeText(window.location.href);
-      toast({
-        title: 'Link copied!',
-        description: 'Place link has been copied to your clipboard.',
-      });
-      
-      if (profile) {
-        await recordAction(place.id, 'share');
+    } catch (error) {
+      console.error('Share failed:', error);
+      // Fallback to clipboard
+      try {
+        await navigator.clipboard.writeText(window.location.href);
+        toast({
+          title: 'Link copied!',
+          description: 'Place link has been copied to your clipboard.',
+        });
+        
+        if (profile) {
+          await recordAction(place.id, 'share');
+        }
+      } catch (clipboardError) {
+        console.error('Clipboard failed:', clipboardError);
+        toast({
+          title: 'Share failed',
+          description: 'Could not share or copy link.',
+          variant: 'destructive',
+        });
       }
     }
   };
 
   const handleVisit = async () => {
-    if (!profile || !place) return;
+    if (!place) return;
     
-    await recordAction(place.id, 'visit');
+    console.log('Visiting place:', place.name);
+    
+    if (profile) {
+      await recordAction(place.id, 'visit');
+    }
     
     // Open in maps
     if (place.latitude && place.longitude) {
-      window.open(`https://maps.google.com/maps?q=${place.latitude},${place.longitude}`, '_blank');
+      const mapsUrl = `https://maps.google.com/maps?q=${place.latitude},${place.longitude}`;
+      console.log('Opening maps URL:', mapsUrl);
+      window.open(mapsUrl, '_blank');
     } else {
-      window.open(`https://www.google.com/search?q=${encodeURIComponent(`${place.name} ${place.address}`)}`, '_blank');
+      const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(`${place.name} ${place.address}`)}`;
+      console.log('Opening search URL:', searchUrl);
+      window.open(searchUrl, '_blank');
     }
   };
 
@@ -289,7 +345,7 @@ const PlaceDetail: React.FC = () => {
               {isSaved ? 'Saved' : 'Save'}
             </Button>
             <Button onClick={handleVisit} className="btn-primary">
-              <MapPin className="w-4 h-4 mr-2" />
+              <ExternalLink className="w-4 h-4 mr-2" />
               Visit
             </Button>
           </div>
