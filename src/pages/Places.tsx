@@ -181,3 +181,5 @@ const Places: React.FC = () => {
     </div>
   );
 };
+
+export default Places
