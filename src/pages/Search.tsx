@@ -7,54 +7,7 @@ import OutingCard from '@/components/OutingCard';
 import { Sparkles, Loader2 } from 'lucide-react';
 import { useTheme } from '@/contexts/ThemeContext';
 import { Place } from '@/components/SwipeCard';
-
-// Mock search results
-const MOCK_SEARCH_RESULTS: Place[] = [
-  {
-    id: '1',
-    name: 'Marina Beach',
-    location: 'Chennai',
-    country: 'India',
-    image: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=800&h=600&fit=crop',
-    rating: 4.2,
-    reviewCount: 1250,
-    category: 'beach',
-    description: 'Famous beach in Chennai perfect for evening walks',
-  },
-  {
-    id: '2',
-    name: 'Phoenix MarketCity',
-    location: 'Chennai',
-    country: 'India',
-    image: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=800&h=600&fit=crop',
-    rating: 4.4,
-    reviewCount: 890,
-    category: 'shopping mall',
-    description: 'Popular shopping and entertainment destination',
-  },
-  {
-    id: '3',
-    name: 'Amethyst Cafe',
-    location: 'Chennai',
-    country: 'India',
-    image: 'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=800&h=600&fit=crop',
-    rating: 4.5,
-    reviewCount: 456,
-    category: 'cafe',
-    description: 'Cozy cafe perfect for hanging out with friends',
-  },
-  {
-    id: '4',
-    name: 'The Flying Elephant',
-    location: 'Chennai',
-    country: 'India',
-    image: 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=800&h=600&fit=crop',
-    rating: 4.7,
-    reviewCount: 678,
-    category: 'restaurant',
-    description: 'Fine dining restaurant with excellent ambiance',
-  },
-];
+import { getBlitzRecommendations } from '@/services/googlePlacesService';
 
 const Search: React.FC = () => {
   const { darkMode } = useTheme();
@@ -68,22 +21,23 @@ const Search: React.FC = () => {
     setIsSearching(true);
     setHasSearched(true);
     
-    // Simulate search delay
-    setTimeout(() => {
-      // Filter mock results based on search input
-      const filtered = MOCK_SEARCH_RESULTS.filter(place =>
-        place.name.toLowerCase().includes(input.toLowerCase()) ||
-        place.category.toLowerCase().includes(input.toLowerCase()) ||
-        place.description?.toLowerCase().includes(input.toLowerCase())
-      );
-      
-      setSearchResults(filtered.length > 0 ? filtered : MOCK_SEARCH_RESULTS);
+    try {
+      console.log("Searching for places with prompt:", input);
+      const results = await getBlitzRecommendations(input);
+      console.log("Search results:", results);
+      setSearchResults(results);
+    } catch (error) {
+      console.error('Search error:', error);
+      setSearchResults([]);
+    } finally {
       setIsSearching(false);
-    }, 1000);
+    }
   };
   
   const handlePlaceClick = (place: Place) => {
+    // Navigate to place details or add to favorites
     console.log('Place clicked:', place);
+    window.location.href = `/places/${place.id}`;
   };
   
   return (
@@ -128,9 +82,9 @@ const Search: React.FC = () => {
                           type: place.category || 'Place',
                           rating: place.rating || 4.0,
                           reviews: place.reviewCount || 0,
-                          tags: [],
+                          tags: place.tags || [],
                           image: place.image,
-                          openStatus: 'Open' as const,
+                          openStatus: place.isOpen ? 'Open' : 'Closed' as const,
                         }}
                         onClick={() => handlePlaceClick(place)}
                       />
@@ -139,10 +93,11 @@ const Search: React.FC = () => {
                   <div className="mt-8 text-center">
                     <GlowButton 
                       className="px-8 py-3" 
-                      color="pink" 
+                      color="primary" 
                       showSparkle
                       onClick={() => {
-                        console.log('Navigate to swipe with results:', searchResults);
+                        // Navigate to swipe mode with these results
+                        window.location.href = '/swipe';
                       }}
                     >
                       Swipe Through Results

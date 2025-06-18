@@ -118,6 +118,8 @@ export const searchPlaces = async (params: NearbySearchParams): Promise<any[]> =
       throw new Error("Google Places API key is missing. Please add VITE_GOOGLE_PLACES_API_KEY to your .env file");
     }
 
+    console.log("Using Google Places API key:", apiKey);
+
     // Build query parameters
     const queryParams = new URLSearchParams({
       key: apiKey,
@@ -142,23 +144,17 @@ export const searchPlaces = async (params: NearbySearchParams): Promise<any[]> =
     if (params.opennow) queryParams.append('opennow', 'true');
 
     const url = `https://maps.googleapis.com/maps/api/place/${endpoint}/json?${queryParams.toString()}`;
+    console.log("Google Places API request URL:", url);
 
-    // Use CORS proxy for browser requests
-    const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
-
-    const response = await fetch(proxyUrl, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
+    // Make direct request to Google Places API
+    const response = await fetch(url);
 
     if (!response.ok) {
       throw new Error(`API request failed with status ${response.status}`);
     }
 
-    const proxyData = await response.json();
-    const data: PlacesResponse = JSON.parse(proxyData.contents);
+    const data: PlacesResponse = await response.json();
+    console.log("Google Places API response:", data);
 
     if (data.status !== 'OK' && data.status !== 'ZERO_RESULTS') {
       throw new Error(data.error_message || `API returned status: ${data.status}`);
@@ -169,7 +165,7 @@ export const searchPlaces = async (params: NearbySearchParams): Promise<any[]> =
     
     return places;
   } catch (error) {
-    console.warn('Google Places API unavailable, using fallback data:', error);
+    console.warn('Google Places API error:', error);
     
     // Return fallback data instead of throwing
     return getFallbackPlaces(params.query || 'places in Chennai');
@@ -252,6 +248,7 @@ const getFallbackPlaces = (query: string): any[] => {
 // Main function to get recommendations based on user prompt
 export const getBlitzRecommendations = async (prompt: string): Promise<any[]> => {
   try {
+    console.log("Getting recommendations for prompt:", prompt);
     const parsed = parsePrompt(prompt);
     
     // Build search query based on parsed data
@@ -303,6 +300,7 @@ export const getBlitzRecommendations = async (prompt: string): Promise<any[]> =>
     }
 
     const places = await searchPlaces(searchParams);
+    console.log("Retrieved places:", places);
     
     // Add some synthetic properties for better UX
     return places.map(place => ({

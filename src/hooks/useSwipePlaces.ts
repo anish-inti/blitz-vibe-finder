@@ -2,9 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Place } from "@/components/SwipeCard";
 import { toast } from "@/hooks/use-toast";
-import { fetchChennaiPlaces } from "@/utils/fetchPlaces";
 import { FilterParams } from "@/components/SearchFilters";
-import { simulateGoogleSearch } from "@/services/searchSimulationService";
 import { parseAndFilterPlaces } from "@/utils/promptParser";
 import { getBlitzRecommendations } from "@/services/googlePlacesService";
 
@@ -15,6 +13,90 @@ interface PlanData {
   timing: Date;
   description: string;
 }
+
+// Fallback places when API fails
+const FALLBACK_PLACES: Place[] = [
+  {
+    id: '1',
+    name: 'Marina Beach',
+    location: 'Chennai',
+    country: 'India',
+    image: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=800&h=600&fit=crop',
+    rating: 4.2,
+    reviewCount: 1250,
+    category: 'beach',
+    description: 'Famous beach in Chennai perfect for evening walks',
+    tags: ['outdoor', 'scenic', 'family-friendly'],
+    budget: 100,
+    maxGroupSize: 10,
+    time: 'evening',
+    hours: '24 hours',
+  },
+  {
+    id: '2',
+    name: 'Phoenix MarketCity',
+    location: 'Chennai',
+    country: 'India',
+    image: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=800&h=600&fit=crop',
+    rating: 4.4,
+    reviewCount: 890,
+    category: 'shopping mall',
+    description: 'Popular shopping and entertainment destination',
+    tags: ['shopping', 'entertainment', 'food'],
+    budget: 500,
+    maxGroupSize: 8,
+    time: 'afternoon',
+    hours: '10:00 AM - 10:00 PM',
+  },
+  {
+    id: '3',
+    name: 'Amethyst Cafe',
+    location: 'Chennai',
+    country: 'India',
+    image: 'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=800&h=600&fit=crop',
+    rating: 4.5,
+    reviewCount: 456,
+    category: 'cafe',
+    description: 'Cozy cafe perfect for hanging out with friends',
+    tags: ['cafe', 'cozy', 'work-friendly'],
+    budget: 300,
+    maxGroupSize: 6,
+    time: 'morning',
+    hours: '8:00 AM - 11:00 PM',
+  },
+  {
+    id: '4',
+    name: 'The Flying Elephant',
+    location: 'Chennai',
+    country: 'India',
+    image: 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=800&h=600&fit=crop',
+    rating: 4.7,
+    reviewCount: 678,
+    category: 'restaurant',
+    description: 'Fine dining restaurant with excellent ambiance',
+    tags: ['fine dining', 'romantic', 'premium'],
+    budget: 1200,
+    maxGroupSize: 4,
+    time: 'evening',
+    hours: '7:00 PM - 12:00 AM',
+  },
+  {
+    id: '5',
+    name: 'Kapaleeshwarar Temple',
+    location: 'Chennai',
+    country: 'India',
+    image: 'https://images.unsplash.com/photo-1582510003544-4d00b7f74220?w=800&h=600&fit=crop',
+    rating: 4.6,
+    reviewCount: 2100,
+    category: 'temple',
+    description: 'Historic temple with beautiful architecture',
+    tags: ['historic', 'cultural', 'spiritual'],
+    budget: 50,
+    maxGroupSize: 15,
+    time: 'morning',
+    hours: '6:00 AM - 12:00 PM, 4:00 PM - 9:00 PM',
+  },
+];
 
 export function useSwipePlaces(planData: PlanData, initialFilters: FilterParams) {
   const [places, setPlaces] = useState<Place[]>([]);
@@ -32,148 +114,67 @@ export function useSwipePlaces(planData: PlanData, initialFilters: FilterParams)
     setError(null);
     
     try {
-      let fetchedPlaces: Place[] = [];
-
-      if (useGoogleAPI) {
-        // Try Google Places API first
-        try {
-          // Build a comprehensive prompt for Google Places API
-          let prompt = '';
-          if (planData.description && planData.description.trim()) {
-            prompt = planData.description;
-          } else {
-            // Build prompt from plan data
-            const parts = [];
-            if (planData.occasion) parts.push(planData.occasion);
-            if (planData.outingType && planData.outingType !== 'movie') parts.push(planData.outingType);
-            parts.push('places in Chennai');
-            if (filters.keyword) parts.push(filters.keyword);
-            prompt = parts.join(' ');
-          }
-
-          console.log('Fetching from Google Places API with prompt:', prompt);
-          fetchedPlaces = await getBlitzRecommendations(prompt);
-          
-          // Filter out any movie-related places
-          fetchedPlaces = fetchedPlaces.filter(place => 
-            !place.category?.toLowerCase().includes('movie') &&
-            !place.category?.toLowerCase().includes('cinema') &&
-            !place.name?.toLowerCase().includes('cinema') &&
-            !place.name?.toLowerCase().includes('theater')
-          );
-          
-          if (fetchedPlaces.length > 0) {
-            console.log('Successfully fetched from Google Places API:', fetchedPlaces);
-            setPlaces(fetchedPlaces);
-            setAllPlaces(fetchedPlaces);
-            setError(null);
-            setIsLoading(false);
-            
-            toast({
-              title: "Places loaded",
-              description: `Found ${fetchedPlaces.length} places using Google Places API`,
-            });
-            return;
-          } else {
-            console.log('No places returned from Google Places API');
-          }
-        } catch (apiError) {
-          console.error('Google Places API failed:', apiError);
-          toast({
-            title: "API Error",
-            description: "Google Places API failed, trying alternative sources...",
-            variant: "destructive",
-          });
-        }
+      // Build a comprehensive prompt for Google Places API
+      let prompt = '';
+      if (planData.description && planData.description.trim()) {
+        prompt = planData.description;
+      } else {
+        // Build prompt from plan data
+        const parts = [];
+        if (planData.occasion) parts.push(planData.occasion);
+        if (planData.outingType && planData.outingType !== 'movie') parts.push(planData.outingType);
+        parts.push('places in Chennai');
+        if (filters.keyword) parts.push(filters.keyword);
+        prompt = parts.join(' ');
       }
 
-      // Fallback to database
-      console.log("Trying database fallback...");
-      const { places: dbPlaces, error: dbError } = await fetchChennaiPlaces({ planData, filters });
+      console.log('Fetching places with prompt:', prompt);
       
-      if (!dbError && dbPlaces.length > 0) {
-        const enhancedPlaces = dbPlaces
-          .filter(place => 
-            !place.category?.toLowerCase().includes('movie') &&
-            !place.category?.toLowerCase().includes('cinema')
-          )
-          .map(place => ({
-            ...place,
-            tags: place.category ? [place.category.toLowerCase(), ...getRandomTags()] : getRandomTags(),
-            budget: Math.floor(Math.random() * 500) + 100,
-            maxGroupSize: Math.floor(Math.random() * 10) + 1,
-            time: getRandomTime(),
-            hours: getRandomHours(),
-          }));
-        
-        setPlaces(enhancedPlaces);
-        setAllPlaces(enhancedPlaces);
+      // Use Google Places API
+      const results = await getBlitzRecommendations(prompt);
+      
+      // Filter out any movie-related places
+      const filteredResults = results.filter(place => 
+        !place.category?.toLowerCase().includes('movie') &&
+        !place.category?.toLowerCase().includes('cinema') &&
+        !place.name?.toLowerCase().includes('cinema') &&
+        !place.name?.toLowerCase().includes('theater')
+      );
+      
+      if (filteredResults.length > 0) {
+        setPlaces(filteredResults);
+        setAllPlaces(filteredResults);
         setError(null);
         
         toast({
-          title: "Places loaded from database",
-          description: `Found ${enhancedPlaces.length} places`,
+          title: "Places loaded",
+          description: `Found ${filteredResults.length} places matching your criteria`,
         });
       } else {
-        // Final fallback to simulation
-        console.log("Database failed, using simulation...");
-        const { places: simulatedPlaces, error: simulationError } = 
-          await simulateGoogleSearch("Chennai, India", filters);
+        // If no results, use fallback data
+        console.log("No places found, using fallback data");
+        setPlaces(FALLBACK_PLACES);
+        setAllPlaces(FALLBACK_PLACES);
         
-        if (simulationError) {
-          setError(simulationError);
-          setPlaces([]);
-          setAllPlaces([]);
-        } else {
-          const enhancedPlaces = simulatedPlaces
-            .filter(place => 
-              !place.category?.toLowerCase().includes('movie') &&
-              !place.category?.toLowerCase().includes('cinema')
-            )
-            .map(place => ({
-              ...place,
-              tags: place.category ? [place.category.toLowerCase(), ...getRandomTags()] : getRandomTags(),
-              budget: Math.floor(Math.random() * 500) + 100,
-              maxGroupSize: Math.floor(Math.random() * 10) + 1,
-              time: getRandomTime(),
-              hours: getRandomHours(),
-            }));
-          
-          setPlaces(enhancedPlaces);
-          setAllPlaces(enhancedPlaces);
-          setError(null);
-          
-          toast({
-            title: "Using simulated results",
-            description: "Showing simulated search results",
-          });
-        }
+        toast({
+          title: "Using fallback data",
+          description: "Could not find places matching your criteria, showing alternatives",
+        });
       }
     } catch (err) {
       console.error("Error fetching places:", err);
       setError("Failed to retrieve places. Please try again.");
+      setPlaces(FALLBACK_PLACES);
+      setAllPlaces(FALLBACK_PLACES);
+      
+      toast({
+        title: "Error loading places",
+        description: "Using fallback data instead",
+        variant: "destructive",
+      });
     } finally {
       setIsLoading(false);
     }
-  };
-  
-  // Helper functions for generating random data
-  const getRandomTags = () => {
-    const allTags = ["rooftop", "outdoor", "cafe", "club", "aesthetic", "chill", "romantic", "premium", "dance", "cozy", "peaceful", "nightlife"];
-    const numTags = Math.floor(Math.random() * 3) + 1;
-    const shuffled = [...allTags].sort(() => 0.5 - Math.random());
-    return shuffled.slice(0, numTags);
-  };
-  
-  const getRandomTime = () => {
-    const times = ["morning", "afternoon", "evening", "night"];
-    return times[Math.floor(Math.random() * times.length)];
-  };
-  
-  const getRandomHours = () => {
-    const startHour = Math.floor(Math.random() * 12) + 7;
-    const endHour = Math.floor(Math.random() * 6) + 18;
-    return `${startHour}:00 AM - ${endHour}:00 PM`;
   };
 
   useEffect(() => {
@@ -190,43 +191,24 @@ export function useSwipePlaces(planData: PlanData, initialFilters: FilterParams)
     
     try {
       // Use Google Places API for prompt-based search
-      if (useGoogleAPI) {
-        const results = await getBlitzRecommendations(prompt);
-        // Filter out movie-related places
-        const filteredResults = results.filter(place => 
-          !place.category?.toLowerCase().includes('movie') &&
-          !place.category?.toLowerCase().includes('cinema') &&
-          !place.name?.toLowerCase().includes('cinema') &&
-          !place.name?.toLowerCase().includes('theater')
-        );
-        
-        if (filteredResults.length > 0) {
-          setPlaces(filteredResults);
-          toast({
-            title: "Places found",
-            description: `Found ${filteredResults.length} places matching your criteria.`
-          });
-        } else {
-          // Fallback to filtering existing places
-          if (prompt && allPlaces.length > 0) {
-            const filteredPlaces = parseAndFilterPlaces(prompt, allPlaces);
-            
-            if (filteredPlaces.length === 0) {
-              toast({
-                title: "No matching places",
-                description: "No places match your criteria. Try a different search."
-              });
-            } else {
-              setPlaces(filteredPlaces);
-              toast({
-                title: "Places filtered",
-                description: `Found ${filteredPlaces.length} places matching your criteria.`
-              });
-            }
-          }
-        }
+      const results = await getBlitzRecommendations(prompt);
+      
+      // Filter out movie-related places
+      const filteredResults = results.filter(place => 
+        !place.category?.toLowerCase().includes('movie') &&
+        !place.category?.toLowerCase().includes('cinema') &&
+        !place.name?.toLowerCase().includes('cinema') &&
+        !place.name?.toLowerCase().includes('theater')
+      );
+      
+      if (filteredResults.length > 0) {
+        setPlaces(filteredResults);
+        toast({
+          title: "Places found",
+          description: `Found ${filteredResults.length} places matching your criteria.`
+        });
       } else {
-        // Use local filtering
+        // Fallback to filtering existing places
         if (prompt && allPlaces.length > 0) {
           const filteredPlaces = parseAndFilterPlaces(prompt, allPlaces);
           
@@ -235,6 +217,7 @@ export function useSwipePlaces(planData: PlanData, initialFilters: FilterParams)
               title: "No matching places",
               description: "No places match your criteria. Try a different search."
             });
+            setPlaces(FALLBACK_PLACES);
           } else {
             setPlaces(filteredPlaces);
             toast({
@@ -242,6 +225,8 @@ export function useSwipePlaces(planData: PlanData, initialFilters: FilterParams)
               description: `Found ${filteredPlaces.length} places matching your criteria.`
             });
           }
+        } else {
+          setPlaces(FALLBACK_PLACES);
         }
       }
     } catch (error) {
@@ -251,6 +236,7 @@ export function useSwipePlaces(planData: PlanData, initialFilters: FilterParams)
         description: "Could not search places. Please try again.",
         variant: "destructive",
       });
+      setPlaces(FALLBACK_PLACES);
     } finally {
       setIsLoading(false);
     }

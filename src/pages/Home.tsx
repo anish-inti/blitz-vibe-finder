@@ -9,6 +9,8 @@ import FeaturedPlaceCard from '@/components/FeaturedPlaceCard';
 import OutingCard from '@/components/OutingCard';
 import QuickAccessButton from '@/components/QuickAccessButton';
 import { useTheme } from '@/contexts/ThemeContext';
+import { getBlitzRecommendations } from '@/services/googlePlacesService';
+import { Place } from '@/components/SwipeCard';
 
 const QUICK_ACCESS = [
   { id: '1', name: 'Dining', icon: <Coffee className="w-5 h-5" />, color: 'bg-orange-500' },
@@ -25,8 +27,8 @@ const COMMUNITY_STATS = [
   { label: 'Reviews Today', value: '847', icon: MessageCircle, color: 'text-purple-600' },
 ];
 
-// Mock data for trending places
-const MOCK_TRENDING_PLACES = [
+// Fallback data in case API fails
+const FALLBACK_TRENDING_PLACES = [
   {
     id: '1',
     name: 'Marina Beach',
@@ -65,8 +67,8 @@ const MOCK_TRENDING_PLACES = [
   },
 ];
 
-// Mock data for community picks
-const MOCK_COMMUNITY_PICKS = [
+// Fallback data for community picks
+const FALLBACK_COMMUNITY_PICKS = [
   {
     id: '1',
     name: 'Amethyst Cafe',
@@ -90,8 +92,8 @@ const MOCK_COMMUNITY_PICKS = [
   },
 ];
 
-// Mock data for curated outings
-const MOCK_CURATED_OUTINGS = [
+// Fallback data for curated outings
+const FALLBACK_CURATED_OUTINGS = [
   {
     id: '1',
     name: 'Dakshin Restaurant',
@@ -141,31 +143,107 @@ const Home: React.FC = () => {
   const [isButtonLoading, setIsButtonLoading] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState("Chennai");
   
-  // State for mock data
-  const [hotNowPlaces, setHotNowPlaces] = useState(MOCK_TRENDING_PLACES);
-  const [curatedOutings, setCuratedOutings] = useState(MOCK_CURATED_OUTINGS);
-  const [communityPicks, setCommunityPicks] = useState(MOCK_COMMUNITY_PICKS);
-  const [isLoadingHotNow, setIsLoadingHotNow] = useState(false);
-  const [isLoadingCurated, setIsLoadingCurated] = useState(false);
-  const [isLoadingCommunity, setIsLoadingCommunity] = useState(false);
+  // API-driven state
+  const [hotNowPlaces, setHotNowPlaces] = useState<any[]>(FALLBACK_TRENDING_PLACES);
+  const [curatedOutings, setCuratedOutings] = useState<any[]>(FALLBACK_CURATED_OUTINGS);
+  const [communityPicks, setCommunityPicks] = useState<any[]>(FALLBACK_COMMUNITY_PICKS);
+  const [isLoadingHotNow, setIsLoadingHotNow] = useState(true);
+  const [isLoadingCurated, setIsLoadingCurated] = useState(true);
+  const [isLoadingCommunity, setIsLoadingCommunity] = useState(true);
 
-  // Filter curated outings based on active filter
-  useEffect(() => {
-    if (activeFilter) {
-      setIsLoadingCurated(true);
-      // Simulate loading
-      setTimeout(() => {
-        const filtered = MOCK_CURATED_OUTINGS.filter(outing => 
-          outing.type.toLowerCase().includes(activeFilter.toLowerCase()) ||
-          outing.tags.some(tag => tag.toLowerCase().includes(activeFilter.toLowerCase()))
-        );
-        setCuratedOutings(filtered.length > 0 ? filtered : MOCK_CURATED_OUTINGS);
-        setIsLoadingCurated(false);
-      }, 500);
-    } else {
-      setCuratedOutings(MOCK_CURATED_OUTINGS);
+  // Fetch "What's Hot Now" places
+  const fetchHotNowPlaces = useCallback(async () => {
+    setIsLoadingHotNow(true);
+    try {
+      console.log("Fetching trending places...");
+      const places = await getBlitzRecommendations(`trending popular places in ${selectedLocation}`);
+      
+      // Map to the format expected by FeaturedPlaceCard
+      const formattedPlaces = places.slice(0, 6).map(place => ({
+        id: place.id,
+        name: place.name,
+        description: place.description || `${place.category} in ${place.location}`,
+        image: place.image,
+      }));
+      
+      setHotNowPlaces(formattedPlaces);
+    } catch (error) {
+      console.error('Failed to fetch hot places:', error);
+      setHotNowPlaces(FALLBACK_TRENDING_PLACES);
+    } finally {
+      setIsLoadingHotNow(false);
     }
-  }, [activeFilter]);
+  }, [selectedLocation]);
+
+  // Fetch curated outings based on active filter
+  const fetchCuratedOutings = useCallback(async () => {
+    setIsLoadingCurated(true);
+    try {
+      let query = `best places to visit in ${selectedLocation}`;
+      if (activeFilter) {
+        query = `${activeFilter.toLowerCase()} places in ${selectedLocation}`;
+      }
+      
+      console.log("Fetching curated places with query:", query);
+      const places = await getBlitzRecommendations(query);
+      
+      // Map to the format expected by OutingCard
+      const formattedOutings = places.slice(0, 6).map(place => ({
+        id: place.id,
+        name: place.name,
+        type: place.category || 'Place',
+        rating: place.rating || 4.0,
+        reviews: place.reviewCount || 0,
+        tags: place.tags || [],
+        image: place.image,
+        category: place.category,
+        openStatus: place.isOpen ? 'Open' : 'Closed' as const,
+      }));
+      
+      setCuratedOutings(formattedOutings);
+    } catch (error) {
+      console.error('Failed to fetch curated places:', error);
+      setCuratedOutings(FALLBACK_CURATED_OUTINGS);
+    } finally {
+      setIsLoadingCurated(false);
+    }
+  }, [selectedLocation, activeFilter]);
+
+  // Fetch community picks
+  const fetchCommunityPicks = useCallback(async () => {
+    setIsLoadingCommunity(true);
+    try {
+      console.log("Fetching community picks...");
+      const places = await getBlitzRecommendations(`highly rated places in ${selectedLocation}`);
+      
+      // Map to the format expected by the community picks section
+      const formattedPicks = places.slice(0, 3).map(place => ({
+        id: place.id,
+        name: place.name,
+        location: place.location,
+        image: place.image,
+        rating: place.rating,
+      }));
+      
+      setCommunityPicks(formattedPicks);
+    } catch (error) {
+      console.error('Failed to fetch community picks:', error);
+      setCommunityPicks(FALLBACK_COMMUNITY_PICKS);
+    } finally {
+      setIsLoadingCommunity(false);
+    }
+  }, [selectedLocation]);
+
+  // Load data on mount and when location changes
+  useEffect(() => {
+    fetchHotNowPlaces();
+    fetchCommunityPicks();
+  }, [fetchHotNowPlaces, fetchCommunityPicks]);
+
+  // Load curated outings when filter changes
+  useEffect(() => {
+    fetchCuratedOutings();
+  }, [fetchCuratedOutings]);
 
   const handleStartBlitz = () => {
     setIsButtonLoading(true);

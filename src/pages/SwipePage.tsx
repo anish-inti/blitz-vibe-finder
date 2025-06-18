@@ -1,19 +1,18 @@
 import React, { useState } from 'react';
-import { useLocation as useRouterLocation } from 'react-router-dom';
+import { useLocation as useRouterLocation, useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
 import BottomNavigation from '@/components/BottomNavigation';
 import SwipeDeck from '@/components/SwipeDeck';
 import { Sparkles, Database, Search, Filter } from 'lucide-react';
 import { useLocationContext } from '@/contexts/LocationContext';
+import SearchFilters from '@/components/SearchFilters';
 import SwipeResults from '@/components/SwipeResults';
+import { useSwipePlaces } from '@/hooks/useSwipePlaces';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { ParsedFilters, parseUserPrompt } from '@/utils/promptParser';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Place } from '@/components/SwipeCard';
-import { toast } from '@/hooks/use-toast';
-import { useNavigate } from 'react-router-dom';
 
 interface PlanData {
   occasion: string;
@@ -23,101 +22,12 @@ interface PlanData {
   description: string;
 }
 
-// Mock places data
-const MOCK_PLACES: Place[] = [
-  {
-    id: '1',
-    name: 'Marina Beach',
-    location: 'Chennai',
-    country: 'India',
-    image: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=800&h=600&fit=crop',
-    rating: 4.2,
-    reviewCount: 1250,
-    category: 'beach',
-    description: 'Famous beach in Chennai perfect for evening walks',
-    tags: ['outdoor', 'scenic', 'family-friendly'],
-    budget: 100,
-    maxGroupSize: 10,
-    time: 'evening',
-    hours: '24 hours',
-  },
-  {
-    id: '2',
-    name: 'Phoenix MarketCity',
-    location: 'Chennai',
-    country: 'India',
-    image: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=800&h=600&fit=crop',
-    rating: 4.4,
-    reviewCount: 890,
-    category: 'shopping mall',
-    description: 'Popular shopping and entertainment destination',
-    tags: ['shopping', 'entertainment', 'food'],
-    budget: 500,
-    maxGroupSize: 8,
-    time: 'afternoon',
-    hours: '10:00 AM - 10:00 PM',
-  },
-  {
-    id: '3',
-    name: 'Amethyst Cafe',
-    location: 'Chennai',
-    country: 'India',
-    image: 'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=800&h=600&fit=crop',
-    rating: 4.5,
-    reviewCount: 456,
-    category: 'cafe',
-    description: 'Cozy cafe perfect for hanging out with friends',
-    tags: ['cafe', 'cozy', 'work-friendly'],
-    budget: 300,
-    maxGroupSize: 6,
-    time: 'morning',
-    hours: '8:00 AM - 11:00 PM',
-  },
-  {
-    id: '4',
-    name: 'The Flying Elephant',
-    location: 'Chennai',
-    country: 'India',
-    image: 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=800&h=600&fit=crop',
-    rating: 4.7,
-    reviewCount: 678,
-    category: 'restaurant',
-    description: 'Fine dining restaurant with excellent ambiance',
-    tags: ['fine dining', 'romantic', 'premium'],
-    budget: 1200,
-    maxGroupSize: 4,
-    time: 'evening',
-    hours: '7:00 PM - 12:00 AM',
-  },
-  {
-    id: '5',
-    name: 'Kapaleeshwarar Temple',
-    location: 'Chennai',
-    country: 'India',
-    image: 'https://images.unsplash.com/photo-1582510003544-4d00b7f74220?w=800&h=600&fit=crop',
-    rating: 4.6,
-    reviewCount: 2100,
-    category: 'temple',
-    description: 'Historic temple with beautiful architecture',
-    tags: ['historic', 'cultural', 'spiritual'],
-    budget: 50,
-    maxGroupSize: 15,
-    time: 'morning',
-    hours: '6:00 AM - 12:00 PM, 4:00 PM - 9:00 PM',
-  },
-];
-
 const SwipePage: React.FC = () => {
   const location = useRouterLocation();
-  const navigate = useNavigate();
+  const locationContext = useLocationContext();
   const [userPrompt, setUserPrompt] = useState<string>('');
   const [promptFilters, setPromptFilters] = useState<ParsedFilters | null>(null);
   const [showPromptInput, setShowPromptInput] = useState<boolean>(false);
-  const [places, setPlaces] = useState<Place[]>(MOCK_PLACES);
-  const [likedPlaces, setLikedPlaces] = useState<Place[]>([]);
-  const [showResults, setShowResults] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [useSimulation, setUseSimulation] = useState(false);
 
   const planData: PlanData = location.state as PlanData || {
     occasion: '',
@@ -127,107 +37,38 @@ const SwipePage: React.FC = () => {
     description: ''
   };
 
+  const {
+    places,
+    likedPlaces,
+    showResults,
+    isLoading,
+    error,
+    filters,
+    useSimulation,
+    handleApplyFilters,
+    handleSwipe,
+    handleContinuePlanning,
+    handleFinishPlanning,
+    handleRetry,
+    handleToggleDataSource,
+    handleFilterByPrompt,
+  } = useSwipePlaces(planData, {
+    type: planData.outingType || undefined,
+    keyword: planData.occasion || undefined,
+    radius: planData.locality * 1000,
+  });
+
+  // Check if showing movies
+  const isShowingMovies = places.length > 0 && 
+    places.some(place => 'isMovie' in place && place.isMovie);
+
   const handlePromptSearch = () => {
     if (!userPrompt.trim()) return;
     
-    setIsLoading(true);
     const filters = parseUserPrompt(userPrompt);
     setPromptFilters(filters);
-    
-    // Filter places based on the prompt
-    let filteredPlaces = [...MOCK_PLACES];
-    
-    if (filters.budget) {
-      filteredPlaces = filteredPlaces.filter(place => 
-        place.budget ? place.budget <= filters.budget! : true
-      );
-    }
-    
-    if (filters.groupSize) {
-      filteredPlaces = filteredPlaces.filter(place => 
-        place.maxGroupSize ? place.maxGroupSize >= filters.groupSize! : true
-      );
-    }
-    
-    if (filters.time) {
-      filteredPlaces = filteredPlaces.filter(place => 
-        place.time === filters.time || 
-        place.hours?.toLowerCase().includes(filters.time!)
-      );
-    }
-    
-    if (filters.vibes.length > 0) {
-      filteredPlaces = filteredPlaces.filter(place => 
-        place.tags ? filters.vibes.some(vibe => place.tags.includes(vibe)) : false
-      );
-    }
-    
-    setTimeout(() => {
-      if (filteredPlaces.length === 0) {
-        toast({
-          title: "No matching places",
-          description: "No places match your criteria. Showing all places.",
-        });
-        setPlaces(MOCK_PLACES);
-      } else {
-        toast({
-          title: "Places found",
-          description: `Found ${filteredPlaces.length} places matching your criteria.`,
-        });
-        setPlaces(filteredPlaces);
-      }
-      
-      setIsLoading(false);
-      setShowPromptInput(false);
-    }, 1000);
-  };
-
-  const handleSwipe = (direction: 'left' | 'right' | 'up') => {
-    if (places.length === 0) return;
-    
-    const currentPlace = places[0];
-    const newPlaces = [...places];
-    newPlaces.shift();
-    
-    if (direction === 'right' || direction === 'up') {
-      setLikedPlaces(prev => [...prev, currentPlace]);
-      
-      if (direction === 'up') {
-        toast({
-          title: 'Booking in progress',
-          description: `Booking ${currentPlace.name}...`,
-        });
-      } else {
-        toast({
-          title: 'Place liked',
-          description: `${currentPlace.name} added to your favorites`,
-        });
-      }
-    }
-    
-    setPlaces(newPlaces);
-    
-    if (newPlaces.length === 0) {
-      setShowResults(true);
-    }
-  };
-
-  const handleContinuePlanning = () => {
-    navigate('/planner');
-  };
-
-  const handleFinishPlanning = () => {
-    navigate('/favorites', { state: { likedPlaces } });
-  };
-
-  const handleToggleDataSource = () => {
-    setUseSimulation(!useSimulation);
-    toast({
-      title: useSimulation ? "Using real data" : "Using simulated data",
-      description: useSimulation 
-        ? "Switching to real place data." 
-        : "Switching to simulated results for demo."
-    });
+    handleFilterByPrompt(userPrompt);
+    setShowPromptInput(false);
   };
 
   return (
@@ -239,7 +80,7 @@ const SwipePage: React.FC = () => {
         <div className="w-full max-w-md mx-auto mt-4">
           <div className="flex justify-between items-center mb-3">
             <h1 className="text-xl font-semibold text-white relative tracking-tight">
-              Find Your Experience
+              {isShowingMovies ? "Find Your Movie" : "Find Your Experience"}
               <Sparkles className="absolute -right-5 top-1 w-3.5 h-3.5 text-blitz-pink opacity-70" />
             </h1>
             
@@ -279,7 +120,7 @@ const SwipePage: React.FC = () => {
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p>{useSimulation ? "Using simulated data" : "Using real data"}</p>
+                    <p>{useSimulation ? "Using simulated search data" : "Using Google Places API"}</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
@@ -326,6 +167,19 @@ const SwipePage: React.FC = () => {
             </div>
           )}
           
+          {!showPromptInput && (
+            <div className="mb-4">
+              <SearchFilters 
+                onApplyFilters={handleApplyFilters}
+                initialFilters={{
+                  type: planData.outingType || undefined,
+                  keyword: planData.occasion || undefined,
+                  radius: planData.locality * 1000,
+                }}
+              />
+            </div>
+          )}
+          
           {showResults ? (
             <SwipeResults
               likedPlaces={likedPlaces}
@@ -335,7 +189,25 @@ const SwipePage: React.FC = () => {
           ) : isLoading ? (
             <div className="w-full h-64 flex flex-col items-center justify-center">
               <div className="w-8 h-8 rounded-full border border-blitz-pink/20 border-t-blitz-pink animate-spin mb-4"></div>
-              <p className="text-blitz-lightgray text-sm">Finding experiences...</p>
+              <p className="text-blitz-lightgray text-sm">{isShowingMovies ? "Finding movies..." : "Finding experiences..."}</p>
+            </div>
+          ) : error ? (
+            <div className="w-full p-6 text-center glassmorphism rounded-xl">
+              <p className="text-white mb-4 text-sm">{error}</p>
+              <div className="flex justify-center gap-3">
+                <button 
+                  onClick={handleContinuePlanning}
+                  className="px-6 py-2.5 text-sm border border-white/10 text-white rounded-full bg-blitz-gray/50 hover:bg-blitz-gray/70 transition-all active:scale-[0.98]"
+                >
+                  Change filters
+                </button>
+                <button 
+                  onClick={handleRetry}
+                  className="px-6 py-2.5 text-sm bg-blitz-pink text-white rounded-full active:scale-[0.98] transition-all"
+                >
+                  Try again
+                </button>
+              </div>
             </div>
           ) : (
             <div className="relative">

@@ -9,99 +9,41 @@ import { Place } from '@/components/SwipeCard';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ParsedFilters, parseUserPrompt } from '@/utils/promptParser';
-
-// Mock places data
-const MOCK_PLACES: Place[] = [
-  {
-    id: '1',
-    name: 'Marina Beach',
-    location: 'Chennai',
-    country: 'India',
-    image: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=800&h=600&fit=crop',
-    rating: 4.2,
-    reviewCount: 1250,
-    category: 'beach',
-    description: 'Famous beach in Chennai perfect for evening walks',
-    tags: ['outdoor', 'scenic', 'family-friendly'],
-    budget: 100,
-    maxGroupSize: 10,
-    time: 'evening',
-    hours: '24 hours',
-  },
-  {
-    id: '2',
-    name: 'Phoenix MarketCity',
-    location: 'Chennai',
-    country: 'India',
-    image: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=800&h=600&fit=crop',
-    rating: 4.4,
-    reviewCount: 890,
-    category: 'shopping mall',
-    description: 'Popular shopping and entertainment destination',
-    tags: ['shopping', 'entertainment', 'food'],
-    budget: 500,
-    maxGroupSize: 8,
-    time: 'afternoon',
-    hours: '10:00 AM - 10:00 PM',
-  },
-  {
-    id: '3',
-    name: 'Amethyst Cafe',
-    location: 'Chennai',
-    country: 'India',
-    image: 'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=800&h=600&fit=crop',
-    rating: 4.5,
-    reviewCount: 456,
-    category: 'cafe',
-    description: 'Cozy cafe perfect for hanging out with friends',
-    tags: ['cafe', 'cozy', 'work-friendly'],
-    budget: 300,
-    maxGroupSize: 6,
-    time: 'morning',
-    hours: '8:00 AM - 11:00 PM',
-  },
-  {
-    id: '4',
-    name: 'The Flying Elephant',
-    location: 'Chennai',
-    country: 'India',
-    image: 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=800&h=600&fit=crop',
-    rating: 4.7,
-    reviewCount: 678,
-    category: 'restaurant',
-    description: 'Fine dining restaurant with excellent ambiance',
-    tags: ['fine dining', 'romantic', 'premium'],
-    budget: 1200,
-    maxGroupSize: 4,
-    time: 'evening',
-    hours: '7:00 PM - 12:00 AM',
-  },
-  {
-    id: '5',
-    name: 'Kapaleeshwarar Temple',
-    location: 'Chennai',
-    country: 'India',
-    image: 'https://images.unsplash.com/photo-1582510003544-4d00b7f74220?w=800&h=600&fit=crop',
-    rating: 4.6,
-    reviewCount: 2100,
-    category: 'temple',
-    description: 'Historic temple with beautiful architecture',
-    tags: ['historic', 'cultural', 'spiritual'],
-    budget: 50,
-    maxGroupSize: 15,
-    time: 'morning',
-    hours: '6:00 AM - 12:00 PM, 4:00 PM - 9:00 PM',
-  },
-];
+import { getBlitzRecommendations } from '@/services/googlePlacesService';
 
 const Places: React.FC = () => {
   const { darkMode } = useTheme();
-  const [places, setPlaces] = useState<Place[]>(MOCK_PLACES);
-  const [allPlaces, setAllPlaces] = useState<Place[]>(MOCK_PLACES);
-  const [isLoading, setIsLoading] = useState(false);
+  const [places, setPlaces] = useState<Place[]>([]);
+  const [allPlaces, setAllPlaces] = useState<Place[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [userPrompt, setUserPrompt] = useState<string>('');
   const [promptFilters, setPromptFilters] = useState<ParsedFilters | null>(null);
   const [showPromptInput, setShowPromptInput] = useState<boolean>(false);
+  
+  useEffect(() => {
+    // Load initial places
+    loadInitialPlaces();
+  }, []);
+
+  const loadInitialPlaces = async () => {
+    setIsLoading(true);
+    try {
+      console.log("Loading initial places...");
+      const initialPlaces = await getBlitzRecommendations("best hangout spots in Chennai");
+      console.log("Initial places loaded:", initialPlaces);
+      setPlaces(initialPlaces);
+      setAllPlaces(initialPlaces);
+    } catch (error) {
+      console.error('Error loading initial places:', error);
+      toast({
+        title: "Error loading places",
+        description: "Could not load places. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
   
   const handleSwipe = (direction: 'left' | 'right' | 'up') => {
     const newPlaces = [...places];
@@ -126,63 +68,51 @@ const Places: React.FC = () => {
     }
   };
 
-  const loadMorePlaces = () => {
-    // Shuffle and add more places from the mock data
-    const shuffled = [...MOCK_PLACES].sort(() => Math.random() - 0.5);
-    setPlaces(prev => [...prev, ...shuffled]);
+  const loadMorePlaces = async () => {
+    try {
+      console.log("Loading more places...");
+      const morePlaces = await getBlitzRecommendations("more places to visit in Chennai");
+      setPlaces(prev => [...prev, ...morePlaces]);
+      setAllPlaces(prev => [...prev, ...morePlaces]);
+    } catch (error) {
+      console.error('Error loading more places:', error);
+    }
   };
   
-  const handlePromptSearch = () => {
+  const handlePromptSearch = async () => {
     if (!userPrompt.trim()) return;
     
     setIsLoading(true);
     const filters = parseUserPrompt(userPrompt);
     setPromptFilters(filters);
     
-    // Filter places based on the prompt
-    let filteredPlaces = [...allPlaces];
-    
-    if (filters.budget) {
-      filteredPlaces = filteredPlaces.filter(place => 
-        place.budget ? place.budget <= filters.budget! : true
-      );
-    }
-    
-    if (filters.groupSize) {
-      filteredPlaces = filteredPlaces.filter(place => 
-        place.maxGroupSize ? place.maxGroupSize >= filters.groupSize! : true
-      );
-    }
-    
-    if (filters.time) {
-      filteredPlaces = filteredPlaces.filter(place => 
-        place.time === filters.time || 
-        place.hours?.toLowerCase().includes(filters.time!)
-      );
-    }
-    
-    if (filters.vibes.length > 0) {
-      filteredPlaces = filteredPlaces.filter(place => 
-        place.tags ? filters.vibes.some(vibe => place.tags.includes(vibe)) : false
-      );
-    }
-    
-    if (filteredPlaces.length === 0) {
+    try {
+      console.log("Searching with prompt:", userPrompt);
+      const searchResults = await getBlitzRecommendations(userPrompt);
+      
+      if (searchResults.length === 0) {
+        toast({
+          title: "No matches found",
+          description: "Try a different search criteria.",
+        });
+      } else {
+        setPlaces(searchResults);
+        toast({
+          title: "Places found",
+          description: `Found ${searchResults.length} places matching your criteria.`,
+        });
+      }
+    } catch (error) {
+      console.error('Error searching places:', error);
       toast({
-        title: "No matching places",
-        description: "No places match your criteria. Try a different search.",
+        title: "Search error",
+        description: "Could not search places. Please try again.",
+        variant: "destructive",
       });
-      filteredPlaces = allPlaces; // Show all places if no matches
-    } else {
-      toast({
-        title: "Places found",
-        description: `Found ${filteredPlaces.length} places matching your criteria.`,
-      });
+    } finally {
+      setIsLoading(false);
+      setShowPromptInput(false);
     }
-    
-    setPlaces(filteredPlaces);
-    setIsLoading(false);
-    setShowPromptInput(false);
   };
   
   return (
