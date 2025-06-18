@@ -9,79 +9,363 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      "BLITZ data": {
+      places: {
         Row: {
-          "Table 1": string | null
-        }
-        Insert: {
-          "Table 1"?: string | null
-        }
-        Update: {
-          "Table 1"?: string | null
-        }
-        Relationships: []
-      }
-      liked_places: {
-        Row: {
-          created_at: string
           id: string
-          place_id: string
+          name: string
+          address: string
+          location: unknown | null
+          latitude: number | null
+          longitude: number | null
+          category: string
+          description: string | null
+          tags: string[] | null
+          opening_hours: Json | null
+          price_level: number | null
+          images: string[] | null
+          added_by: string | null
+          is_verified: boolean | null
+          average_rating: number | null
+          review_count: number | null
+          like_count: number | null
+          save_count: number | null
+          visit_count: number | null
+          share_count: number | null
+          metadata: Json | null
+          created_at: string | null
+          updated_at: string | null
         }
         Insert: {
-          created_at?: string
           id?: string
-          place_id: string
+          name: string
+          address: string
+          location?: unknown | null
+          latitude?: number | null
+          longitude?: number | null
+          category: string
+          description?: string | null
+          tags?: string[] | null
+          opening_hours?: Json | null
+          price_level?: number | null
+          images?: string[] | null
+          added_by?: string | null
+          is_verified?: boolean | null
+          average_rating?: number | null
+          review_count?: number | null
+          like_count?: number | null
+          save_count?: number | null
+          visit_count?: number | null
+          share_count?: number | null
+          metadata?: Json | null
+          created_at?: string | null
+          updated_at?: string | null
         }
         Update: {
-          created_at?: string
           id?: string
-          place_id?: string
+          name?: string
+          address?: string
+          location?: unknown | null
+          latitude?: number | null
+          longitude?: number | null
+          category?: string
+          description?: string | null
+          tags?: string[] | null
+          opening_hours?: Json | null
+          price_level?: number | null
+          images?: string[] | null
+          added_by?: string | null
+          is_verified?: boolean | null
+          average_rating?: number | null
+          review_count?: number | null
+          like_count?: number | null
+          save_count?: number | null
+          visit_count?: number | null
+          share_count?: number | null
+          metadata?: Json | null
+          created_at?: string | null
+          updated_at?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "liked_places_place_id_fkey"
+            foreignKeyName: "places_added_by_fkey"
+            columns: ["added_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      users: {
+        Row: {
+          id: string
+          auth_user_id: string | null
+          username: string | null
+          display_name: string | null
+          avatar_url: string | null
+          bio: string | null
+          location: string | null
+          preferences: Json | null
+          stats: Json | null
+          created_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          id?: string
+          auth_user_id?: string | null
+          username?: string | null
+          display_name?: string | null
+          avatar_url?: string | null
+          bio?: string | null
+          location?: string | null
+          preferences?: Json | null
+          stats?: Json | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          auth_user_id?: string | null
+          username?: string | null
+          display_name?: string | null
+          avatar_url?: string | null
+          bio?: string | null
+          location?: string | null
+          preferences?: Json | null
+          stats?: Json | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "users_auth_user_id_fkey"
+            columns: ["auth_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      user_actions: {
+        Row: {
+          id: string
+          user_id: string | null
+          place_id: string
+          action_type: string
+          metadata: Json | null
+          created_at: string | null
+        }
+        Insert: {
+          id?: string
+          user_id?: string | null
+          place_id: string
+          action_type: string
+          metadata?: Json | null
+          created_at?: string | null
+        }
+        Update: {
+          id?: string
+          user_id?: string | null
+          place_id?: string
+          action_type?: string
+          metadata?: Json | null
+          created_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_actions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      user_plans: {
+        Row: {
+          id: string
+          user_id: string | null
+          title: string
+          description: string | null
+          place_ids: string[] | null
+          occasion: string | null
+          timing: string | null
+          locality: number | null
+          is_public: boolean | null
+          share_token: string | null
+          metadata: Json | null
+          created_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          id?: string
+          user_id?: string | null
+          title: string
+          description?: string | null
+          place_ids?: string[] | null
+          occasion?: string | null
+          timing?: string | null
+          locality?: number | null
+          is_public?: boolean | null
+          share_token?: string | null
+          metadata?: Json | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          user_id?: string | null
+          title?: string
+          description?: string | null
+          place_ids?: string[] | null
+          occasion?: string | null
+          timing?: string | null
+          locality?: number | null
+          is_public?: boolean | null
+          share_token?: string | null
+          metadata?: Json | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_plans_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      user_preferences: {
+        Row: {
+          id: string
+          user_id: string | null
+          category: string
+          preferences: Json | null
+          created_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          id?: string
+          user_id?: string | null
+          category: string
+          preferences?: Json | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          user_id?: string | null
+          category?: string
+          preferences?: Json | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_preferences_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      reviews: {
+        Row: {
+          id: string
+          place_id: string
+          user_id: string
+          rating: number
+          title: string | null
+          content: string
+          images: string[] | null
+          helpful_count: number | null
+          metadata: Json | null
+          created_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          id?: string
+          place_id: string
+          user_id: string
+          rating: number
+          title?: string | null
+          content: string
+          images?: string[] | null
+          helpful_count?: number | null
+          metadata?: Json | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          place_id?: string
+          user_id?: string
+          rating?: number
+          title?: string | null
+          content?: string
+          images?: string[] | null
+          helpful_count?: number | null
+          metadata?: Json | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reviews_place_id_fkey"
             columns: ["place_id"]
             isOneToOne: false
             referencedRelation: "places"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "reviews_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
         ]
       }
-      places: {
+      review_votes: {
         Row: {
-          category: string
-          country: string
-          created_at: string
           id: string
-          image: string
-          locality: number
-          location: string
-          name: string
-          occasion: string
+          review_id: string
+          user_id: string
+          vote_type: string
+          created_at: string | null
         }
         Insert: {
-          category: string
-          country: string
-          created_at?: string
           id?: string
-          image: string
-          locality: number
-          location: string
-          name: string
-          occasion: string
+          review_id: string
+          user_id: string
+          vote_type: string
+          created_at?: string | null
         }
         Update: {
-          category?: string
-          country?: string
-          created_at?: string
           id?: string
-          image?: string
-          locality?: number
-          location?: string
-          name?: string
-          occasion?: string
+          review_id?: string
+          user_id?: string
+          vote_type?: string
+          created_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "review_votes_review_id_fkey"
+            columns: ["review_id"]
+            isOneToOne: false
+            referencedRelation: "reviews"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "review_votes_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
       }
     }
     Views: {
