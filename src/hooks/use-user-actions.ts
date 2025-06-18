@@ -1,18 +1,11 @@
 import { useState, useCallback } from 'react';
-import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
 
 export type ActionType = 'like' | 'save' | 'review' | 'visit' | 'share';
 
-interface UserAction {
-  id: string;
-  user_id: string;
-  place_id: string;
-  action_type: ActionType;
-  metadata: Record<string, any>;
-  created_at: string;
-}
+// Mock storage for user actions
+const userActionsStorage: Record<string, any[]> = {};
 
 export const useUserActions = () => {
   const { profile } = useAuth();
@@ -36,62 +29,52 @@ export const useUserActions = () => {
     }
 
     setLoading(true);
+    
     try {
+      // Simulate API delay
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // Create a unique key for the user
+      const userKey = profile.id;
+      
+      // Initialize user's actions array if it doesn't exist
+      if (!userActionsStorage[userKey]) {
+        userActionsStorage[userKey] = [];
+      }
+      
       // Check if action already exists
-      const { data: existingAction, error: checkError } = await supabase
-        .from('user_actions')
-        .select('id')
-        .eq('user_id', profile.id)
-        .eq('place_id', placeId)
-        .eq('action_type', actionType)
-        .single();
-
-      if (checkError && checkError.code !== 'PGRST116') {
-        console.error('useUserActions: Error checking existing action:', checkError);
-        return { error: checkError };
-      }
-
-      if (existingAction) {
-        console.log('useUserActions: Action already exists, updating metadata');
+      const existingActionIndex = userActionsStorage[userKey].findIndex(
+        action => action.place_id === placeId && action.action_type === actionType
+      );
+      
+      if (existingActionIndex !== -1) {
         // Update existing action
-        const { error } = await supabase
-          .from('user_actions')
-          .update({ metadata })
-          .eq('id', existingAction.id);
-
-        return { error };
+        userActionsStorage[userKey][existingActionIndex].metadata = metadata;
       } else {
-        console.log('useUserActions: Creating new action');
         // Create new action
-        const { error } = await supabase
-          .from('user_actions')
-          .insert([
-            {
-              user_id: profile.id,
-              place_id: placeId,
-              action_type: actionType,
-              metadata,
-            },
-          ]);
-
-        if (!error) {
-          console.log('useUserActions: Action recorded successfully');
-          // Update user stats
-          const newStats = { ...profile.stats };
-          if (actionType === 'save') newStats.places_saved++;
-          if (actionType === 'visit') newStats.places_visited++;
-          if (actionType === 'review') newStats.reviews_written++;
-
-          await supabase
-            .from('users')
-            .update({ stats: newStats })
-            .eq('id', profile.id);
-        } else {
-          console.error('useUserActions: Error recording action:', error);
+        userActionsStorage[userKey].push({
+          id: `action-${Date.now()}`,
+          user_id: profile.id,
+          place_id: placeId,
+          action_type: actionType,
+          metadata,
+          created_at: new Date().toISOString(),
+        });
+        
+        // Update user stats
+        if (profile.stats) {
+          if (actionType === 'save') profile.stats.places_saved++;
+          if (actionType === 'visit') profile.stats.places_visited++;
+          if (actionType === 'review') profile.stats.reviews_written++;
         }
-
-        return { error };
       }
+      
+      toast({
+        title: 'Action recorded',
+        description: `${actionType.charAt(0).toUpperCase() + actionType.slice(1)} action recorded successfully.`,
+      });
+      
+      return { error: null };
     } catch (error) {
       console.error('useUserActions: Exception in recordAction:', error);
       return { error };
@@ -109,31 +92,40 @@ export const useUserActions = () => {
     }
 
     setLoading(true);
+    
     try {
-      const { error } = await supabase
-        .from('user_actions')
-        .delete()
-        .eq('user_id', profile.id)
-        .eq('place_id', placeId)
-        .eq('action_type', actionType);
-
-      if (!error) {
-        console.log('useUserActions: Action removed successfully');
-        // Update user stats
-        const newStats = { ...profile.stats };
-        if (actionType === 'save' && newStats.places_saved > 0) newStats.places_saved--;
-        if (actionType === 'visit' && newStats.places_visited > 0) newStats.places_visited--;
-        if (actionType === 'review' && newStats.reviews_written > 0) newStats.reviews_written--;
-
-        await supabase
-          .from('users')
-          .update({ stats: newStats })
-          .eq('id', profile.id);
-      } else {
-        console.error('useUserActions: Error removing action:', error);
+      // Simulate API delay
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // Create a unique key for the user
+      const userKey = profile.id;
+      
+      // Check if user has any actions
+      if (userActionsStorage[userKey]) {
+        // Find the action to remove
+        const actionIndex = userActionsStorage[userKey].findIndex(
+          action => action.place_id === placeId && action.action_type === actionType
+        );
+        
+        if (actionIndex !== -1) {
+          // Remove the action
+          userActionsStorage[userKey].splice(actionIndex, 1);
+          
+          // Update user stats
+          if (profile.stats) {
+            if (actionType === 'save' && profile.stats.places_saved > 0) profile.stats.places_saved--;
+            if (actionType === 'visit' && profile.stats.places_visited > 0) profile.stats.places_visited--;
+            if (actionType === 'review' && profile.stats.reviews_written > 0) profile.stats.reviews_written--;
+          }
+          
+          toast({
+            title: 'Action removed',
+            description: `${actionType.charAt(0).toUpperCase() + actionType.slice(1)} action removed successfully.`,
+          });
+        }
       }
-
-      return { error };
+      
+      return { error: null };
     } catch (error) {
       console.error('useUserActions: Exception in removeAction:', error);
       return { error };
@@ -149,26 +141,27 @@ export const useUserActions = () => {
       console.error('useUserActions: No profile found for getUserActions');
       return { data: [], error: new Error('User not authenticated') };
     }
-
-    let query = supabase
-      .from('user_actions')
-      .select('*')
-      .eq('user_id', profile.id)
-      .order('created_at', { ascending: false });
-
-    if (actionType) {
-      query = query.eq('action_type', actionType);
-    }
-
-    const { data, error } = await query;
     
-    if (error) {
-      console.error('useUserActions: Error getting user actions:', error);
-    } else {
-      console.log('useUserActions: User actions retrieved successfully:', data?.length || 0);
+    try {
+      // Simulate API delay
+      await new Promise(resolve => setTimeout(resolve, 300));
+      
+      // Create a unique key for the user
+      const userKey = profile.id;
+      
+      // Get user's actions
+      const actions = userActionsStorage[userKey] || [];
+      
+      // Filter by action type if specified
+      const filteredActions = actionType 
+        ? actions.filter(action => action.action_type === actionType)
+        : actions;
+      
+      return { data: filteredActions, error: null };
+    } catch (error) {
+      console.error('Error getting user actions:', error);
+      return { data: [], error };
     }
-    
-    return { data: data || [], error };
   }, [profile]);
 
   const checkUserAction = useCallback(async (placeId: string, actionType: ActionType) => {
@@ -178,23 +171,28 @@ export const useUserActions = () => {
       console.log('useUserActions: No profile found for checkUserAction');
       return { exists: false, error: null };
     }
-
-    const { data, error } = await supabase
-      .from('user_actions')
-      .select('id')
-      .eq('user_id', profile.id)
-      .eq('place_id', placeId)
-      .eq('action_type', actionType)
-      .single();
-
-    if (error && error.code !== 'PGRST116') {
-      console.error('useUserActions: Error checking user action:', error);
-    }
-
-    const exists = !!data;
-    console.log('useUserActions: Action exists:', exists);
     
-    return { exists, error: error?.code === 'PGRST116' ? null : error };
+    try {
+      // Create a unique key for the user
+      const userKey = profile.id;
+      
+      // Check if user has any actions
+      if (!userActionsStorage[userKey]) {
+        return { exists: false, error: null };
+      }
+      
+      // Check if action exists
+      const exists = userActionsStorage[userKey].some(
+        action => action.place_id === placeId && action.action_type === actionType
+      );
+      
+      console.log('useUserActions: Action exists:', exists);
+      
+      return { exists, error: null };
+    } catch (error) {
+      console.error('Error checking user action:', error);
+      return { exists: false, error };
+    }
   }, [profile]);
 
   return {

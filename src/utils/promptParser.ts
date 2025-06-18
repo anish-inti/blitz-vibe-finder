@@ -1,4 +1,3 @@
-
 import { Place } from "@/components/SwipeCard";
 
 export interface ParsedFilters {

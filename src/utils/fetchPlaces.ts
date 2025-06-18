@@ -1,7 +1,6 @@
-
-import { supabase } from "@/integrations/supabase/client";
 import { Place } from "@/components/SwipeCard";
 import { FilterParams } from "@/components/SearchFilters";
+import { getBlitzRecommendations } from "@/services/googlePlacesService";
 
 interface FetchPlacesOpts {
   planData: {
@@ -17,58 +16,29 @@ export async function fetchChennaiPlaces({
   filters,
 }: FetchPlacesOpts): Promise<{ places: Place[]; error: string | null }> {
   try {
-    console.log("Fetching places from database with filters:", { planData, filters });
+    console.log("Fetching places with options:", { planData, filters });
     
-    let query = supabase.from('places').select('*');
-
-    // Restrict to Chennai, India (case-insensitive)
-    query = query.ilike('location', '%chennai%').ilike('country', '%india%');
-
-    if (planData.occasion) {
-      query = query.ilike('occasion', `%${planData.occasion.toLowerCase()}%`);
-    }
-    if (planData.outingType) {
-      query = query.ilike('category', `%${planData.outingType.toLowerCase()}%`);
-    }
-    if (planData.locality && planData.locality > 0) {
-      query = query.lte('locality', planData.locality);
-    }
-    if (filters.keyword) {
-      query = query.or(`name.ilike.%${filters.keyword}%,category.ilike.%${filters.keyword}%,occasion.ilike.%${filters.keyword}%`);
-    }
-    if (filters.type) {
-      query = query.ilike('category', `%${filters.type}%`);
-    }
-
-    const { data, error } = await query;
-
-    if (error) {
-      console.error("Error fetching places from database:", error);
-      return { places: [], error: error.message };
-    }
+    // Build a comprehensive prompt for Google Places API
+    let prompt = '';
+    if (planData.occasion) prompt += `${planData.occasion} `;
+    if (planData.outingType) prompt += `${planData.outingType} `;
+    prompt += 'places in Chennai';
+    if (filters.keyword) prompt += ` ${filters.keyword}`;
     
-    if (!data || data.length === 0) {
-      console.log("No places found in database with current filters");
-      return { places: [], error: 'No places found in database that match your criteria.' };
+    console.log("Using prompt:", prompt);
+    
+    const places = await getBlitzRecommendations(prompt);
+    
+    if (places.length === 0) {
+      return { 
+        places: [], 
+        error: 'No places found matching your criteria.' 
+      };
     }
-    
-    console.log("Successfully fetched places from database:", data);
-    
-    const places: Place[] = data.map((place: any) => ({
-      id: place.id,
-      name: place.name,
-      location: place.location,
-      country: place.country,
-      image: place.image || 'https://picsum.photos/800/600',
-      category: place.category,
-      rating: Math.floor(Math.random() * 2 + 3), // Random rating between 3-5
-      reviewCount: Math.floor(Math.random() * 500) + 50,
-      description: `A beautiful ${place.category} in ${place.location}, perfect for ${place.occasion}.`,
-    }));
     
     return { places, error: null };
   } catch (err: any) {
     console.error("Error in fetchChennaiPlaces:", err);
-    return { places: [], error: 'Error retrieving places from database.' };
+    return { places: [], error: err.message || 'Error retrieving places.' };
   }
 }

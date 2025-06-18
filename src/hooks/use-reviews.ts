@@ -1,5 +1,4 @@
 import { useState, useCallback } from 'react';
-import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
 
@@ -12,7 +11,6 @@ export interface Review {
   content: string;
   images: string[];
   helpful_count: number;
-  metadata: Record<string, any>;
   created_at: string;
   updated_at: string;
   // Joined data
@@ -29,6 +27,10 @@ export interface ReviewVote {
   vote_type: 'helpful' | 'not_helpful';
   created_at: string;
 }
+
+// Mock storage for reviews and votes
+const reviewsStorage: Record<string, Review[]> = {};
+const votesStorage: Record<string, ReviewVote[]> = {};
 
 export const useReviews = () => {
   const { profile } = useAuth();
@@ -51,28 +53,50 @@ export const useReviews = () => {
     }
 
     setLoading(true);
+    
     try {
-      const { data, error } = await supabase
-        .from('reviews')
-        .insert([
-          {
-            ...reviewData,
-            user_id: profile.id,
-            images: reviewData.images || [],
-          },
-        ])
-        .select()
-        .single();
-
-      if (!error) {
-        toast({
-          title: 'Review added!',
-          description: 'Your review has been posted successfully.',
-        });
+      // Simulate API delay
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Create a new review
+      const newReview: Review = {
+        id: `review-${Date.now()}`,
+        place_id: reviewData.place_id,
+        user_id: profile.id,
+        rating: reviewData.rating,
+        title: reviewData.title,
+        content: reviewData.content,
+        images: reviewData.images || [],
+        helpful_count: 0,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        user: {
+          display_name: profile.display_name,
+          avatar_url: profile.avatar_url,
+        },
+      };
+      
+      // Initialize place's reviews array if it doesn't exist
+      if (!reviewsStorage[reviewData.place_id]) {
+        reviewsStorage[reviewData.place_id] = [];
       }
-
-      return { data, error };
+      
+      // Add the review
+      reviewsStorage[reviewData.place_id].push(newReview);
+      
+      // Update user stats
+      if (profile.stats) {
+        profile.stats.reviews_written++;
+      }
+      
+      toast({
+        title: 'Review added!',
+        description: 'Your review has been posted successfully.',
+      });
+      
+      return { data: newReview, error: null };
     } catch (error) {
+      console.error('Error adding review:', error);
       return { data: null, error };
     } finally {
       setLoading(false);
@@ -80,16 +104,18 @@ export const useReviews = () => {
   }, [profile]);
 
   const getReviewsForPlace = useCallback(async (placeId: string) => {
-    const { data, error } = await supabase
-      .from('reviews')
-      .select(`
-        *,
-        user:users!reviews_user_id_fkey(display_name, avatar_url)
-      `)
-      .eq('place_id', placeId)
-      .order('created_at', { ascending: false });
-
-    return { data: data || [], error };
+    try {
+      // Simulate API delay
+      await new Promise(resolve => setTimeout(resolve, 300));
+      
+      // Get place's reviews
+      const reviews = reviewsStorage[placeId] || [];
+      
+      return { data: reviews, error: null };
+    } catch (error) {
+      console.error('Error getting reviews for place:', error);
+      return { data: [], error };
+    }
   }, []);
 
   const getUserReviews = useCallback(async (userId?: string) => {
@@ -97,40 +123,72 @@ export const useReviews = () => {
 
     const targetUserId = userId || profile?.id;
     
-    const { data, error } = await supabase
-      .from('reviews')
-      .select(`
-        *,
-        place:places!reviews_place_id_fkey(name, category, images)
-      `)
-      .eq('user_id', targetUserId)
-      .order('created_at', { ascending: false });
-
-    return { data: data || [], error };
+    try {
+      // Simulate API delay
+      await new Promise(resolve => setTimeout(resolve, 300));
+      
+      // Get all reviews
+      const allReviews: Review[] = [];
+      Object.values(reviewsStorage).forEach(placeReviews => {
+        allReviews.push(...placeReviews);
+      });
+      
+      // Filter by user ID
+      const userReviews = allReviews.filter(review => review.user_id === targetUserId);
+      
+      return { data: userReviews, error: null };
+    } catch (error) {
+      console.error('Error getting user reviews:', error);
+      return { data: [], error };
+    }
   }, [profile]);
 
   const updateReview = useCallback(async (reviewId: string, updates: Partial<Review>) => {
     if (!profile) return { data: null, error: new Error('User not authenticated') };
 
     setLoading(true);
+    
     try {
-      const { data, error } = await supabase
-        .from('reviews')
-        .update(updates)
-        .eq('id', reviewId)
-        .eq('user_id', profile.id)
-        .select()
-        .single();
-
-      if (!error) {
-        toast({
-          title: 'Review updated',
-          description: 'Your review has been updated successfully.',
-        });
+      // Simulate API delay
+      await new Promise(resolve => setTimeout(resolve, 800));
+      
+      // Find the review
+      let updatedReview: Review | null = null;
+      
+      // Check all places
+      for (const placeId in reviewsStorage) {
+        const reviewIndex = reviewsStorage[placeId].findIndex(review => review.id === reviewId);
+        
+        if (reviewIndex !== -1) {
+          // Check if user owns the review
+          if (reviewsStorage[placeId][reviewIndex].user_id !== profile.id) {
+            return { data: null, error: new Error('You can only update your own reviews') };
+          }
+          
+          // Update the review
+          reviewsStorage[placeId][reviewIndex] = {
+            ...reviewsStorage[placeId][reviewIndex],
+            ...updates,
+            updated_at: new Date().toISOString(),
+          };
+          
+          updatedReview = reviewsStorage[placeId][reviewIndex];
+          break;
+        }
       }
-
-      return { data, error };
+      
+      if (!updatedReview) {
+        return { data: null, error: new Error('Review not found') };
+      }
+      
+      toast({
+        title: 'Review updated',
+        description: 'Your review has been updated successfully.',
+      });
+      
+      return { data: updatedReview, error: null };
     } catch (error) {
+      console.error('Error updating review:', error);
       return { data: null, error };
     } finally {
       setLoading(false);
@@ -141,22 +199,49 @@ export const useReviews = () => {
     if (!profile) return { error: new Error('User not authenticated') };
 
     setLoading(true);
+    
     try {
-      const { error } = await supabase
-        .from('reviews')
-        .delete()
-        .eq('id', reviewId)
-        .eq('user_id', profile.id);
-
-      if (!error) {
-        toast({
-          title: 'Review deleted',
-          description: 'Your review has been deleted successfully.',
-        });
+      // Simulate API delay
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // Find the review
+      let deleted = false;
+      
+      // Check all places
+      for (const placeId in reviewsStorage) {
+        const reviewIndex = reviewsStorage[placeId].findIndex(review => review.id === reviewId);
+        
+        if (reviewIndex !== -1) {
+          // Check if user owns the review
+          if (reviewsStorage[placeId][reviewIndex].user_id !== profile.id) {
+            return { error: new Error('You can only delete your own reviews') };
+          }
+          
+          // Delete the review
+          reviewsStorage[placeId].splice(reviewIndex, 1);
+          deleted = true;
+          
+          // Update user stats
+          if (profile.stats && profile.stats.reviews_written > 0) {
+            profile.stats.reviews_written--;
+          }
+          
+          break;
+        }
       }
-
-      return { error };
+      
+      if (!deleted) {
+        return { error: new Error('Review not found') };
+      }
+      
+      toast({
+        title: 'Review deleted',
+        description: 'Your review has been deleted successfully.',
+      });
+      
+      return { error: null };
     } catch (error) {
+      console.error('Error deleting review:', error);
       return { error };
     } finally {
       setLoading(false);
@@ -174,44 +259,55 @@ export const useReviews = () => {
     }
 
     try {
+      // Simulate API delay
+      await new Promise(resolve => setTimeout(resolve, 300));
+      
+      // Initialize votes array if it doesn't exist
+      if (!votesStorage[reviewId]) {
+        votesStorage[reviewId] = [];
+      }
+      
       // Check if user already voted
-      const { data: existingVote } = await supabase
-        .from('review_votes')
-        .select('id, vote_type')
-        .eq('review_id', reviewId)
-        .eq('user_id', profile.id)
-        .single();
-
-      if (existingVote) {
+      const existingVoteIndex = votesStorage[reviewId].findIndex(vote => vote.user_id === profile.id);
+      
+      if (existingVoteIndex !== -1) {
+        const existingVote = votesStorage[reviewId][existingVoteIndex];
+        
         if (existingVote.vote_type === voteType) {
           // Remove vote if same type
-          const { error } = await supabase
-            .from('review_votes')
-            .delete()
-            .eq('id', existingVote.id);
-          return { error };
+          votesStorage[reviewId].splice(existingVoteIndex, 1);
         } else {
           // Update vote type
-          const { error } = await supabase
-            .from('review_votes')
-            .update({ vote_type: voteType })
-            .eq('id', existingVote.id);
-          return { error };
+          votesStorage[reviewId][existingVoteIndex].vote_type = voteType;
         }
       } else {
         // Create new vote
-        const { error } = await supabase
-          .from('review_votes')
-          .insert([
-            {
-              review_id: reviewId,
-              user_id: profile.id,
-              vote_type: voteType,
-            },
-          ]);
-        return { error };
+        votesStorage[reviewId].push({
+          id: `vote-${Date.now()}`,
+          review_id: reviewId,
+          user_id: profile.id,
+          vote_type: voteType,
+          created_at: new Date().toISOString(),
+        });
       }
+      
+      // Update helpful count for the review
+      for (const placeId in reviewsStorage) {
+        const reviewIndex = reviewsStorage[placeId].findIndex(review => review.id === reviewId);
+        
+        if (reviewIndex !== -1) {
+          // Count helpful votes
+          const helpfulCount = votesStorage[reviewId]?.filter(vote => vote.vote_type === 'helpful').length || 0;
+          
+          // Update review
+          reviewsStorage[placeId][reviewIndex].helpful_count = helpfulCount;
+          break;
+        }
+      }
+      
+      return { error: null };
     } catch (error) {
+      console.error('Error voting on review:', error);
       return { error };
     }
   }, [profile]);
@@ -219,14 +315,18 @@ export const useReviews = () => {
   const getUserVoteForReview = useCallback(async (reviewId: string) => {
     if (!profile) return { data: null, error: null };
 
-    const { data, error } = await supabase
-      .from('review_votes')
-      .select('vote_type')
-      .eq('review_id', reviewId)
-      .eq('user_id', profile.id)
-      .single();
-
-    return { data, error };
+    try {
+      // Simulate API delay
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      // Check if user voted on this review
+      const vote = votesStorage[reviewId]?.find(vote => vote.user_id === profile.id);
+      
+      return { data: vote || null, error: null };
+    } catch (error) {
+      console.error('Error getting user vote for review:', error);
+      return { data: null, error };
+    }
   }, [profile]);
 
   return {

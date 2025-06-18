@@ -10,20 +10,16 @@ interface Place {
   category: string;
   description?: string;
   tags: string[];
-  opening_hours: Record<string, any>;
+  opening_hours?: Record<string, any>;
   price_level?: number;
-  images: string[];
-  added_by?: string;
-  is_verified: boolean;
-  average_rating: number;
-  review_count: number;
-  like_count: number;
-  save_count: number;
-  visit_count: number;
-  share_count: number;
-  metadata: Record<string, any>;
-  created_at: string;
-  updated_at: string;
+  images?: string[];
+  is_verified?: boolean;
+  average_rating?: number;
+  review_count?: number;
+  like_count?: number;
+  save_count?: number;
+  visit_count?: number;
+  share_count?: number;
 }
 
 interface PlaceCardProps {
@@ -109,11 +105,11 @@ const PlaceCard: React.FC<PlaceCardProps> = ({ place, onClick, showCommunityStat
         {/* Rating and stats */}
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
-            {place.average_rating > 0 && (
+            {place.average_rating && place.average_rating > 0 && (
               <div className="flex items-center space-x-1">
                 <Star className="w-4 h-4 text-yellow-500 fill-current" />
                 <span className="font-bold text-foreground">{place.average_rating.toFixed(1)}</span>
-                <span className="text-xs text-muted-foreground">({place.review_count})</span>
+                <span className="text-xs text-muted-foreground">({place.review_count || 0})</span>
               </div>
             )}
             

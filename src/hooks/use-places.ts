@@ -1,5 +1,4 @@
 import { useState, useCallback } from 'react';
-import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
 
@@ -103,6 +102,12 @@ const MOCK_PLACES: Place[] = [
   },
 ];
 
+// Mock storage for places
+const placesStorage: Record<string, Place> = {};
+MOCK_PLACES.forEach(place => {
+  placesStorage[place.id] = place;
+});
+
 export const usePlaces = () => {
   const { profile } = useAuth();
   const [loading, setLoading] = useState(false);
@@ -129,29 +134,46 @@ export const usePlaces = () => {
     }
 
     setLoading(true);
+    
     try {
-      const { data, error } = await supabase
-        .from('places')
-        .insert([
-          {
-            ...placeData,
-            added_by: profile.id,
-            tags: placeData.tags || [],
-            opening_hours: placeData.opening_hours || {},
-            images: placeData.images || [],
-          },
-        ])
-        .select()
-        .single();
-
-      if (!error) {
-        toast({
-          title: 'Place added!',
-          description: `"${placeData.name}" has been added successfully.`,
-        });
-      }
-
-      return { data, error };
+      // Simulate API delay
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Create a new place
+      const newPlace: Place = {
+        id: `place-${Date.now()}`,
+        name: placeData.name,
+        address: placeData.address,
+        latitude: placeData.latitude,
+        longitude: placeData.longitude,
+        category: placeData.category,
+        description: placeData.description,
+        tags: placeData.tags || [],
+        opening_hours: placeData.opening_hours || {},
+        price_level: placeData.price_level,
+        images: placeData.images || [],
+        added_by: profile.id,
+        is_verified: false,
+        average_rating: 0,
+        review_count: 0,
+        like_count: 0,
+        save_count: 0,
+        visit_count: 0,
+        share_count: 0,
+        metadata: {},
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
+      
+      // Add the place to storage
+      placesStorage[newPlace.id] = newPlace;
+      
+      toast({
+        title: 'Place added!',
+        description: `"${placeData.name}" has been added successfully.`,
+      });
+      
+      return { data: newPlace, error: null };
     } catch (error) {
       console.error('Error adding place:', error);
       return { data: null, error };
@@ -162,136 +184,139 @@ export const usePlaces = () => {
 
   const getPlaces = useCallback(async (filters: PlaceFilters = {}) => {
     try {
-      // Try to fetch from database first
-      let query = supabase
-        .from('places')
-        .select('*');
-
+      // Simulate API delay
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // Get all places
+      let places = Object.values(placesStorage);
+      
       // Apply filters
       if (filters.category) {
-        query = query.eq('category', filters.category);
+        places = places.filter(place => 
+          place.category.toLowerCase().includes(filters.category!.toLowerCase())
+        );
       }
-
+      
       if (filters.tags && filters.tags.length > 0) {
-        query = query.overlaps('tags', filters.tags);
+        places = places.filter(place => 
+          filters.tags!.some(tag => place.tags.includes(tag))
+        );
       }
-
+      
       if (filters.price_level) {
-        query = query.eq('price_level', filters.price_level);
+        places = places.filter(place => place.price_level === filters.price_level);
       }
-
+      
       if (filters.min_rating) {
-        query = query.gte('average_rating', filters.min_rating);
+        places = places.filter(place => place.average_rating >= filters.min_rating!);
       }
-
+      
       if (filters.search) {
-        query = query.or(`name.ilike.%${filters.search}%,description.ilike.%${filters.search}%,address.ilike.%${filters.search}%`);
+        places = places.filter(place => 
+          place.name.toLowerCase().includes(filters.search!.toLowerCase()) ||
+          place.description?.toLowerCase().includes(filters.search!.toLowerCase()) ||
+          place.address.toLowerCase().includes(filters.search!.toLowerCase())
+        );
       }
-
+      
       // Apply sorting
       const sortBy = filters.sort_by || 'created_at';
       const sortOrder = filters.sort_order || 'desc';
-      query = query.order(sortBy, { ascending: sortOrder === 'asc' });
-
+      
+      places.sort((a, b) => {
+        let valueA: any = a[sortBy as keyof Place];
+        let valueB: any = b[sortBy as keyof Place];
+        
+        if (typeof valueA === 'string' && typeof valueB === 'string') {
+          return sortOrder === 'asc' ? valueA.localeCompare(valueB) : valueB.localeCompare(valueA);
+        }
+        
+        return sortOrder === 'asc' ? valueA - valueB : valueB - valueA;
+      });
+      
       // Apply limit
       if (filters.limit) {
-        query = query.limit(filters.limit);
+        places = places.slice(0, filters.limit);
       }
-
-      const { data, error } = await query;
       
-      if (error) {
-        console.warn('Database query failed, using mock data:', error);
-        // Filter mock data based on filters
-        let filteredData = [...MOCK_PLACES];
-        
-        if (filters.category) {
-          filteredData = filteredData.filter(place => 
-            place.category.toLowerCase().includes(filters.category!.toLowerCase())
-          );
-        }
-        
-        if (filters.search) {
-          filteredData = filteredData.filter(place => 
-            place.name.toLowerCase().includes(filters.search!.toLowerCase()) ||
-            place.description?.toLowerCase().includes(filters.search!.toLowerCase()) ||
-            place.address.toLowerCase().includes(filters.search!.toLowerCase())
-          );
-        }
-        
-        return { data: filteredData, error: null };
-      }
-
-      return { data: data || [], error };
+      return { data: places, error: null };
     } catch (error) {
-      console.warn('Error fetching places, using mock data:', error);
-      return { data: MOCK_PLACES, error: null };
+      console.error('Error getting places:', error);
+      return { data: [], error };
     }
   }, []);
 
   const getPlaceById = useCallback(async (placeId: string) => {
     try {
-      const { data, error } = await supabase
-        .from('places')
-        .select('*')
-        .eq('id', placeId)
-        .single();
-
-      if (error) {
-        // Fallback to mock data
-        const mockPlace = MOCK_PLACES.find(place => place.id === placeId);
-        return { data: mockPlace || null, error: mockPlace ? null : error };
+      // Simulate API delay
+      await new Promise(resolve => setTimeout(resolve, 300));
+      
+      // Get place by ID
+      const place = placesStorage[placeId];
+      
+      if (!place) {
+        return { data: null, error: new Error('Place not found') };
       }
-
-      return { data, error };
+      
+      return { data: place, error: null };
     } catch (error) {
-      console.warn('Error fetching place by ID, using mock data:', error);
-      const mockPlace = MOCK_PLACES.find(place => place.id === placeId);
-      return { data: mockPlace || null, error: mockPlace ? null : error };
+      console.error('Error getting place by ID:', error);
+      return { data: null, error };
     }
   }, []);
 
   const getTrendingPlaces = useCallback(async (limit: number = 10) => {
     try {
-      const { data, error } = await supabase
-        .from('places')
-        .select('*')
-        .order('like_count', { ascending: false })
-        .order('average_rating', { ascending: false })
-        .limit(limit);
-
-      if (error) {
-        console.warn('Error fetching trending places, using mock data:', error);
-        return { data: MOCK_PLACES.slice(0, limit), error: null };
-      }
-
-      return { data: data || [], error };
+      // Simulate API delay
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // Get all places
+      let places = Object.values(placesStorage);
+      
+      // Sort by like count and average rating
+      places.sort((a, b) => {
+        if (b.like_count !== a.like_count) {
+          return b.like_count - a.like_count;
+        }
+        return b.average_rating - a.average_rating;
+      });
+      
+      // Apply limit
+      places = places.slice(0, limit);
+      
+      return { data: places, error: null };
     } catch (error) {
-      console.warn('Error fetching trending places, using mock data:', error);
-      return { data: MOCK_PLACES.slice(0, limit), error: null };
+      console.error('Error getting trending places:', error);
+      return { data: [], error };
     }
   }, []);
 
   const getCommunityFavorites = useCallback(async (limit: number = 10) => {
     try {
-      const { data, error } = await supabase
-        .from('places')
-        .select('*')
-        .gte('average_rating', 4.0)
-        .gte('review_count', 5)
-        .order('save_count', { ascending: false })
-        .order('average_rating', { ascending: false })
-        .limit(limit);
-
-      if (error) {
-        console.warn('Error fetching community favorites, using mock data:', error);
-        return { data: MOCK_PLACES.slice(0, limit), error: null };
-      }
-
-      return { data: data || [], error };
+      // Simulate API delay
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // Get all places
+      let places = Object.values(placesStorage);
+      
+      // Filter by rating and review count
+      places = places.filter(place => place.average_rating >= 4.0 && place.review_count >= 5);
+      
+      // Sort by save count and average rating
+      places.sort((a, b) => {
+        if (b.save_count !== a.save_count) {
+          return b.save_count - a.save_count;
+        }
+        return b.average_rating - a.average_rating;
+      });
+      
+      // Apply limit
+      places = places.slice(0, limit);
+      
+      return { data: places, error: null };
     } catch (error) {
-      console.warn('Error fetching community favorites, using mock data:', error);
-      return { data: MOCK_PLACES.slice(0, limit), error: null };
+      console.error('Error getting community favorites:', error);
+      return { data: [], error };
     }
   }, []);
 
@@ -299,23 +324,39 @@ export const usePlaces = () => {
     if (!profile) return { data: null, error: new Error('User not authenticated') };
 
     setLoading(true);
+    
     try {
-      const { data, error } = await supabase
-        .from('places')
-        .update(updates)
-        .eq('id', placeId)
-        .eq('added_by', profile.id)
-        .select()
-        .single();
-
-      if (!error) {
-        toast({
-          title: 'Place updated',
-          description: 'Place has been updated successfully.',
-        });
+      // Simulate API delay
+      await new Promise(resolve => setTimeout(resolve, 800));
+      
+      // Get place by ID
+      const place = placesStorage[placeId];
+      
+      if (!place) {
+        return { data: null, error: new Error('Place not found') };
       }
-
-      return { data, error };
+      
+      // Check if user owns the place
+      if (place.added_by !== profile.id) {
+        return { data: null, error: new Error('You can only update your own places') };
+      }
+      
+      // Update the place
+      const updatedPlace = {
+        ...place,
+        ...updates,
+        updated_at: new Date().toISOString(),
+      };
+      
+      // Save the updated place
+      placesStorage[placeId] = updatedPlace;
+      
+      toast({
+        title: 'Place updated',
+        description: 'Place has been updated successfully.',
+      });
+      
+      return { data: updatedPlace, error: null };
     } catch (error) {
       console.error('Error updating place:', error);
       return { data: null, error };
