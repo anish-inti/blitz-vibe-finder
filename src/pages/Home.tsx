@@ -55,12 +55,14 @@ const Home: React.FC = () => {
       const { data, error } = await getTrendingPlaces(6);
       if (error) {
         console.error('Error fetching trending places:', error);
+        setHotNowPlaces([]);
       } else {
         console.log('Trending places loaded:', data.length);
         setHotNowPlaces(data);
       }
     } catch (error) {
       console.error('Exception fetching trending places:', error);
+      setHotNowPlaces([]);
     } finally {
       setIsLoadingHotNow(false);
     }
@@ -80,12 +82,14 @@ const Home: React.FC = () => {
       const { data, error } = await getPlaces(filters);
       if (error) {
         console.error('Error fetching curated places:', error);
+        setCuratedOutings([]);
       } else {
         console.log('Curated places loaded:', data.length);
         setCuratedOutings(data);
       }
     } catch (error) {
       console.error('Exception fetching curated places:', error);
+      setCuratedOutings([]);
     } finally {
       setIsLoadingCurated(false);
     }
@@ -99,12 +103,14 @@ const Home: React.FC = () => {
       const { data, error } = await getCommunityFavorites(3);
       if (error) {
         console.error('Error fetching community favorites:', error);
+        setCommunityPicks([]);
       } else {
         console.log('Community favorites loaded:', data.length);
         setCommunityPicks(data);
       }
     } catch (error) {
       console.error('Exception fetching community favorites:', error);
+      setCommunityPicks([]);
     } finally {
       setIsLoadingCommunity(false);
     }
