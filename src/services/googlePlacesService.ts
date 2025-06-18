@@ -270,7 +270,7 @@ const getFallbackPlaces = (query: string): any[] => {
       longitude: 80.2698
     },
   ];
-
+  
   // Filter based on query if possible
   const queryLower = query.toLowerCase();
   if (queryLower.includes('cafe') || queryLower.includes('coffee')) {
