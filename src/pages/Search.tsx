@@ -1,19 +1,19 @@
 import React, { useState } from 'react';
 import Header from '@/components/Header';
 import BottomNavigation from '@/components/BottomNavigation';
-import PromptInput from '@/components/PromptInput';
-import GlowButton from '@/components/GlowButton';
-import OutingCard from '@/components/OutingCard';
-import { Sparkles, Loader2 } from 'lucide-react';
+import { Sparkles, Loader2, TrendingUp } from 'lucide-react';
 import { useTheme } from '@/contexts/ThemeContext';
-import { getBlitzRecommendations } from '@/services/googlePlacesService';
-import { Place } from '@/components/SwipeCard';
+import { usePlaces } from '@/hooks/use-places';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import PlaceCard from '@/components/Places/PlaceCard';
 
 const Search: React.FC = () => {
   const { darkMode } = useTheme();
+  const { getPlaces } = usePlaces();
   const [prompt, setPrompt] = useState('');
   const [isSearching, setIsSearching] = useState(false);
-  const [searchResults, setSearchResults] = useState<Place[]>([]);
+  const [searchResults, setSearchResults] = useState<any[]>([]);
   const [hasSearched, setHasSearched] = useState(false);
   
   const handleSearch = async (input: string) => {
@@ -22,43 +22,64 @@ const Search: React.FC = () => {
     setHasSearched(true);
     
     try {
-      const results = await getBlitzRecommendations(input);
-      setSearchResults(results);
+      const { data, error } = await getPlaces({ 
+        search: input,
+        limit: 20 
+      });
+      
+      if (error) {
+        console.error('Search error:', error);
+        setSearchResults([]);
+      } else {
+        setSearchResults(data);
+      }
     } catch (error) {
-      console.error('Search error:', error);
+      console.error('Search exception:', error);
       setSearchResults([]);
     } finally {
       setIsSearching(false);
     }
   };
   
-  const handlePlaceClick = (place: Place) => {
-    // Navigate to place details or add to favorites
-    console.log('Place clicked:', place);
+  const handlePlaceClick = (place: any) => {
+    window.location.href = `/places/${place.id}`;
   };
   
   return (
-    <div className={`min-h-screen flex flex-col relative transition-all duration-300 ${darkMode ? "bg-blitz-black" : "bg-blitz-offwhite"}`}>
-      <div className={`cosmic-bg absolute inset-0 z-0 ${darkMode ? "opacity-100" : "opacity-20"}`}></div>
-      
+    <div className="min-h-screen bg-background">
       <Header />
       
-      <main className="flex-1 flex flex-col px-6 pb-20 z-10">
-        <div className="w-full max-w-md mx-auto mt-8">
-          <h1 className={`text-2xl font-bold mb-6 text-center ${darkMode ? "text-white" : "text-blitz-black"} neon-text relative`}>
+      <main className="flex-1 flex flex-col px-6 pb-20 pt-8">
+        <div className="w-full max-w-md mx-auto">
+          <h1 className="text-2xl font-bold mb-6 text-center text-foreground relative">
             Find Your Vibe
             <Sparkles className="absolute -right-6 top-1 w-4 h-4 text-blitz-stardust animate-pulse-glow" />
           </h1>
           
-          <PromptInput 
-            onSubmit={handleSearch} 
-            placeholder="e.g., 6 of us want rooftop vibes under ₹500"
-          />
+          <div className="mb-6">
+            <div className="flex gap-2">
+              <Input
+                type="text"
+                placeholder="e.g., 6 of us want rooftop vibes under ₹500"
+                value={prompt}
+                onChange={(e) => setPrompt(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && handleSearch(prompt)}
+                className="flex-1"
+              />
+              <Button 
+                onClick={() => handleSearch(prompt)}
+                disabled={!prompt.trim() || isSearching}
+                className="btn-primary"
+              >
+                {isSearching ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Search'}
+              </Button>
+            </div>
+          </div>
           
           {isSearching && (
             <div className="mt-12 flex flex-col items-center justify-center">
-              <Loader2 className="w-8 h-8 animate-spin text-blitz-pink mb-4" />
-              <p className="text-sm text-gray-400">Searching for places...</p>
+              <Loader2 className="w-8 h-8 animate-spin text-primary mb-4" />
+              <p className="text-sm text-muted-foreground">Searching for places...</p>
             </div>
           )}
           
@@ -66,49 +87,34 @@ const Search: React.FC = () => {
             <div className="mt-8">
               {searchResults.length > 0 ? (
                 <>
-                  <h2 className={`text-lg font-semibold mb-4 ${darkMode ? "text-white" : "text-blitz-black"}`}>
-                    Found {searchResults.length} places
-                  </h2>
-                  <div className="space-y-4">
-                    {searchResults.map((place) => (
-                      <OutingCard
-                        key={place.id}
-                        outing={{
-                          id: place.id,
-                          name: place.name,
-                          type: place.category || 'Place',
-                          rating: place.rating || 4.0,
-                          reviews: place.reviewCount || 0,
-                          tags: place.tags || [],
-                          image: place.image,
-                          openStatus: place.isOpen ? 'Open' : 'Closed' as const,
-                        }}
-                        onClick={() => handlePlaceClick(place)}
-                      />
-                    ))}
+                  <div className="flex items-center justify-between mb-4">
+                    <h2 className="text-lg font-semibold text-foreground">
+                      Found {searchResults.length} places
+                    </h2>
+                    <TrendingUp className="w-5 h-5 text-primary" />
                   </div>
-                  <div className="mt-8 text-center">
-                    <GlowButton 
-                      className="px-8 py-3" 
-                      color="pink" 
-                      showSparkle
-                      onClick={() => {
-                        // Navigate to swipe mode with these results
-                        console.log('Navigate to swipe with results:', searchResults);
-                      }}
-                    >
-                      Swipe Through Results
-                    </GlowButton>
+                  <div className="space-y-4">
+                    {searchResults.map((place, index) => (
+                      <div key={place.id} className="animate-fade-in" style={{ animationDelay: `${index * 0.1}s` }}>
+                        <PlaceCard
+                          place={place}
+                          onClick={() => handlePlaceClick(place)}
+                        />
+                      </div>
+                    ))}
                   </div>
                 </>
               ) : (
                 <div className="mt-12 text-center">
-                  <p className={`${darkMode ? "text-gray-300" : "text-gray-600"} mb-4`}>
-                    No places found for "{prompt}"
-                  </p>
-                  <p className="text-sm text-gray-500">
-                    Try a different search or check your internet connection
-                  </p>
+                  <div className="card-spotify rounded-2xl p-8">
+                    <TrendingUp className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
+                    <p className="text-foreground mb-4">
+                      No places found for "{prompt}"
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      Try a different search or check your spelling
+                    </p>
+                  </div>
                 </div>
               )}
             </div>
@@ -116,29 +122,29 @@ const Search: React.FC = () => {
           
           {!hasSearched && (
             <div className="mt-6">
-              <div className={`text-sm mb-2 ${darkMode ? "text-gray-300" : "text-gray-600"}`}>Popular searches:</div>
+              <div className="text-sm mb-2 text-muted-foreground">Popular searches:</div>
               <div className="flex flex-wrap gap-2">
                 <button 
                   onClick={() => handleSearch("Rooftop bars in Chennai")}
-                  className="px-3 py-1 bg-blitz-purple/20 text-blitz-purple rounded-full text-sm hover:bg-blitz-purple/30 transition-colors border border-blitz-purple/30"
+                  className="px-3 py-1 bg-primary/20 text-primary rounded-full text-sm hover:bg-primary/30 transition-colors border border-primary/30"
                 >
                   Rooftop bars
                 </button>
                 <button 
                   onClick={() => handleSearch("Late night food in Chennai")}
-                  className="px-3 py-1 bg-blitz-blue/20 text-blitz-blue rounded-full text-sm hover:bg-blitz-blue/30 transition-colors border border-blitz-blue/30"
+                  className="px-3 py-1 bg-secondary/20 text-secondary rounded-full text-sm hover:bg-secondary/30 transition-colors border border-secondary/30"
                 >
                   Late night food
                 </button>
                 <button 
                   onClick={() => handleSearch("Live music venues in Chennai")}
-                  className="px-3 py-1 bg-blitz-pink/20 text-blitz-pink rounded-full text-sm hover:bg-blitz-pink/30 transition-colors border border-blitz-pink/30"
+                  className="px-3 py-1 bg-accent/20 text-accent rounded-full text-sm hover:bg-accent/30 transition-colors border border-accent/30"
                 >
                   Live music venues
                 </button>
                 <button 
                   onClick={() => handleSearch("Outdoor cafés in Chennai")}
-                  className="px-3 py-1 bg-blitz-neonred/20 text-blitz-neonred rounded-full text-sm hover:bg-blitz-neonred/30 transition-colors border border-blitz-neonred/30"
+                  className="px-3 py-1 bg-primary/20 text-primary rounded-full text-sm hover:bg-primary/30 transition-colors border border-primary/30"
                 >
                   Outdoor cafés
                 </button>

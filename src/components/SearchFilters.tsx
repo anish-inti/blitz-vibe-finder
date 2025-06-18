@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -22,7 +21,6 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
-import { parseUserPreferences } from '@/services/googlePlacesService';
 
 const placeTypes = [
   { value: '', label: 'Any Type' },
@@ -69,13 +67,8 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
   const handlePromptSubmit = () => {
     if (!prompt.trim()) return;
     
-    // Parse the user's free text prompt
-    const parsedFilters = parseUserPreferences(prompt);
-    
-    // Apply parsed filters, preserving existing ones unless overridden
     const newFilters = {
       ...filters,
-      ...parsedFilters,
       prompt: prompt
     };
     
@@ -110,20 +103,20 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
           <Input
             type="text"
             placeholder="Describe what you're looking for..."
-            className="pl-10 pr-10 py-3 bg-blitz-gray/60 border-none text-white placeholder:text-blitz-lightgray"
+            className="pl-10 pr-10 py-3 bg-background border-border text-foreground placeholder:text-muted-foreground"
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handlePromptSubmit()}
           />
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-blitz-lightgray" />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <button
-            className="absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-blitz-pink hover:text-white transition-colors"
+            className="absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-primary hover:text-foreground transition-colors"
             onClick={handlePromptSubmit}
           >
             <Filter className="h-4 w-4" />
           </button>
         </div>
-        <p className="text-xs text-blitz-lightgray mt-1 ml-1">
+        <p className="text-xs text-muted-foreground mt-1 ml-1">
           Try: "Romantic dinner under $50" or "Casual café within 2km"
         </p>
       </div>
@@ -132,7 +125,7 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
       {(filters.type || filters.keyword || filters.opennow || filters.maxprice < 4) && (
         <div className="flex flex-wrap gap-2 my-3">
           {filters.type && (
-            <Badge variant="outline" className="bg-blitz-gray/40 text-white border-blitz-gray/60">
+            <Badge variant="outline" className="bg-muted/40 text-foreground border-border">
               {placeTypes.find(t => t.value === filters.type)?.label || filters.type}
               <button 
                 className="ml-1" 
@@ -144,7 +137,7 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
           )}
           
           {filters.keyword && (
-            <Badge variant="outline" className="bg-blitz-gray/40 text-white border-blitz-gray/60">
+            <Badge variant="outline" className="bg-muted/40 text-foreground border-border">
               {filters.keyword}
               <button 
                 className="ml-1" 
@@ -156,7 +149,7 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
           )}
           
           {filters.maxprice < 4 && (
-            <Badge variant="outline" className="bg-blitz-gray/40 text-white border-blitz-gray/60">
+            <Badge variant="outline" className="bg-muted/40 text-foreground border-border">
               {getPriceLabel(filters.maxprice)}
               <button 
                 className="ml-1" 
@@ -168,7 +161,7 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
           )}
           
           {filters.opennow && (
-            <Badge variant="outline" className="bg-blitz-gray/40 text-white border-blitz-gray/60">
+            <Badge variant="outline" className="bg-muted/40 text-foreground border-border">
               Open Now
               <button 
                 className="ml-1" 
@@ -179,7 +172,7 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
             </Badge>
           )}
           
-          <Badge variant="outline" className="bg-blitz-gray/40 text-white border-blitz-gray/60">
+          <Badge variant="outline" className="bg-muted/40 text-foreground border-border">
             {getDistanceLabel(filters.radius || 5000)}
             <button 
               className="ml-1" 
@@ -195,7 +188,8 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
       <div className="text-center mb-4">
         <Button 
           variant="ghost" 
-          className="text-xs text-blitz-lightgray hover:text-white"
+          size="sm"
+          className="text-xs text-muted-foreground hover:text-foreground"
           onClick={() => setShowFilters(!showFilters)}
         >
           {showFilters ? 'Hide Filters' : 'More Filters'}
@@ -204,27 +198,27 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
       
       {/* Detailed filters */}
       {showFilters && (
-        <Card className="bg-blitz-gray/40 border-blitz-gray/60 backdrop-blur-lg text-white mb-4">
+        <Card className="bg-muted/40 border-border backdrop-blur-lg text-foreground mb-4">
           <CardContent className="pt-4">
             <div className="space-y-4">
               {/* Place type filter */}
               <div>
-                <label className="text-xs text-blitz-lightgray flex items-center gap-1 mb-1">
+                <label className="text-xs text-muted-foreground flex items-center gap-1 mb-1">
                   <Tag className="h-3 w-3" /> Type
                 </label>
                 <Select
                   value={filters.type || ''}
                   onValueChange={(value) => handleFilterChange('type', value)}
                 >
-                  <SelectTrigger className="bg-blitz-gray/60 border-blitz-gray/60 text-white">
+                  <SelectTrigger className="bg-background border-border text-foreground">
                     <SelectValue placeholder="Select type" />
                   </SelectTrigger>
-                  <SelectContent className="bg-blitz-black border-blitz-gray/60 text-white">
+                  <SelectContent className="bg-background border-border text-foreground">
                     {placeTypes.map((type) => (
                       <SelectItem 
                         key={type.value} 
                         value={type.value}
-                        className="hover:bg-blitz-gray/40"
+                        className="hover:bg-muted/40"
                       >
                         {type.label}
                       </SelectItem>
@@ -235,7 +229,7 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
               
               {/* Price level slider */}
               <div>
-                <label className="text-xs text-blitz-lightgray flex items-center gap-1 mb-1">
+                <label className="text-xs text-muted-foreground flex items-center gap-1 mb-1">
                   <DollarSign className="h-3 w-3" /> Max Price: {getPriceLabel(filters.maxprice || 0)}
                 </label>
                 <Slider
@@ -250,7 +244,7 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
               
               {/* Distance slider */}
               <div>
-                <label className="text-xs text-blitz-lightgray flex items-center gap-1 mb-1">
+                <label className="text-xs text-muted-foreground flex items-center gap-1 mb-1">
                   <MapPin className="h-3 w-3" /> Distance: {getDistanceLabel(filters.radius || 5000)}
                 </label>
                 <Slider
@@ -265,7 +259,7 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
               
               {/* Open now toggle */}
               <div className="flex items-center justify-between">
-                <label className="text-xs text-blitz-lightgray flex items-center gap-1">
+                <label className="text-xs text-muted-foreground flex items-center gap-1">
                   <Clock className="h-3 w-3" /> Open Now
                 </label>
                 <Switch
@@ -276,13 +270,13 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
               
               {/* Keyword/Vibe input */}
               <div>
-                <label className="text-xs text-blitz-lightgray mb-1 block">
+                <label className="text-xs text-muted-foreground mb-1 block">
                   Atmosphere/Keywords
                 </label>
                 <Input
                   type="text"
                   placeholder="e.g., cozy, romantic, rooftop"
-                  className="bg-blitz-gray/60 border-blitz-gray/60 text-white"
+                  className="bg-background border-border text-foreground"
                   value={filters.keyword || ''}
                   onChange={(e) => handleFilterChange('keyword', e.target.value)}
                 />
@@ -290,7 +284,7 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
               
               {/* Apply button */}
               <Button 
-                className="w-full bg-blitz-pink hover:bg-blitz-pink/90 text-white"
+                className="w-full btn-primary"
                 onClick={handleApplyFilters}
               >
                 Apply Filters

@@ -1,78 +1,46 @@
 import React, { useState, useEffect } from 'react';
 import Header from '@/components/Header';
 import BottomNavigation from '@/components/BottomNavigation';
-import SwipeDeck from '@/components/SwipeDeck';
-import { Sparkles, Filter } from 'lucide-react';
+import { Sparkles, Filter, TrendingUp } from 'lucide-react';
 import { useTheme } from '@/contexts/ThemeContext';
 import { toast } from '@/hooks/use-toast';
-import { Place } from '@/components/SwipeCard';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ParsedFilters, parseUserPrompt } from '@/utils/promptParser';
-import { getBlitzRecommendations } from '@/services/googlePlacesService';
+import { usePlaces } from '@/hooks/use-places';
+import PlaceCard from '@/components/Places/PlaceCard';
 
 const Places: React.FC = () => {
   const { darkMode } = useTheme();
-  const [places, setPlaces] = useState<Place[]>([]);
-  const [allPlaces, setAllPlaces] = useState<Place[]>([]);
+  const { getPlaces } = usePlaces();
+  const [places, setPlaces] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [userPrompt, setUserPrompt] = useState<string>('');
-  const [promptFilters, setPromptFilters] = useState<ParsedFilters | null>(null);
   const [showPromptInput, setShowPromptInput] = useState<boolean>(false);
   
   useEffect(() => {
-    // Load initial places
     loadInitialPlaces();
   }, []);
 
   const loadInitialPlaces = async () => {
     setIsLoading(true);
     try {
-      const initialPlaces = await getBlitzRecommendations("best hangout spots in Chennai");
-      setPlaces(initialPlaces);
-      setAllPlaces(initialPlaces);
+      const { data, error } = await getPlaces({ limit: 20 });
+      if (error) {
+        console.error('Error loading places:', error);
+        toast({
+          title: "Error loading places",
+          description: "Could not load places. Please try again.",
+          variant: "destructive",
+        });
+        setPlaces([]);
+      } else {
+        setPlaces(data);
+      }
     } catch (error) {
-      console.error('Error loading initial places:', error);
-      toast({
-        title: "Error loading places",
-        description: "Could not load places. Please try again.",
-        variant: "destructive",
-      });
+      console.error('Exception loading places:', error);
+      setPlaces([]);
     } finally {
       setIsLoading(false);
-    }
-  };
-  
-  const handleSwipe = (direction: 'left' | 'right' | 'up') => {
-    const newPlaces = [...places];
-    const removed = newPlaces.shift();
-    setPlaces(newPlaces);
-    
-    if (direction === 'right') {
-      toast({
-        title: 'Place added to favorites',
-        description: `${removed?.name} has been added to your favorites`,
-      });
-    } else if (direction === 'up') {
-      toast({
-        title: 'Booking information',
-        description: `Opening booking options for ${removed?.name}...`,
-      });
-    }
-
-    // Load more places if running low
-    if (newPlaces.length <= 2) {
-      loadMorePlaces();
-    }
-  };
-
-  const loadMorePlaces = async () => {
-    try {
-      const morePlaces = await getBlitzRecommendations("more places to visit in Chennai");
-      setPlaces(prev => [...prev, ...morePlaces]);
-      setAllPlaces(prev => [...prev, ...morePlaces]);
-    } catch (error) {
-      console.error('Error loading more places:', error);
     }
   };
   
@@ -80,22 +48,30 @@ const Places: React.FC = () => {
     if (!userPrompt.trim()) return;
     
     setIsLoading(true);
-    const filters = parseUserPrompt(userPrompt);
-    setPromptFilters(filters);
-    
     try {
-      const searchResults = await getBlitzRecommendations(userPrompt);
+      const { data, error } = await getPlaces({ 
+        search: userPrompt,
+        limit: 20 
+      });
       
-      if (searchResults.length === 0) {
+      if (error) {
+        toast({
+          title: "Search error",
+          description: "Could not search places. Please try again.",
+          variant: "destructive",
+        });
+        setPlaces([]);
+      } else if (data.length === 0) {
         toast({
           title: "No matches found",
           description: "Try a different search criteria.",
         });
+        setPlaces([]);
       } else {
-        setPlaces(searchResults);
+        setPlaces(data);
         toast({
           title: "Places found",
-          description: `Found ${searchResults.length} places matching your criteria.`,
+          description: `Found ${data.length} places matching your criteria.`,
         });
       }
     } catch (error) {
@@ -105,6 +81,7 @@ const Places: React.FC = () => {
         description: "Could not search places. Please try again.",
         variant: "destructive",
       });
+      setPlaces([]);
     } finally {
       setIsLoading(false);
       setShowPromptInput(false);
@@ -112,15 +89,13 @@ const Places: React.FC = () => {
   };
   
   return (
-    <div className={`min-h-screen flex flex-col relative transition-all duration-300 ${darkMode ? "bg-blitz-black" : "bg-blitz-offwhite"}`}>
-      <div className={`cosmic-bg absolute inset-0 z-0 ${darkMode ? "opacity-100" : "opacity-20"}`}></div>
-      
+    <div className="min-h-screen bg-background">
       <Header title="Discover Places" />
       
-      <main className="flex-1 flex flex-col items-center justify-center px-4 sm:px-6 pb-20 z-10">
-        <div className="w-full max-w-md mx-auto mt-4">
+      <main className="flex-1 px-6 pb-24 pt-8">
+        <div className="max-w-md mx-auto">
           <div className="flex justify-between items-center mb-4">
-            <h1 className={`text-xl font-semibold relative ${darkMode ? "text-white" : "text-blitz-black"}`}>
+            <h1 className="text-xl font-semibold text-foreground relative">
               Discover Places
               <Sparkles className="absolute -right-6 top-1 w-4 h-4 text-blitz-stardust animate-pulse-glow" />
             </h1>
@@ -128,7 +103,7 @@ const Places: React.FC = () => {
             <Button 
               variant="ghost" 
               size="sm" 
-              className={darkMode ? "text-blitz-lightgray hover:text-white" : "text-gray-600 hover:text-gray-900"}
+              className="text-muted-foreground hover:text-foreground"
               onClick={() => setShowPromptInput(!showPromptInput)}
             >
               <Filter className="h-4 w-4" />
@@ -144,12 +119,12 @@ const Places: React.FC = () => {
                   value={userPrompt}
                   onChange={(e) => setUserPrompt(e.target.value)}
                   onKeyPress={(e) => e.key === 'Enter' && handlePromptSearch()}
-                  className={darkMode ? "bg-transparent border-blitz-gray text-white" : "bg-white text-gray-900"}
+                  className="bg-background border-border text-foreground"
                 />
                 <Button 
                   onClick={handlePromptSearch}
                   size="sm"
-                  className="whitespace-nowrap bg-blitz-pink hover:bg-blitz-pink/90"
+                  className="whitespace-nowrap btn-primary"
                 >
                   Search
                 </Button>
@@ -159,19 +134,45 @@ const Places: React.FC = () => {
           
           {isLoading ? (
             <div className="w-full h-64 flex flex-col items-center justify-center">
-              <div className="w-8 h-8 rounded-full border border-blitz-pink/20 border-t-blitz-pink animate-spin mb-4"></div>
-              <p className={`text-sm ${darkMode ? "text-blitz-lightgray" : "text-blitz-gray"}`}>Loading places...</p>
+              <div className="w-8 h-8 rounded-full border border-primary/20 border-t-primary animate-spin mb-4"></div>
+              <p className="text-sm text-muted-foreground">Loading places...</p>
+            </div>
+          ) : places.length > 0 ? (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <p className="text-sm text-muted-foreground">
+                  Found {places.length} places
+                </p>
+                <TrendingUp className="w-4 h-4 text-primary" />
+              </div>
+              
+              <div className="grid gap-4">
+                {places.map((place, index) => (
+                  <div key={place.id} className="animate-fade-in" style={{ animationDelay: `${index * 0.1}s` }}>
+                    <PlaceCard 
+                      place={place}
+                      onClick={() => window.location.href = `/places/${place.id}`}
+                    />
+                  </div>
+                ))}
+              </div>
             </div>
           ) : (
-            <>
-              <div className="relative">
-                <SwipeDeck 
-                  places={places} 
-                  onSwipe={handleSwipe} 
-                  promptFilters={promptFilters || undefined} 
-                />
+            <div className="text-center py-16">
+              <div className="card-spotify rounded-2xl p-8">
+                <TrendingUp className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
+                <h3 className="text-title mb-2">No places found</h3>
+                <p className="text-caption text-muted-foreground mb-6">
+                  Try a different search or explore our categories
+                </p>
+                <Button 
+                  onClick={loadInitialPlaces}
+                  className="btn-primary rounded-xl px-6 py-3 font-semibold"
+                >
+                  Refresh Places
+                </Button>
               </div>
-            </>
+            </div>
           )}
         </div>
       </main>
@@ -180,5 +181,3 @@ const Places: React.FC = () => {
     </div>
   );
 };
-
-export default Places;

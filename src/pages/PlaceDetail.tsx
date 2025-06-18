@@ -229,9 +229,12 @@ const PlaceDetail: React.FC = () => {
         {/* Hero Image */}
         <div className="relative h-64 overflow-hidden">
           <img 
-            src={place.images[0] || 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&h=600&fit=crop'} 
+            src={place.images?.[0] || 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&h=600&fit=crop'} 
             alt={place.name}
             className="w-full h-full object-cover"
+            onError={(e) => {
+              e.currentTarget.src = 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&h=600&fit=crop';
+            }}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
           
@@ -305,7 +308,7 @@ const PlaceDetail: React.FC = () => {
           )}
 
           {/* Tags */}
-          {place.tags.length > 0 && (
+          {place.tags && place.tags.length > 0 && (
             <div>
               <h3 className="font-bold text-lg mb-3">Tags</h3>
               <div className="flex flex-wrap gap-2">

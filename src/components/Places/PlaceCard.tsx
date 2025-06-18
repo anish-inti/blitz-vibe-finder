@@ -1,8 +1,30 @@
 import React from 'react';
 import { Star, Heart, MessageCircle, MapPin, Users, Share2, Eye } from 'lucide-react';
-import { Place } from '@/hooks/use-places';
-import { useUserActions } from '@/hooks/use-user-actions';
-import { useAuth } from '@/contexts/AuthContext';
+
+interface Place {
+  id: string;
+  name: string;
+  address: string;
+  latitude?: number;
+  longitude?: number;
+  category: string;
+  description?: string;
+  tags: string[];
+  opening_hours: Record<string, any>;
+  price_level?: number;
+  images: string[];
+  added_by?: string;
+  is_verified: boolean;
+  average_rating: number;
+  review_count: number;
+  like_count: number;
+  save_count: number;
+  visit_count: number;
+  share_count: number;
+  metadata: Record<string, any>;
+  created_at: string;
+  updated_at: string;
+}
 
 interface PlaceCardProps {
   place: Place;
@@ -11,65 +33,6 @@ interface PlaceCardProps {
 }
 
 const PlaceCard: React.FC<PlaceCardProps> = ({ place, onClick, showCommunityStats = true }) => {
-  const { profile } = useAuth();
-  const { recordAction, removeAction } = useUserActions();
-  const [isLiked, setIsLiked] = React.useState(false);
-  const [isSaved, setIsSaved] = React.useState(false);
-
-  const handleLike = async (e: React.MouseEvent) => {
-    e.stopPropagation();
-    
-    if (!profile) return;
-
-    if (isLiked) {
-      await removeAction(place.id, 'like');
-      setIsLiked(false);
-    } else {
-      await recordAction(place.id, 'like');
-      setIsLiked(true);
-    }
-  };
-
-  const handleSave = async (e: React.MouseEvent) => {
-    e.stopPropagation();
-    
-    if (!profile) return;
-
-    if (isSaved) {
-      await removeAction(place.id, 'save');
-      setIsSaved(false);
-    } else {
-      await recordAction(place.id, 'save');
-      setIsSaved(true);
-    }
-  };
-
-  const handleShare = async (e: React.MouseEvent) => {
-    e.stopPropagation();
-    
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: place.name,
-          text: place.description || `Check out ${place.name} on Blitz!`,
-          url: `${window.location.origin}/places/${place.id}`,
-        });
-        
-        if (profile) {
-          await recordAction(place.id, 'share');
-        }
-      } catch (error) {
-        // User cancelled sharing
-      }
-    } else {
-      // Fallback to clipboard
-      navigator.clipboard.writeText(`${window.location.origin}/places/${place.id}`);
-      if (profile) {
-        await recordAction(place.id, 'share');
-      }
-    }
-  };
-
   return (
     <div 
       className="card-elevated rounded-2xl overflow-hidden cursor-pointer interactive group"
@@ -78,9 +41,12 @@ const PlaceCard: React.FC<PlaceCardProps> = ({ place, onClick, showCommunityStat
       {/* Image */}
       <div className="relative h-48 overflow-hidden">
         <img 
-          src={place.images[0] || 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&h=600&fit=crop'} 
+          src={place.images?.[0] || 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&h=600&fit=crop'} 
           alt={place.name}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+          onError={(e) => {
+            e.currentTarget.src = 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&h=600&fit=crop';
+          }}
         />
         
         {/* Overlay with actions */}
@@ -91,27 +57,6 @@ const PlaceCard: React.FC<PlaceCardProps> = ({ place, onClick, showCommunityStat
           <span className="badge-community">
             {place.category}
           </span>
-        </div>
-
-        {/* Action buttons */}
-        <div className="absolute top-4 right-4 flex space-x-2">
-          <button
-            onClick={handleLike}
-            className={`p-2 rounded-full backdrop-blur-md transition-all duration-300 border-2 ${
-              isLiked 
-                ? 'bg-[hsl(var(--blitz-primary))] text-white border-white/30' 
-                : 'bg-black/40 text-white hover:bg-black/60 border-white/20'
-            }`}
-          >
-            <Heart className={`w-4 h-4 ${isLiked ? 'fill-current' : ''}`} />
-          </button>
-          
-          <button
-            onClick={handleShare}
-            className="p-2 rounded-full backdrop-blur-md bg-black/40 text-white hover:bg-black/60 transition-all duration-300 border-2 border-white/20"
-          >
-            <Share2 className="w-4 h-4" />
-          </button>
         </div>
 
         {/* Verification badge */}
@@ -143,7 +88,7 @@ const PlaceCard: React.FC<PlaceCardProps> = ({ place, onClick, showCommunityStat
         )}
 
         {/* Tags */}
-        {place.tags.length > 0 && (
+        {place.tags && place.tags.length > 0 && (
           <div className="flex flex-wrap gap-2">
             {place.tags.slice(0, 3).map((tag, index) => (
               <span 
@@ -183,15 +128,15 @@ const PlaceCard: React.FC<PlaceCardProps> = ({ place, onClick, showCommunityStat
             <div className="flex items-center space-x-3 text-xs text-muted-foreground">
               <div className="flex items-center space-x-1">
                 <Heart className="w-3 h-3" />
-                <span className="font-semibold">{place.like_count}</span>
+                <span className="font-semibold">{place.like_count || 0}</span>
               </div>
               <div className="flex items-center space-x-1">
                 <MessageCircle className="w-3 h-3" />
-                <span className="font-semibold">{place.review_count}</span>
+                <span className="font-semibold">{place.review_count || 0}</span>
               </div>
               <div className="flex items-center space-x-1">
                 <Eye className="w-3 h-3" />
-                <span className="font-semibold">{place.visit_count}</span>
+                <span className="font-semibold">{place.visit_count || 0}</span>
               </div>
             </div>
           )}

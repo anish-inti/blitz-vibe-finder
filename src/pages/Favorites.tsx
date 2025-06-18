@@ -1,15 +1,16 @@
 import React from 'react';
 import Header from '@/components/Header';
 import BottomNavigation from '@/components/BottomNavigation';
-import { Heart, Sparkles, MapPin, Star, Clock } from 'lucide-react';
+import { Heart, Sparkles, MapPin, Star, Clock, TrendingUp } from 'lucide-react';
 import { useTheme } from '@/contexts/ThemeContext';
+import { Button } from '@/components/ui/button';
 
 const FAVORITE_PLACES = [
   {
     id: '1',
     name: 'VM Food Street',
     location: 'Chennai, India',
-    image: '/lovable-uploads/b752b4f7-2a81-4715-a676-9c7bd1f9c93c.png',
+    image: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=800&h=600&fit=crop',
     rating: 4.5,
     category: 'Street Food',
     visitedAt: '2 days ago',
@@ -19,7 +20,7 @@ const FAVORITE_PLACES = [
     id: '2',
     name: 'Marina Bay Lounge',
     location: 'Chennai, India',
-    image: '/lovable-uploads/338fb7a8-90b8-400c-a1a7-b1f2af04f5bf.png',
+    image: 'https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=800&h=600&fit=crop',
     rating: 4.8,
     category: 'Rooftop Bar',
     visitedAt: '1 week ago',
@@ -29,7 +30,7 @@ const FAVORITE_PLACES = [
     id: '3',
     name: 'Phoenix Garden Cafe',
     location: 'Chennai, India',
-    image: '/lovable-uploads/02972e2d-092f-4952-88c5-fcf4ee6acc82.png',
+    image: 'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=800&h=600&fit=crop',
     rating: 4.3,
     category: 'Café',
     visitedAt: '3 days ago',
@@ -73,8 +74,9 @@ const Favorites: React.FC = () => {
               {FAVORITE_PLACES.map((place, index) => (
                 <div 
                   key={place.id}
-                  className="card-hero rounded-2xl overflow-hidden interactive-glow animate-scale-in"
+                  className="card-hero rounded-2xl overflow-hidden interactive-glow animate-scale-in cursor-pointer"
                   style={{ animationDelay: `${index * 0.1}s` }}
+                  onClick={() => window.location.href = `/places/${place.id}`}
                 >
                   <div className="flex">
                     {/* Image */}
@@ -147,9 +149,12 @@ const Favorites: React.FC = () => {
                 <p className="text-caption text-muted-foreground mb-6">
                   Start exploring and save places you love
                 </p>
-                <button className="btn-primary rounded-xl px-6 py-3 font-semibold">
+                <Button 
+                  onClick={() => window.location.href = '/'}
+                  className="btn-primary rounded-xl px-6 py-3 font-semibold"
+                >
                   Discover Places
-                </button>
+                </Button>
               </div>
             </div>
           )}

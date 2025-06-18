@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
 import BottomNavigation from '@/components/BottomNavigation';
@@ -117,13 +117,13 @@ const Home: React.FC = () => {
   }, [getCommunityFavorites]);
 
   // Load data on mount and when location changes
-  useEffect(() => {
+  React.useEffect(() => {
     fetchHotNowPlaces();
     fetchCommunityPicks();
   }, [fetchHotNowPlaces, fetchCommunityPicks]);
 
   // Load curated outings when filter changes
-  useEffect(() => {
+  React.useEffect(() => {
     fetchCuratedOutings();
   }, [fetchCuratedOutings]);
 
