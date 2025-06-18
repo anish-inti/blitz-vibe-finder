@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
 import BottomNavigation from '@/components/BottomNavigation';
@@ -9,8 +9,6 @@ import FeaturedPlaceCard from '@/components/FeaturedPlaceCard';
 import OutingCard from '@/components/OutingCard';
 import QuickAccessButton from '@/components/QuickAccessButton';
 import { useTheme } from '@/contexts/ThemeContext';
-import { useAuth } from '@/contexts/AuthContext';
-import AuthModal from '@/components/Auth/AuthModal';
 
 const QUICK_ACCESS = [
   { id: '1', name: 'Dining', icon: <Coffee className="w-5 h-5" />, color: 'bg-orange-500' },
@@ -27,7 +25,7 @@ const COMMUNITY_STATS = [
   { label: 'Reviews Today', value: '847', icon: MessageCircle, color: 'text-purple-600' },
 ];
 
-// Mock data for demonstration
+// Mock data for trending places
 const MOCK_TRENDING_PLACES = [
   {
     id: '1',
@@ -43,63 +41,107 @@ const MOCK_TRENDING_PLACES = [
   },
   {
     id: '3',
+    name: 'Kapaleeshwarar Temple',
+    description: 'Historic temple with beautiful architecture',
+    image: 'https://images.unsplash.com/photo-1582510003544-4d00b7f74220?w=800&h=600&fit=crop',
+  },
+  {
+    id: '4',
     name: 'Express Avenue',
     description: 'Modern shopping mall with restaurants and entertainment',
     image: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=800&h=600&fit=crop',
   },
+  {
+    id: '5',
+    name: 'Elliot\'s Beach',
+    description: 'Peaceful beach with cafes and restaurants nearby',
+    image: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&h=600&fit=crop',
+  },
+  {
+    id: '6',
+    name: 'VR Chennai',
+    description: 'Premium shopping and dining destination',
+    image: 'https://images.unsplash.com/photo-1519567241046-7f570eee3ce6?w=800&h=600&fit=crop',
+  },
 ];
 
+// Mock data for community picks
 const MOCK_COMMUNITY_PICKS = [
   {
     id: '1',
-    name: 'Kapaleeshwarar Temple',
-    address: 'Mylapore, Chennai',
-    average_rating: 4.6,
-    like_count: 120,
-    images: ['https://images.unsplash.com/photo-1582510003544-4d00b7f74220?w=800&h=600&fit=crop'],
+    name: 'Amethyst Cafe',
+    location: 'Royapettah, Chennai',
+    image: 'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=800&h=600&fit=crop',
+    rating: 4.5,
   },
   {
     id: '2',
-    name: 'Cafe Coffee Day',
-    address: 'T. Nagar, Chennai',
-    average_rating: 4.0,
-    like_count: 85,
-    images: ['https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=800&h=600&fit=crop'],
+    name: 'The Flying Elephant',
+    location: 'Park Hyatt, Chennai',
+    image: 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=800&h=600&fit=crop',
+    rating: 4.7,
+  },
+  {
+    id: '3',
+    name: 'Guindy National Park',
+    location: 'Guindy, Chennai',
+    image: 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=800&h=600&fit=crop',
+    rating: 4.3,
   },
 ];
 
+// Mock data for curated outings
 const MOCK_CURATED_OUTINGS = [
   {
     id: '1',
-    name: 'VM Food Street',
-    category: 'Street Food',
-    average_rating: 4.5,
-    review_count: 234,
-    tags: ['Budget', 'Outdoor', 'Group-friendly'],
-    images: ['https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=800&h=600&fit=crop'],
+    name: 'Dakshin Restaurant',
+    type: 'South Indian',
+    rating: 4.6,
+    reviews: 1250,
+    tags: ['Fine Dining', 'Traditional'],
+    image: 'https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?w=800&h=600&fit=crop',
+    openStatus: 'Open' as const,
   },
   {
     id: '2',
-    name: 'Marina Bay Lounge',
-    category: 'Rooftop Bar',
-    average_rating: 4.8,
-    review_count: 156,
-    tags: ['Premium', 'Aesthetic', 'Evening'],
-    images: ['https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=800&h=600&fit=crop'],
+    name: 'Semmozhi Poonga',
+    type: 'Botanical Garden',
+    rating: 4.2,
+    reviews: 890,
+    tags: ['Nature', 'Family-friendly'],
+    image: 'https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=800&h=600&fit=crop',
+    openStatus: 'Open' as const,
+  },
+  {
+    id: '3',
+    name: 'The Vault',
+    type: 'Cocktail Bar',
+    rating: 4.4,
+    reviews: 567,
+    tags: ['Nightlife', 'Cocktails'],
+    image: 'https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=800&h=600&fit=crop',
+    openStatus: 'Closed' as const,
+  },
+  {
+    id: '4',
+    name: 'Government Museum',
+    type: 'Museum',
+    rating: 4.1,
+    reviews: 432,
+    tags: ['Culture', 'History'],
+    image: 'https://images.unsplash.com/photo-1566127992631-137a642a90f4?w=800&h=600&fit=crop',
+    openStatus: 'Open' as const,
   },
 ];
 
 const Home: React.FC = () => {
   const navigate = useNavigate();
   const { darkMode } = useTheme();
-  const { profile } = useAuth();
-  
   const [activeFilter, setActiveFilter] = useState<string | null>(null);
   const [isButtonLoading, setIsButtonLoading] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState("Chennai");
-  const [showAuthModal, setShowAuthModal] = useState(false);
   
-  // Using mock data instead of API calls
+  // State for mock data
   const [hotNowPlaces, setHotNowPlaces] = useState(MOCK_TRENDING_PLACES);
   const [curatedOutings, setCuratedOutings] = useState(MOCK_CURATED_OUTINGS);
   const [communityPicks, setCommunityPicks] = useState(MOCK_COMMUNITY_PICKS);
@@ -107,12 +149,25 @@ const Home: React.FC = () => {
   const [isLoadingCurated, setIsLoadingCurated] = useState(false);
   const [isLoadingCommunity, setIsLoadingCommunity] = useState(false);
 
-  const handleStartBlitz = () => {
-    if (!profile) {
-      setShowAuthModal(true);
-      return;
+  // Filter curated outings based on active filter
+  useEffect(() => {
+    if (activeFilter) {
+      setIsLoadingCurated(true);
+      // Simulate loading
+      setTimeout(() => {
+        const filtered = MOCK_CURATED_OUTINGS.filter(outing => 
+          outing.type.toLowerCase().includes(activeFilter.toLowerCase()) ||
+          outing.tags.some(tag => tag.toLowerCase().includes(activeFilter.toLowerCase()))
+        );
+        setCuratedOutings(filtered.length > 0 ? filtered : MOCK_CURATED_OUTINGS);
+        setIsLoadingCurated(false);
+      }, 500);
+    } else {
+      setCuratedOutings(MOCK_CURATED_OUTINGS);
     }
-    
+  }, [activeFilter]);
+
+  const handleStartBlitz = () => {
     setIsButtonLoading(true);
     setTimeout(() => {
       navigate('/planner');
@@ -124,16 +179,6 @@ const Home: React.FC = () => {
     const newFilter = filter === activeFilter ? null : filter;
     setActiveFilter(newFilter);
     
-    // Filter the mock data based on the selected filter
-    if (newFilter) {
-      const filteredOutings = MOCK_CURATED_OUTINGS.filter(
-        place => place.category.toLowerCase().includes(newFilter.toLowerCase())
-      );
-      setCuratedOutings(filteredOutings.length > 0 ? filteredOutings : MOCK_CURATED_OUTINGS);
-    } else {
-      setCuratedOutings(MOCK_CURATED_OUTINGS);
-    }
-    
     toast({
       title: `${filter} mode activated`,
       description: `Finding the best ${filter.toLowerCase()} spots for you...`,
@@ -141,7 +186,6 @@ const Home: React.FC = () => {
   };
 
   const handlePlaceClick = (place: any) => {
-    console.log('Navigating to place:', place.id);
     navigate(`/places/${place.id}`);
   };
 
@@ -156,19 +200,6 @@ const Home: React.FC = () => {
       description: "Discovering amazing places in your new city...",
     });
   };
-
-  // Convert Place to OutingCard format
-  const convertPlaceToOuting = (place: any) => ({
-    id: place.id,
-    name: place.name,
-    type: place.category || 'Place',
-    rating: place.average_rating || 4.0,
-    reviews: place.review_count || 0,
-    tags: place.tags || [],
-    image: place.images?.[0] || place.image || 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&h=600&fit=crop',
-    category: place.category,
-    openStatus: 'Open' as const,
-  });
   
   return (
     <div className="min-h-screen bg-background">
@@ -278,19 +309,14 @@ const Home: React.FC = () => {
                 <p className="text-caption text-muted-foreground">Discovering trending spots...</p>
               </div>
             </div>
-          ) : hotNowPlaces.length > 0 ? (
+          ) : (
             <Carousel className="w-full">
               <CarouselContent className="ml-6">
                 {hotNowPlaces.map((place, index) => (
                   <CarouselItem key={place.id} className="basis-4/5 pr-4">
                     <div className="animate-scale-in" style={{ animationDelay: `${index * 0.1}s` }}>
                       <FeaturedPlaceCard 
-                        place={{
-                          id: place.id,
-                          name: place.name,
-                          description: place.description || `${place.category} in ${selectedLocation}`,
-                          image: place.images?.[0] || place.image || 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&h=600&fit=crop',
-                        }} 
+                        place={place} 
                         onClick={() => handlePlaceClick(place)} 
                       />
                     </div>
@@ -298,13 +324,6 @@ const Home: React.FC = () => {
                 ))}
               </CarouselContent>
             </Carousel>
-          ) : (
-            <div className="px-6">
-              <div className="card-spotify rounded-2xl p-6 text-center">
-                <TrendingUp className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-                <p className="text-muted-foreground">No trending places yet. Be the first to add some!</p>
-              </div>
-            </div>
           )}
         </section>
         
@@ -325,14 +344,14 @@ const Home: React.FC = () => {
                 <div key={i} className="h-20 bg-muted/30 rounded-xl animate-shimmer" />
               ))}
             </div>
-          ) : communityPicks.length > 0 ? (
+          ) : (
             <div className="px-6 space-y-3">
               {communityPicks.map((place, index) => (
                 <div key={place.id} className="animate-scale-in" style={{ animationDelay: `${index * 0.15}s` }}>
-                  <div className="card-community rounded-2xl p-4 cursor-pointer" onClick={() => handlePlaceClick(place)}>
+                  <div className="card-community rounded-2xl p-4">
                     <div className="flex items-center space-x-4">
                       <img 
-                        src={place.images?.[0] || 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&h=600&fit=crop'} 
+                        src={place.image} 
                         alt={place.name} 
                         className="w-12 h-12 rounded-xl object-cover border-2 border-border" 
                       />
@@ -341,17 +360,17 @@ const Home: React.FC = () => {
                         <div className="flex items-center space-x-2 mt-1">
                           <div className="flex items-center space-x-1">
                             <MapPin className="w-3 h-3 text-muted-foreground" />
-                            <span className="text-xs text-muted-foreground font-semibold">{place.address}</span>
+                            <span className="text-xs text-muted-foreground font-semibold">{place.location}</span>
                           </div>
                           <span className="text-muted-foreground">•</span>
                           <div className="flex items-center space-x-1">
                             <Star className="w-3 h-3 text-yellow-500 fill-current" />
-                            <span className="text-xs font-bold text-foreground">{place.average_rating || 4.0}</span>
+                            <span className="text-xs font-bold text-foreground">{place.rating}</span>
                           </div>
                           <span className="text-muted-foreground">•</span>
                           <div className="flex items-center space-x-1">
                             <Heart className="w-3 h-3 text-red-500" />
-                            <span className="text-xs font-bold text-foreground">{place.like_count || 0}</span>
+                            <span className="text-xs font-bold text-foreground">{Math.floor(Math.random() * 100) + 50}</span>
                           </div>
                         </div>
                       </div>
@@ -362,13 +381,6 @@ const Home: React.FC = () => {
                   </div>
                 </div>
               ))}
-            </div>
-          ) : (
-            <div className="px-6">
-              <div className="card-spotify rounded-2xl p-6 text-center">
-                <Heart className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-                <p className="text-muted-foreground">No community favorites yet. Start exploring and rating places!</p>
-              </div>
             </div>
           )}
         </section>
@@ -395,28 +407,16 @@ const Home: React.FC = () => {
                 <div key={i} className="h-20 bg-muted/30 rounded-xl animate-shimmer" />
               ))}
             </div>
-          ) : curatedOutings.length > 0 ? (
+          ) : (
             <div className="px-6 space-y-3">
-              {curatedOutings.slice(0, 4).map((place, index) => (
-                <div key={place.id} className="animate-fade-in" style={{ animationDelay: `${index * 0.1}s` }}>
+              {curatedOutings.slice(0, 4).map((outing, index) => (
+                <div key={outing.id} className="animate-fade-in" style={{ animationDelay: `${index * 0.1}s` }}>
                   <OutingCard 
-                    outing={convertPlaceToOuting(place)}
-                    onClick={() => handlePlaceClick(place)} 
+                    outing={outing}
+                    onClick={() => handlePlaceClick(outing)} 
                   />
                 </div>
               ))}
-            </div>
-          ) : (
-            <div className="px-6">
-              <div className="card-spotify rounded-2xl p-6 text-center">
-                <Coffee className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-                <p className="text-muted-foreground">
-                  {activeFilter 
-                    ? `No ${activeFilter.toLowerCase()} places found. Try a different category!`
-                    : 'No places found. Start by adding some amazing spots!'
-                  }
-                </p>
-              </div>
             </div>
           )}
         </section>
@@ -450,9 +450,6 @@ const Home: React.FC = () => {
       </main>
       
       <BottomNavigation />
-      
-      {/* Auth Modal */}
-      <AuthModal open={showAuthModal} onOpenChange={setShowAuthModal} />
     </div>
   );
 };

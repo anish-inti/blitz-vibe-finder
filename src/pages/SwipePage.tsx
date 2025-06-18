@@ -2,9 +2,18 @@ import React, { useState } from 'react';
 import { useLocation as useRouterLocation } from 'react-router-dom';
 import Header from '@/components/Header';
 import BottomNavigation from '@/components/BottomNavigation';
-import { Sparkles, Filter, TrendingUp } from 'lucide-react';
+import SwipeDeck from '@/components/SwipeDeck';
+import { Sparkles, Database, Search, Filter } from 'lucide-react';
+import { useLocationContext } from '@/contexts/LocationContext';
+import SwipeResults from '@/components/SwipeResults';
 import { Button } from '@/components/ui/button';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { ParsedFilters, parseUserPrompt } from '@/utils/promptParser';
 import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import { Place } from '@/components/SwipeCard';
+import { toast } from '@/hooks/use-toast';
+import { useNavigate } from 'react-router-dom';
 
 interface PlanData {
   occasion: string;
@@ -14,96 +23,101 @@ interface PlanData {
   description: string;
 }
 
-// Mock data for demonstration
-const MOCK_PLACES = [
+// Mock places data
+const MOCK_PLACES: Place[] = [
   {
     id: '1',
     name: 'Marina Beach',
-    address: 'Marina Beach Rd, Chennai',
-    category: 'Beach',
+    location: 'Chennai',
+    country: 'India',
+    image: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=800&h=600&fit=crop',
+    rating: 4.2,
+    reviewCount: 1250,
+    category: 'beach',
     description: 'Famous beach in Chennai perfect for evening walks',
-    tags: ['Outdoor', 'Scenic', 'Family-friendly'],
-    images: ['https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=800&h=600&fit=crop'],
-    average_rating: 4.2,
-    review_count: 1250,
-    like_count: 350,
-    save_count: 180,
-    visit_count: 420,
-    share_count: 95,
-    is_verified: true
+    tags: ['outdoor', 'scenic', 'family-friendly'],
+    budget: 100,
+    maxGroupSize: 10,
+    time: 'evening',
+    hours: '24 hours',
   },
   {
     id: '2',
     name: 'Phoenix MarketCity',
-    address: 'Velachery, Chennai',
-    category: 'Shopping Mall',
+    location: 'Chennai',
+    country: 'India',
+    image: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=800&h=600&fit=crop',
+    rating: 4.4,
+    reviewCount: 890,
+    category: 'shopping mall',
     description: 'Popular shopping and entertainment destination',
-    tags: ['Shopping', 'Entertainment', 'Food'],
-    images: ['https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=800&h=600&fit=crop'],
-    average_rating: 4.4,
-    review_count: 890,
-    like_count: 210,
-    save_count: 150,
-    visit_count: 380,
-    share_count: 75,
-    is_verified: true
+    tags: ['shopping', 'entertainment', 'food'],
+    budget: 500,
+    maxGroupSize: 8,
+    time: 'afternoon',
+    hours: '10:00 AM - 10:00 PM',
   },
   {
     id: '3',
-    name: 'Kapaleeshwarar Temple',
-    address: 'Mylapore, Chennai',
-    category: 'Temple',
-    description: 'Historic temple with beautiful architecture',
-    tags: ['Historic', 'Cultural', 'Spiritual'],
-    images: ['https://images.unsplash.com/photo-1582510003544-4d00b7f74220?w=800&h=600&fit=crop'],
-    average_rating: 4.6,
-    review_count: 2100,
-    like_count: 420,
-    save_count: 280,
-    visit_count: 560,
-    share_count: 130,
-    is_verified: true
+    name: 'Amethyst Cafe',
+    location: 'Chennai',
+    country: 'India',
+    image: 'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=800&h=600&fit=crop',
+    rating: 4.5,
+    reviewCount: 456,
+    category: 'cafe',
+    description: 'Cozy cafe perfect for hanging out with friends',
+    tags: ['cafe', 'cozy', 'work-friendly'],
+    budget: 300,
+    maxGroupSize: 6,
+    time: 'morning',
+    hours: '8:00 AM - 11:00 PM',
   },
   {
     id: '4',
-    name: 'Cafe Coffee Day',
-    address: 'T. Nagar, Chennai',
-    category: 'Cafe',
-    description: 'Cozy cafe perfect for hanging out with friends',
-    tags: ['Coffee', 'Casual', 'Work-friendly'],
-    images: ['https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=800&h=600&fit=crop'],
-    average_rating: 4.0,
-    review_count: 456,
-    like_count: 180,
-    save_count: 120,
-    visit_count: 320,
-    share_count: 65,
-    is_verified: false
+    name: 'The Flying Elephant',
+    location: 'Chennai',
+    country: 'India',
+    image: 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=800&h=600&fit=crop',
+    rating: 4.7,
+    reviewCount: 678,
+    category: 'restaurant',
+    description: 'Fine dining restaurant with excellent ambiance',
+    tags: ['fine dining', 'romantic', 'premium'],
+    budget: 1200,
+    maxGroupSize: 4,
+    time: 'evening',
+    hours: '7:00 PM - 12:00 AM',
   },
   {
     id: '5',
-    name: 'Express Avenue',
-    address: 'Royapettah, Chennai',
-    category: 'Shopping Mall',
-    description: 'Modern shopping mall with restaurants and entertainment',
-    tags: ['Shopping', 'Entertainment', 'Food'],
-    images: ['https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=800&h=600&fit=crop'],
-    average_rating: 4.3,
-    review_count: 678,
-    like_count: 195,
-    save_count: 140,
-    visit_count: 350,
-    share_count: 85,
-    is_verified: true
-  }
+    name: 'Kapaleeshwarar Temple',
+    location: 'Chennai',
+    country: 'India',
+    image: 'https://images.unsplash.com/photo-1582510003544-4d00b7f74220?w=800&h=600&fit=crop',
+    rating: 4.6,
+    reviewCount: 2100,
+    category: 'temple',
+    description: 'Historic temple with beautiful architecture',
+    tags: ['historic', 'cultural', 'spiritual'],
+    budget: 50,
+    maxGroupSize: 15,
+    time: 'morning',
+    hours: '6:00 AM - 12:00 PM, 4:00 PM - 9:00 PM',
+  },
 ];
 
 const SwipePage: React.FC = () => {
   const location = useRouterLocation();
+  const navigate = useNavigate();
   const [userPrompt, setUserPrompt] = useState<string>('');
+  const [promptFilters, setPromptFilters] = useState<ParsedFilters | null>(null);
   const [showPromptInput, setShowPromptInput] = useState<boolean>(false);
-  const [places, setPlaces] = useState<any[]>(MOCK_PLACES);
+  const [places, setPlaces] = useState<Place[]>(MOCK_PLACES);
+  const [likedPlaces, setLikedPlaces] = useState<Place[]>([]);
+  const [showResults, setShowResults] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [useSimulation, setUseSimulation] = useState(false);
 
   const planData: PlanData = location.state as PlanData || {
     occasion: '',
@@ -117,45 +131,159 @@ const SwipePage: React.FC = () => {
     if (!userPrompt.trim()) return;
     
     setIsLoading(true);
+    const filters = parseUserPrompt(userPrompt);
+    setPromptFilters(filters);
     
-    // Simple client-side filtering based on the prompt
+    // Filter places based on the prompt
+    let filteredPlaces = [...MOCK_PLACES];
+    
+    if (filters.budget) {
+      filteredPlaces = filteredPlaces.filter(place => 
+        place.budget ? place.budget <= filters.budget! : true
+      );
+    }
+    
+    if (filters.groupSize) {
+      filteredPlaces = filteredPlaces.filter(place => 
+        place.maxGroupSize ? place.maxGroupSize >= filters.groupSize! : true
+      );
+    }
+    
+    if (filters.time) {
+      filteredPlaces = filteredPlaces.filter(place => 
+        place.time === filters.time || 
+        place.hours?.toLowerCase().includes(filters.time!)
+      );
+    }
+    
+    if (filters.vibes.length > 0) {
+      filteredPlaces = filteredPlaces.filter(place => 
+        place.tags ? filters.vibes.some(vibe => place.tags.includes(vibe)) : false
+      );
+    }
+    
     setTimeout(() => {
-      const searchTerms = userPrompt.toLowerCase().split(' ');
-      const filteredPlaces = MOCK_PLACES.filter(place => {
-        const searchableText = `${place.name} ${place.category} ${place.description} ${place.tags.join(' ')}`.toLowerCase();
-        return searchTerms.some(term => searchableText.includes(term));
-      });
+      if (filteredPlaces.length === 0) {
+        toast({
+          title: "No matching places",
+          description: "No places match your criteria. Showing all places.",
+        });
+        setPlaces(MOCK_PLACES);
+      } else {
+        toast({
+          title: "Places found",
+          description: `Found ${filteredPlaces.length} places matching your criteria.`,
+        });
+        setPlaces(filteredPlaces);
+      }
       
-      setPlaces(filteredPlaces);
       setIsLoading(false);
       setShowPromptInput(false);
     }, 1000);
   };
 
-  const handlePlaceClick = (place: any) => {
-    window.location.href = `/places/${place.id}`;
+  const handleSwipe = (direction: 'left' | 'right' | 'up') => {
+    if (places.length === 0) return;
+    
+    const currentPlace = places[0];
+    const newPlaces = [...places];
+    newPlaces.shift();
+    
+    if (direction === 'right' || direction === 'up') {
+      setLikedPlaces(prev => [...prev, currentPlace]);
+      
+      if (direction === 'up') {
+        toast({
+          title: 'Booking in progress',
+          description: `Booking ${currentPlace.name}...`,
+        });
+      } else {
+        toast({
+          title: 'Place liked',
+          description: `${currentPlace.name} added to your favorites`,
+        });
+      }
+    }
+    
+    setPlaces(newPlaces);
+    
+    if (newPlaces.length === 0) {
+      setShowResults(true);
+    }
   };
-  
+
+  const handleContinuePlanning = () => {
+    navigate('/planner');
+  };
+
+  const handleFinishPlanning = () => {
+    navigate('/favorites', { state: { likedPlaces } });
+  };
+
+  const handleToggleDataSource = () => {
+    setUseSimulation(!useSimulation);
+    toast({
+      title: useSimulation ? "Using real data" : "Using simulated data",
+      description: useSimulation 
+        ? "Switching to real place data." 
+        : "Switching to simulated results for demo."
+    });
+  };
+
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen flex flex-col relative bg-blitz-black">
+      <div className="cosmic-bg absolute inset-0 z-0"></div>
       <Header showBackButton title="Find Places" />
       
-      <main className="flex-1 px-6 pb-24 pt-8">
-        <div className="max-w-md mx-auto">
-          <div className="flex justify-between items-center mb-4">
-            <h1 className="text-xl font-semibold text-foreground relative tracking-tight">
+      <main className="flex-1 flex flex-col items-center px-4 sm:px-6 pb-20 z-10">
+        <div className="w-full max-w-md mx-auto mt-4">
+          <div className="flex justify-between items-center mb-3">
+            <h1 className="text-xl font-semibold text-white relative tracking-tight">
               Find Your Experience
-              <Sparkles className="absolute -right-5 top-1 w-3.5 h-3.5 text-primary opacity-70" />
+              <Sparkles className="absolute -right-5 top-1 w-3.5 h-3.5 text-blitz-pink opacity-70" />
             </h1>
             
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              className="text-muted-foreground hover:text-foreground"
-              onClick={() => setShowPromptInput(!showPromptInput)}
-            >
-              <Filter className="h-4 w-4" />
-            </Button>
+            <div className="flex space-x-2">
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="text-blitz-lightgray hover:text-white"
+                      onClick={() => setShowPromptInput(!showPromptInput)}
+                    >
+                      <Filter className="h-4 w-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Search by prompt</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+              
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="text-blitz-lightgray hover:text-white"
+                      onClick={handleToggleDataSource}
+                    >
+                      {useSimulation ? (
+                        <Search className="h-4 w-4" />
+                      ) : (
+                        <Database className="h-4 w-4" />
+                      )}
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{useSimulation ? "Using simulated data" : "Using real data"}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
           </div>
           
           {showPromptInput && (
@@ -167,145 +295,55 @@ const SwipePage: React.FC = () => {
                   value={userPrompt}
                   onChange={(e) => setUserPrompt(e.target.value)}
                   onKeyPress={(e) => e.key === 'Enter' && handlePromptSearch()}
-                  className="bg-background border-border text-foreground"
+                  className="bg-transparent border-blitz-gray text-white"
                 />
                 <Button 
                   onClick={handlePromptSearch}
                   size="sm"
-                  className="whitespace-nowrap btn-primary"
+                  className="whitespace-nowrap bg-blitz-pink hover:bg-blitz-pink/90"
                 >
                   Search
                 </Button>
               </div>
+              {promptFilters && (
+                <div className="mt-2 text-xs text-blitz-lightgray">
+                  <div className="flex flex-wrap gap-2">
+                    {promptFilters.budget && (
+                      <Badge className="bg-blitz-gray/70">₹{promptFilters.budget}</Badge>
+                    )}
+                    {promptFilters.groupSize && (
+                      <Badge className="bg-blitz-gray/70">{promptFilters.groupSize} people</Badge>
+                    )}
+                    {promptFilters.time && (
+                      <Badge className="bg-blitz-gray/70">{promptFilters.time}</Badge>
+                    )}
+                    {promptFilters.vibes.map((vibe, index) => (
+                      <Badge key={index} className="bg-blitz-pink/80">{vibe}</Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           )}
           
-          {isLoading ? (
+          {showResults ? (
+            <SwipeResults
+              likedPlaces={likedPlaces}
+              onContinue={handleContinuePlanning}
+              onFinish={handleFinishPlanning}
+            />
+          ) : isLoading ? (
             <div className="w-full h-64 flex flex-col items-center justify-center">
-              <div className="w-8 h-8 rounded-full border border-primary/20 border-t-primary animate-spin mb-4"></div>
-              <p className="text-muted-foreground text-sm">Finding experiences...</p>
-            </div>
-          ) : places.length > 0 ? (
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <p className="text-sm text-muted-foreground">
-                  Found {places.length} places
-                </p>
-                <TrendingUp className="w-4 h-4 text-primary" />
-              </div>
-              
-              <div className="grid gap-4">
-                {places.map((place, index) => (
-                  <div 
-                    key={place.id} 
-                    className="card-elevated rounded-2xl overflow-hidden cursor-pointer interactive group animate-fade-in"
-                    style={{ animationDelay: `${index * 0.1}s` }}
-                    onClick={() => handlePlaceClick(place)}
-                  >
-                    {/* Image */}
-                    <div className="relative h-48 overflow-hidden">
-                      <img 
-                        src={place.images?.[0] || 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&h=600&fit=crop'} 
-                        alt={place.name}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                        onError={(e) => {
-                          e.currentTarget.src = 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&h=600&fit=crop';
-                        }}
-                      />
-                      
-                      {/* Overlay with actions */}
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-                      
-                      {/* Category badge */}
-                      <div className="absolute top-4 left-4">
-                        <span className="badge-community">
-                          {place.category}
-                        </span>
-                      </div>
-
-                      {/* Verification badge */}
-                      {place.is_verified && (
-                        <div className="absolute bottom-4 left-4">
-                          <span className="badge-featured">
-                            Verified
-                          </span>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Content */}
-                    <div className="p-6 space-y-4">
-                      <div>
-                        <h3 className="text-title text-foreground line-clamp-1 group-hover:text-primary transition-colors">
-                          {place.name}
-                        </h3>
-                        <div className="flex items-center text-sm text-muted-foreground mt-1">
-                          <TrendingUp className="w-4 h-4 mr-1" />
-                          <span className="line-clamp-1">{place.address}</span>
-                        </div>
-                      </div>
-
-                      {place.description && (
-                        <p className="text-caption text-muted-foreground line-clamp-2">
-                          {place.description}
-                        </p>
-                      )}
-
-                      {/* Tags */}
-                      {place.tags && place.tags.length > 0 && (
-                        <div className="flex flex-wrap gap-2">
-                          {place.tags.slice(0, 3).map((tag: string, index: number) => (
-                            <span 
-                              key={index}
-                              className="px-2 py-1 bg-muted text-muted-foreground rounded-full text-xs font-semibold"
-                            >
-                              {tag}
-                            </span>
-                          ))}
-                          {place.tags.length > 3 && (
-                            <span className="px-2 py-1 bg-muted text-muted-foreground rounded-full text-xs font-semibold">
-                              +{place.tags.length - 3} more
-                            </span>
-                          )}
-                        </div>
-                      )}
-
-                      {/* Rating and stats */}
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-4">
-                          {place.average_rating > 0 && (
-                            <div className="flex items-center space-x-1">
-                              <Star className="w-4 h-4 text-yellow-500 fill-current" />
-                              <span className="font-bold text-foreground">{place.average_rating.toFixed(1)}</span>
-                              <span className="text-xs text-muted-foreground">({place.review_count})</span>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
+              <div className="w-8 h-8 rounded-full border border-blitz-pink/20 border-t-blitz-pink animate-spin mb-4"></div>
+              <p className="text-blitz-lightgray text-sm">Finding experiences...</p>
             </div>
           ) : (
-            <div className="w-full p-6 text-center card-spotify rounded-xl">
-              <TrendingUp className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
-              <p className="text-foreground mb-4 text-sm">No places found matching your criteria</p>
-              <div className="flex justify-center gap-3">
-                <Button 
-                  onClick={() => window.location.href = '/planner'}
-                  variant="outline"
-                  className="px-6 py-2.5 text-sm"
-                >
-                  Change filters
-                </Button>
-                <Button 
-                  onClick={() => setPlaces(MOCK_PLACES)}
-                  className="px-6 py-2.5 text-sm btn-primary"
-                >
-                  Try again
-                </Button>
-              </div>
+            <div className="relative">
+              <SwipeDeck 
+                places={places} 
+                onSwipe={handleSwipe}
+                promptFilters={promptFilters || undefined}
+              />
             </div>
           )}
         </div>

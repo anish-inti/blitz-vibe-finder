@@ -23,7 +23,10 @@ export const useUserActions = () => {
     actionType: ActionType,
     metadata: Record<string, any> = {}
   ) => {
+    console.log('useUserActions: Recording action:', { placeId, actionType, metadata });
+    
     if (!profile) {
+      console.log('useUserActions: No profile found, showing auth toast');
       toast({
         title: 'Sign in required',
         description: 'Please sign in to save your preferences.',
@@ -34,10 +37,8 @@ export const useUserActions = () => {
 
     setLoading(true);
     try {
-      console.log('Recording action:', { placeId, actionType, userId: profile.id });
-      
       // Check if action already exists
-      const { data: existingAction } = await supabase
+      const { data: existingAction, error: checkError } = await supabase
         .from('user_actions')
         .select('id')
         .eq('user_id', profile.id)
@@ -45,23 +46,22 @@ export const useUserActions = () => {
         .eq('action_type', actionType)
         .single();
 
+      if (checkError && checkError.code !== 'PGRST116') {
+        console.error('useUserActions: Error checking existing action:', checkError);
+        return { error: checkError };
+      }
+
       if (existingAction) {
-        console.log('Action already exists, updating metadata');
+        console.log('useUserActions: Action already exists, updating metadata');
         // Update existing action
         const { error } = await supabase
           .from('user_actions')
           .update({ metadata })
           .eq('id', existingAction.id);
 
-        if (error) {
-          console.error('Error updating action:', error);
-        } else {
-          console.log('Action updated successfully');
-        }
-
         return { error };
       } else {
-        console.log('Creating new action');
+        console.log('useUserActions: Creating new action');
         // Create new action
         const { error } = await supabase
           .from('user_actions')
@@ -74,16 +74,8 @@ export const useUserActions = () => {
             },
           ]);
 
-        if (error) {
-          console.error('Error creating action:', error);
-          toast({
-            title: 'Action failed',
-            description: error.message,
-            variant: 'destructive',
-          });
-        } else {
-          console.log('Action recorded successfully');
-          
+        if (!error) {
+          console.log('useUserActions: Action recorded successfully');
           // Update user stats
           const newStats = { ...profile.stats };
           if (actionType === 'save') newStats.places_saved++;
@@ -94,26 +86,14 @@ export const useUserActions = () => {
             .from('users')
             .update({ stats: newStats })
             .eq('id', profile.id);
-
-          // Show success message
-          const actionMessages = {
-            like: 'Place liked!',
-            save: 'Place saved to your favorites!',
-            visit: 'Visit recorded!',
-            share: 'Place shared!',
-            review: 'Review submitted!'
-          };
-
-          toast({
-            title: actionMessages[actionType],
-            description: 'Your action has been recorded.',
-          });
+        } else {
+          console.error('useUserActions: Error recording action:', error);
         }
 
         return { error };
       }
     } catch (error) {
-      console.error('Exception recording action:', error);
+      console.error('useUserActions: Exception in recordAction:', error);
       return { error };
     } finally {
       setLoading(false);
@@ -121,12 +101,15 @@ export const useUserActions = () => {
   }, [profile]);
 
   const removeAction = useCallback(async (placeId: string, actionType: ActionType) => {
-    if (!profile) return { error: new Error('User not authenticated') };
+    console.log('useUserActions: Removing action:', { placeId, actionType });
+    
+    if (!profile) {
+      console.error('useUserActions: No profile found for removeAction');
+      return { error: new Error('User not authenticated') };
+    }
 
     setLoading(true);
     try {
-      console.log('Removing action:', { placeId, actionType, userId: profile.id });
-      
       const { error } = await supabase
         .from('user_actions')
         .delete()
@@ -134,16 +117,8 @@ export const useUserActions = () => {
         .eq('place_id', placeId)
         .eq('action_type', actionType);
 
-      if (error) {
-        console.error('Error removing action:', error);
-        toast({
-          title: 'Action failed',
-          description: error.message,
-          variant: 'destructive',
-        });
-      } else {
-        console.log('Action removed successfully');
-        
+      if (!error) {
+        console.log('useUserActions: Action removed successfully');
         // Update user stats
         const newStats = { ...profile.stats };
         if (actionType === 'save' && newStats.places_saved > 0) newStats.places_saved--;
@@ -154,25 +129,13 @@ export const useUserActions = () => {
           .from('users')
           .update({ stats: newStats })
           .eq('id', profile.id);
-
-        // Show success message
-        const actionMessages = {
-          like: 'Like removed',
-          save: 'Removed from favorites',
-          visit: 'Visit removed',
-          share: 'Share removed',
-          review: 'Review removed'
-        };
-
-        toast({
-          title: actionMessages[actionType],
-          description: 'Your action has been removed.',
-        });
+      } else {
+        console.error('useUserActions: Error removing action:', error);
       }
 
       return { error };
     } catch (error) {
-      console.error('Exception removing action:', error);
+      console.error('useUserActions: Exception in removeAction:', error);
       return { error };
     } finally {
       setLoading(false);
@@ -180,52 +143,58 @@ export const useUserActions = () => {
   }, [profile]);
 
   const getUserActions = useCallback(async (actionType?: ActionType) => {
-    if (!profile) return { data: [], error: new Error('User not authenticated') };
-
-    try {
-      console.log('Fetching user actions:', { userId: profile.id, actionType });
-      
-      let query = supabase
-        .from('user_actions')
-        .select('*')
-        .eq('user_id', profile.id)
-        .order('created_at', { ascending: false });
-
-      if (actionType) {
-        query = query.eq('action_type', actionType);
-      }
-
-      const { data, error } = await query;
-      
-      if (error) {
-        console.error('Error fetching user actions:', error);
-      } else {
-        console.log('User actions fetched:', data?.length || 0);
-      }
-      
-      return { data: data || [], error };
-    } catch (error) {
-      console.error('Exception fetching user actions:', error);
-      return { data: [], error };
+    console.log('useUserActions: Getting user actions:', { actionType });
+    
+    if (!profile) {
+      console.error('useUserActions: No profile found for getUserActions');
+      return { data: [], error: new Error('User not authenticated') };
     }
+
+    let query = supabase
+      .from('user_actions')
+      .select('*')
+      .eq('user_id', profile.id)
+      .order('created_at', { ascending: false });
+
+    if (actionType) {
+      query = query.eq('action_type', actionType);
+    }
+
+    const { data, error } = await query;
+    
+    if (error) {
+      console.error('useUserActions: Error getting user actions:', error);
+    } else {
+      console.log('useUserActions: User actions retrieved successfully:', data?.length || 0);
+    }
+    
+    return { data: data || [], error };
   }, [profile]);
 
   const checkUserAction = useCallback(async (placeId: string, actionType: ActionType) => {
-    if (!profile) return { exists: false, error: null };
-
-    try {
-      const { data, error } = await supabase
-        .from('user_actions')
-        .select('id')
-        .eq('user_id', profile.id)
-        .eq('place_id', placeId)
-        .eq('action_type', actionType)
-        .single();
-
-      return { exists: !!data, error };
-    } catch (error) {
-      return { exists: false, error };
+    console.log('useUserActions: Checking user action:', { placeId, actionType });
+    
+    if (!profile) {
+      console.log('useUserActions: No profile found for checkUserAction');
+      return { exists: false, error: null };
     }
+
+    const { data, error } = await supabase
+      .from('user_actions')
+      .select('id')
+      .eq('user_id', profile.id)
+      .eq('place_id', placeId)
+      .eq('action_type', actionType)
+      .single();
+
+    if (error && error.code !== 'PGRST116') {
+      console.error('useUserActions: Error checking user action:', error);
+    }
+
+    const exists = !!data;
+    console.log('useUserActions: Action exists:', exists);
+    
+    return { exists, error: error?.code === 'PGRST116' ? null : error };
   }, [profile]);
 
   return {
