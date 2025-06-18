@@ -10,7 +10,6 @@ import OutingCard from '@/components/OutingCard';
 import QuickAccessButton from '@/components/QuickAccessButton';
 import { useTheme } from '@/contexts/ThemeContext';
 import { getBlitzRecommendations } from '@/services/googlePlacesService';
-import { Place } from '@/components/SwipeCard';
 
 const QUICK_ACCESS = [
   { id: '1', name: 'Dining', icon: <Coffee className="w-5 h-5" />, color: 'bg-orange-500' },

@@ -59,7 +59,7 @@ export interface ParsedPromptData {
 export const mapGooglePlaceToPlace = (place: GooglePlace): any => {
   // Get image URL from photo reference or use a placeholder
   const imageUrl = place.photos && place.photos.length > 0
-    ? getPhotoUrl(place.photos[0].photo_reference)
+    ? `https://maps.googleapis.com/maps/api/place/photo?maxwidth=800&photoreference=${place.photos[0].photo_reference}&key=${import.meta.env.VITE_GOOGLE_PLACES_API_KEY}`
     : `https://images.unsplash.com/photo-${Math.floor(Math.random() * 1000) + 1517248135467}-4c7edcad34c4?w=800&h=600&fit=crop`;
   
   // Get primary type for category
@@ -88,12 +88,6 @@ export const mapGooglePlaceToPlace = (place: GooglePlace): any => {
     longitude: place.geometry.location.lng,
     description: `A popular ${primaryType} in ${location}`,
   };
-};
-
-// Function to get photo URL from photo reference
-export const getPhotoUrl = (photoReference: string, maxwidth: number = 800): string => {
-  const apiKey = import.meta.env.VITE_GOOGLE_PLACES_API_KEY;
-  return `https://maps.googleapis.com/maps/api/place/photo?maxwidth=${maxwidth}&photoreference=${photoReference}&key=${apiKey}`;
 };
 
 // Function to parse user prompt
@@ -146,8 +140,16 @@ export const searchPlaces = async (params: NearbySearchParams): Promise<any[]> =
     const url = `https://maps.googleapis.com/maps/api/place/${endpoint}/json?${queryParams.toString()}`;
     console.log("Google Places API request URL:", url);
 
-    // Make direct request to Google Places API
-    const response = await fetch(url);
+    // Use CORS proxy for browser requests
+    const proxyUrl = `https://cors-anywhere.herokuapp.com/${url}`;
+
+    const response = await fetch(proxyUrl, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Origin': window.location.origin
+      },
+    });
 
     if (!response.ok) {
       throw new Error(`API request failed with status ${response.status}`);
@@ -174,6 +176,8 @@ export const searchPlaces = async (params: NearbySearchParams): Promise<any[]> =
 
 // Fallback places when API fails
 const getFallbackPlaces = (query: string): any[] => {
+  console.log("Using fallback places for query:", query);
+  
   const fallbackPlaces = [
     {
       id: 'fallback-1',
@@ -185,6 +189,13 @@ const getFallbackPlaces = (query: string): any[] => {
       reviewCount: 1250,
       category: 'beach',
       description: 'Famous beach in Chennai perfect for evening walks',
+      tags: ['outdoor', 'scenic', 'family-friendly'],
+      budget: 100,
+      maxGroupSize: 10,
+      time: 'evening',
+      hours: '24 hours',
+      latitude: 13.0500,
+      longitude: 80.2824
     },
     {
       id: 'fallback-2',
@@ -196,28 +207,49 @@ const getFallbackPlaces = (query: string): any[] => {
       reviewCount: 890,
       category: 'shopping mall',
       description: 'Popular shopping and entertainment destination',
+      tags: ['shopping', 'entertainment', 'food'],
+      budget: 500,
+      maxGroupSize: 8,
+      time: 'afternoon',
+      hours: '10:00 AM - 10:00 PM',
+      latitude: 12.9914,
+      longitude: 80.2181
     },
     {
       id: 'fallback-3',
-      name: 'Cafe Coffee Day',
+      name: 'Amethyst Cafe',
       location: 'Chennai',
       country: 'India',
       image: 'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=800&h=600&fit=crop',
-      rating: 4.0,
+      rating: 4.5,
       reviewCount: 456,
       category: 'cafe',
       description: 'Cozy cafe perfect for hanging out with friends',
+      tags: ['cafe', 'cozy', 'work-friendly'],
+      budget: 300,
+      maxGroupSize: 6,
+      time: 'morning',
+      hours: '8:00 AM - 11:00 PM',
+      latitude: 13.0418,
+      longitude: 80.2341
     },
     {
       id: 'fallback-4',
-      name: 'Express Avenue',
+      name: 'The Flying Elephant',
       location: 'Chennai',
       country: 'India',
-      image: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=800&h=600&fit=crop',
-      rating: 4.3,
+      image: 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=800&h=600&fit=crop',
+      rating: 4.7,
       reviewCount: 678,
-      category: 'shopping mall',
-      description: 'Modern shopping mall with restaurants and entertainment',
+      category: 'restaurant',
+      description: 'Fine dining restaurant with excellent ambiance',
+      tags: ['fine dining', 'romantic', 'premium'],
+      budget: 1200,
+      maxGroupSize: 4,
+      time: 'evening',
+      hours: '7:00 PM - 12:00 AM',
+      latitude: 13.0569,
+      longitude: 80.2425
     },
     {
       id: 'fallback-5',
@@ -229,7 +261,14 @@ const getFallbackPlaces = (query: string): any[] => {
       reviewCount: 2100,
       category: 'temple',
       description: 'Historic temple with beautiful architecture',
-    }
+      tags: ['historic', 'cultural', 'spiritual'],
+      budget: 50,
+      maxGroupSize: 15,
+      time: 'morning',
+      hours: '6:00 AM - 12:00 PM, 4:00 PM - 9:00 PM',
+      latitude: 13.0343,
+      longitude: 80.2698
+    },
   ];
 
   // Filter based on query if possible
@@ -237,9 +276,13 @@ const getFallbackPlaces = (query: string): any[] => {
   if (queryLower.includes('cafe') || queryLower.includes('coffee')) {
     return [fallbackPlaces[2]];
   } else if (queryLower.includes('shop') || queryLower.includes('mall')) {
-    return [fallbackPlaces[1], fallbackPlaces[3]];
+    return [fallbackPlaces[1]];
   } else if (queryLower.includes('beach') || queryLower.includes('outdoor')) {
     return [fallbackPlaces[0]];
+  } else if (queryLower.includes('restaurant') || queryLower.includes('dining')) {
+    return [fallbackPlaces[3]];
+  } else if (queryLower.includes('temple') || queryLower.includes('cultural')) {
+    return [fallbackPlaces[4]];
   }
 
   return fallbackPlaces;
@@ -362,7 +405,7 @@ const generateHours = (): string => {
   return `${openHour}:00 AM - ${closeHour > 12 ? closeHour - 12 : closeHour}:00 ${closeHour >= 12 ? 'PM' : 'AM'}`;
 };
 
-// Function to parse user preferences from free text (enhanced version)
+// Function to parse user preferences from free text
 export const parseUserPreferences = (text: string): {
   type?: string;
   keyword?: string;

@@ -17,7 +17,7 @@ interface PlanData {
 // Fallback places when API fails
 const FALLBACK_PLACES: Place[] = [
   {
-    id: '1',
+    id: 'fallback-1',
     name: 'Marina Beach',
     location: 'Chennai',
     country: 'India',
@@ -31,9 +31,11 @@ const FALLBACK_PLACES: Place[] = [
     maxGroupSize: 10,
     time: 'evening',
     hours: '24 hours',
+    latitude: 13.0500,
+    longitude: 80.2824
   },
   {
-    id: '2',
+    id: 'fallback-2',
     name: 'Phoenix MarketCity',
     location: 'Chennai',
     country: 'India',
@@ -47,9 +49,11 @@ const FALLBACK_PLACES: Place[] = [
     maxGroupSize: 8,
     time: 'afternoon',
     hours: '10:00 AM - 10:00 PM',
+    latitude: 12.9914,
+    longitude: 80.2181
   },
   {
-    id: '3',
+    id: 'fallback-3',
     name: 'Amethyst Cafe',
     location: 'Chennai',
     country: 'India',
@@ -63,9 +67,11 @@ const FALLBACK_PLACES: Place[] = [
     maxGroupSize: 6,
     time: 'morning',
     hours: '8:00 AM - 11:00 PM',
+    latitude: 13.0418,
+    longitude: 80.2341
   },
   {
-    id: '4',
+    id: 'fallback-4',
     name: 'The Flying Elephant',
     location: 'Chennai',
     country: 'India',
@@ -79,9 +85,11 @@ const FALLBACK_PLACES: Place[] = [
     maxGroupSize: 4,
     time: 'evening',
     hours: '7:00 PM - 12:00 AM',
+    latitude: 13.0569,
+    longitude: 80.2425
   },
   {
-    id: '5',
+    id: 'fallback-5',
     name: 'Kapaleeshwarar Temple',
     location: 'Chennai',
     country: 'India',
@@ -95,6 +103,8 @@ const FALLBACK_PLACES: Place[] = [
     maxGroupSize: 15,
     time: 'morning',
     hours: '6:00 AM - 12:00 PM, 4:00 PM - 9:00 PM',
+    latitude: 13.0343,
+    longitude: 80.2698
   },
 ];
 
@@ -142,6 +152,7 @@ export function useSwipePlaces(planData: PlanData, initialFilters: FilterParams)
       );
       
       if (filteredResults.length > 0) {
+        console.log("Successfully fetched places:", filteredResults);
         setPlaces(filteredResults);
         setAllPlaces(filteredResults);
         setError(null);
@@ -191,6 +202,7 @@ export function useSwipePlaces(planData: PlanData, initialFilters: FilterParams)
     
     try {
       // Use Google Places API for prompt-based search
+      console.log("Filtering by prompt:", prompt);
       const results = await getBlitzRecommendations(prompt);
       
       // Filter out movie-related places
