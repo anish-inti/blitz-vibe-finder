@@ -2,11 +2,9 @@ import React, { useState } from 'react';
 import { useLocation as useRouterLocation } from 'react-router-dom';
 import Header from '@/components/Header';
 import BottomNavigation from '@/components/BottomNavigation';
-import { Sparkles, Database, Search, Filter, TrendingUp } from 'lucide-react';
+import { Sparkles, Filter, TrendingUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { usePlaces } from '@/hooks/use-places';
-import PlaceCard from '@/components/Places/PlaceCard';
 
 interface PlanData {
   occasion: string;
@@ -16,13 +14,96 @@ interface PlanData {
   description: string;
 }
 
+// Mock data for demonstration
+const MOCK_PLACES = [
+  {
+    id: '1',
+    name: 'Marina Beach',
+    address: 'Marina Beach Rd, Chennai',
+    category: 'Beach',
+    description: 'Famous beach in Chennai perfect for evening walks',
+    tags: ['Outdoor', 'Scenic', 'Family-friendly'],
+    images: ['https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=800&h=600&fit=crop'],
+    average_rating: 4.2,
+    review_count: 1250,
+    like_count: 350,
+    save_count: 180,
+    visit_count: 420,
+    share_count: 95,
+    is_verified: true
+  },
+  {
+    id: '2',
+    name: 'Phoenix MarketCity',
+    address: 'Velachery, Chennai',
+    category: 'Shopping Mall',
+    description: 'Popular shopping and entertainment destination',
+    tags: ['Shopping', 'Entertainment', 'Food'],
+    images: ['https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=800&h=600&fit=crop'],
+    average_rating: 4.4,
+    review_count: 890,
+    like_count: 210,
+    save_count: 150,
+    visit_count: 380,
+    share_count: 75,
+    is_verified: true
+  },
+  {
+    id: '3',
+    name: 'Kapaleeshwarar Temple',
+    address: 'Mylapore, Chennai',
+    category: 'Temple',
+    description: 'Historic temple with beautiful architecture',
+    tags: ['Historic', 'Cultural', 'Spiritual'],
+    images: ['https://images.unsplash.com/photo-1582510003544-4d00b7f74220?w=800&h=600&fit=crop'],
+    average_rating: 4.6,
+    review_count: 2100,
+    like_count: 420,
+    save_count: 280,
+    visit_count: 560,
+    share_count: 130,
+    is_verified: true
+  },
+  {
+    id: '4',
+    name: 'Cafe Coffee Day',
+    address: 'T. Nagar, Chennai',
+    category: 'Cafe',
+    description: 'Cozy cafe perfect for hanging out with friends',
+    tags: ['Coffee', 'Casual', 'Work-friendly'],
+    images: ['https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=800&h=600&fit=crop'],
+    average_rating: 4.0,
+    review_count: 456,
+    like_count: 180,
+    save_count: 120,
+    visit_count: 320,
+    share_count: 65,
+    is_verified: false
+  },
+  {
+    id: '5',
+    name: 'Express Avenue',
+    address: 'Royapettah, Chennai',
+    category: 'Shopping Mall',
+    description: 'Modern shopping mall with restaurants and entertainment',
+    tags: ['Shopping', 'Entertainment', 'Food'],
+    images: ['https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=800&h=600&fit=crop'],
+    average_rating: 4.3,
+    review_count: 678,
+    like_count: 195,
+    save_count: 140,
+    visit_count: 350,
+    share_count: 85,
+    is_verified: true
+  }
+];
+
 const SwipePage: React.FC = () => {
   const location = useRouterLocation();
-  const { getPlaces } = usePlaces();
   const [userPrompt, setUserPrompt] = useState<string>('');
   const [showPromptInput, setShowPromptInput] = useState<boolean>(false);
-  const [places, setPlaces] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [places, setPlaces] = useState<any[]>(MOCK_PLACES);
+  const [isLoading, setIsLoading] = useState(false);
 
   const planData: PlanData = location.state as PlanData || {
     occasion: '',
@@ -32,57 +113,23 @@ const SwipePage: React.FC = () => {
     description: ''
   };
 
-  React.useEffect(() => {
-    loadPlaces();
-  }, []);
-
-  const loadPlaces = async () => {
-    setIsLoading(true);
-    try {
-      const filters: any = { limit: 20 };
-      
-      if (planData.outingType) {
-        filters.category = planData.outingType;
-      }
-      
-      const { data, error } = await getPlaces(filters);
-      if (error) {
-        console.error('Error loading places:', error);
-        setPlaces([]);
-      } else {
-        setPlaces(data);
-      }
-    } catch (error) {
-      console.error('Exception loading places:', error);
-      setPlaces([]);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handlePromptSearch = async () => {
+  const handlePromptSearch = () => {
     if (!userPrompt.trim()) return;
     
     setIsLoading(true);
-    try {
-      const { data, error } = await getPlaces({ 
-        search: userPrompt,
-        limit: 20 
+    
+    // Simple client-side filtering based on the prompt
+    setTimeout(() => {
+      const searchTerms = userPrompt.toLowerCase().split(' ');
+      const filteredPlaces = MOCK_PLACES.filter(place => {
+        const searchableText = `${place.name} ${place.category} ${place.description} ${place.tags.join(' ')}`.toLowerCase();
+        return searchTerms.some(term => searchableText.includes(term));
       });
       
-      if (error) {
-        console.error('Search error:', error);
-        setPlaces([]);
-      } else {
-        setPlaces(data);
-      }
-    } catch (error) {
-      console.error('Exception searching places:', error);
-      setPlaces([]);
-    } finally {
+      setPlaces(filteredPlaces);
       setIsLoading(false);
       setShowPromptInput(false);
-    }
+    }, 1000);
   };
 
   const handlePlaceClick = (place: any) => {
@@ -149,11 +196,93 @@ const SwipePage: React.FC = () => {
               
               <div className="grid gap-4">
                 {places.map((place, index) => (
-                  <div key={place.id} className="animate-fade-in" style={{ animationDelay: `${index * 0.1}s` }}>
-                    <PlaceCard 
-                      place={place}
-                      onClick={() => handlePlaceClick(place)}
-                    />
+                  <div 
+                    key={place.id} 
+                    className="card-elevated rounded-2xl overflow-hidden cursor-pointer interactive group animate-fade-in"
+                    style={{ animationDelay: `${index * 0.1}s` }}
+                    onClick={() => handlePlaceClick(place)}
+                  >
+                    {/* Image */}
+                    <div className="relative h-48 overflow-hidden">
+                      <img 
+                        src={place.images?.[0] || 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&h=600&fit=crop'} 
+                        alt={place.name}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        onError={(e) => {
+                          e.currentTarget.src = 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&h=600&fit=crop';
+                        }}
+                      />
+                      
+                      {/* Overlay with actions */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                      
+                      {/* Category badge */}
+                      <div className="absolute top-4 left-4">
+                        <span className="badge-community">
+                          {place.category}
+                        </span>
+                      </div>
+
+                      {/* Verification badge */}
+                      {place.is_verified && (
+                        <div className="absolute bottom-4 left-4">
+                          <span className="badge-featured">
+                            Verified
+                          </span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Content */}
+                    <div className="p-6 space-y-4">
+                      <div>
+                        <h3 className="text-title text-foreground line-clamp-1 group-hover:text-primary transition-colors">
+                          {place.name}
+                        </h3>
+                        <div className="flex items-center text-sm text-muted-foreground mt-1">
+                          <TrendingUp className="w-4 h-4 mr-1" />
+                          <span className="line-clamp-1">{place.address}</span>
+                        </div>
+                      </div>
+
+                      {place.description && (
+                        <p className="text-caption text-muted-foreground line-clamp-2">
+                          {place.description}
+                        </p>
+                      )}
+
+                      {/* Tags */}
+                      {place.tags && place.tags.length > 0 && (
+                        <div className="flex flex-wrap gap-2">
+                          {place.tags.slice(0, 3).map((tag: string, index: number) => (
+                            <span 
+                              key={index}
+                              className="px-2 py-1 bg-muted text-muted-foreground rounded-full text-xs font-semibold"
+                            >
+                              {tag}
+                            </span>
+                          ))}
+                          {place.tags.length > 3 && (
+                            <span className="px-2 py-1 bg-muted text-muted-foreground rounded-full text-xs font-semibold">
+                              +{place.tags.length - 3} more
+                            </span>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Rating and stats */}
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-4">
+                          {place.average_rating > 0 && (
+                            <div className="flex items-center space-x-1">
+                              <Star className="w-4 h-4 text-yellow-500 fill-current" />
+                              <span className="font-bold text-foreground">{place.average_rating.toFixed(1)}</span>
+                              <span className="text-xs text-muted-foreground">({place.review_count})</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -171,7 +300,7 @@ const SwipePage: React.FC = () => {
                   Change filters
                 </Button>
                 <Button 
-                  onClick={loadPlaces}
+                  onClick={() => setPlaces(MOCK_PLACES)}
                   className="px-6 py-2.5 text-sm btn-primary"
                 >
                   Try again

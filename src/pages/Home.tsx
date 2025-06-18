@@ -9,7 +9,6 @@ import FeaturedPlaceCard from '@/components/FeaturedPlaceCard';
 import OutingCard from '@/components/OutingCard';
 import QuickAccessButton from '@/components/QuickAccessButton';
 import { useTheme } from '@/contexts/ThemeContext';
-import { usePlaces } from '@/hooks/use-places';
 import { useAuth } from '@/contexts/AuthContext';
 import AuthModal from '@/components/Auth/AuthModal';
 
@@ -28,104 +27,85 @@ const COMMUNITY_STATS = [
   { label: 'Reviews Today', value: '847', icon: MessageCircle, color: 'text-purple-600' },
 ];
 
+// Mock data for demonstration
+const MOCK_TRENDING_PLACES = [
+  {
+    id: '1',
+    name: 'Marina Beach',
+    description: 'Famous beach in Chennai perfect for evening walks',
+    image: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=800&h=600&fit=crop',
+  },
+  {
+    id: '2',
+    name: 'Phoenix MarketCity',
+    description: 'Popular shopping and entertainment destination',
+    image: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=800&h=600&fit=crop',
+  },
+  {
+    id: '3',
+    name: 'Express Avenue',
+    description: 'Modern shopping mall with restaurants and entertainment',
+    image: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=800&h=600&fit=crop',
+  },
+];
+
+const MOCK_COMMUNITY_PICKS = [
+  {
+    id: '1',
+    name: 'Kapaleeshwarar Temple',
+    address: 'Mylapore, Chennai',
+    average_rating: 4.6,
+    like_count: 120,
+    images: ['https://images.unsplash.com/photo-1582510003544-4d00b7f74220?w=800&h=600&fit=crop'],
+  },
+  {
+    id: '2',
+    name: 'Cafe Coffee Day',
+    address: 'T. Nagar, Chennai',
+    average_rating: 4.0,
+    like_count: 85,
+    images: ['https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=800&h=600&fit=crop'],
+  },
+];
+
+const MOCK_CURATED_OUTINGS = [
+  {
+    id: '1',
+    name: 'VM Food Street',
+    category: 'Street Food',
+    average_rating: 4.5,
+    review_count: 234,
+    tags: ['Budget', 'Outdoor', 'Group-friendly'],
+    images: ['https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=800&h=600&fit=crop'],
+  },
+  {
+    id: '2',
+    name: 'Marina Bay Lounge',
+    category: 'Rooftop Bar',
+    average_rating: 4.8,
+    review_count: 156,
+    tags: ['Premium', 'Aesthetic', 'Evening'],
+    images: ['https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=800&h=600&fit=crop'],
+  },
+];
+
 const Home: React.FC = () => {
   const navigate = useNavigate();
   const { darkMode } = useTheme();
   const { profile } = useAuth();
-  const { getPlaces, getTrendingPlaces, getCommunityFavorites } = usePlaces();
   
   const [activeFilter, setActiveFilter] = useState<string | null>(null);
   const [isButtonLoading, setIsButtonLoading] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState("Chennai");
   const [showAuthModal, setShowAuthModal] = useState(false);
   
-  // API-driven state
-  const [hotNowPlaces, setHotNowPlaces] = useState<any[]>([]);
-  const [curatedOutings, setCuratedOutings] = useState<any[]>([]);
-  const [communityPicks, setCommunityPicks] = useState<any[]>([]);
-  const [isLoadingHotNow, setIsLoadingHotNow] = useState(true);
-  const [isLoadingCurated, setIsLoadingCurated] = useState(true);
-  const [isLoadingCommunity, setIsLoadingCommunity] = useState(true);
-
-  // Fetch trending places
-  const fetchHotNowPlaces = useCallback(async () => {
-    setIsLoadingHotNow(true);
-    try {
-      console.log('Fetching trending places...');
-      const { data, error } = await getTrendingPlaces(6);
-      if (error) {
-        console.error('Error fetching trending places:', error);
-        setHotNowPlaces([]);
-      } else {
-        console.log('Trending places loaded:', data.length);
-        setHotNowPlaces(data);
-      }
-    } catch (error) {
-      console.error('Exception fetching trending places:', error);
-      setHotNowPlaces([]);
-    } finally {
-      setIsLoadingHotNow(false);
-    }
-  }, [getTrendingPlaces]);
-
-  // Fetch curated outings based on active filter
-  const fetchCuratedOutings = useCallback(async () => {
-    setIsLoadingCurated(true);
-    try {
-      console.log('Fetching curated places with filter:', activeFilter);
-      const filters: any = { limit: 6 };
-      
-      if (activeFilter) {
-        filters.category = activeFilter.toLowerCase();
-      }
-      
-      const { data, error } = await getPlaces(filters);
-      if (error) {
-        console.error('Error fetching curated places:', error);
-        setCuratedOutings([]);
-      } else {
-        console.log('Curated places loaded:', data.length);
-        setCuratedOutings(data);
-      }
-    } catch (error) {
-      console.error('Exception fetching curated places:', error);
-      setCuratedOutings([]);
-    } finally {
-      setIsLoadingCurated(false);
-    }
-  }, [getPlaces, activeFilter]);
-
-  // Fetch community picks
-  const fetchCommunityPicks = useCallback(async () => {
-    setIsLoadingCommunity(true);
-    try {
-      console.log('Fetching community favorites...');
-      const { data, error } = await getCommunityFavorites(3);
-      if (error) {
-        console.error('Error fetching community favorites:', error);
-        setCommunityPicks([]);
-      } else {
-        console.log('Community favorites loaded:', data.length);
-        setCommunityPicks(data);
-      }
-    } catch (error) {
-      console.error('Exception fetching community favorites:', error);
-      setCommunityPicks([]);
-    } finally {
-      setIsLoadingCommunity(false);
-    }
-  }, [getCommunityFavorites]);
-
-  // Load data on mount and when location changes
-  React.useEffect(() => {
-    fetchHotNowPlaces();
-    fetchCommunityPicks();
-  }, [fetchHotNowPlaces, fetchCommunityPicks]);
-
-  // Load curated outings when filter changes
-  React.useEffect(() => {
-    fetchCuratedOutings();
-  }, [fetchCuratedOutings]);
+  // Using mock data instead of API calls
+  const [hotNowPlaces, setHotNowPlaces] = useState(MOCK_TRENDING_PLACES);
+  const [curatedOutings, setCuratedOutings] = useState(MOCK_CURATED_OUTINGS);
+  const [communityPicks, setCommunityPicks] = useState(MOCK_COMMUNITY_PICKS);
+  const [isLoadingHotNow, setIsLoadingHotNow] = useState(false);
+  const [isLoadingCurated, setIsLoadingCurated] = useState(false);
+  const [isLoadingCommunity, setIsLoadingCommunity] = useState(false);
 
   const handleStartBlitz = () => {
     if (!profile) {
@@ -143,6 +123,16 @@ const Home: React.FC = () => {
   const handleQuickAccessClick = (filter: string) => {
     const newFilter = filter === activeFilter ? null : filter;
     setActiveFilter(newFilter);
+    
+    // Filter the mock data based on the selected filter
+    if (newFilter) {
+      const filteredOutings = MOCK_CURATED_OUTINGS.filter(
+        place => place.category.toLowerCase().includes(newFilter.toLowerCase())
+      );
+      setCuratedOutings(filteredOutings.length > 0 ? filteredOutings : MOCK_CURATED_OUTINGS);
+    } else {
+      setCuratedOutings(MOCK_CURATED_OUTINGS);
+    }
     
     toast({
       title: `${filter} mode activated`,
@@ -175,7 +165,7 @@ const Home: React.FC = () => {
     rating: place.average_rating || 4.0,
     reviews: place.review_count || 0,
     tags: place.tags || [],
-    image: place.images?.[0] || 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&h=600&fit=crop',
+    image: place.images?.[0] || place.image || 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&h=600&fit=crop',
     category: place.category,
     openStatus: 'Open' as const,
   });
@@ -299,7 +289,7 @@ const Home: React.FC = () => {
                           id: place.id,
                           name: place.name,
                           description: place.description || `${place.category} in ${selectedLocation}`,
-                          image: place.images?.[0] || 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&h=600&fit=crop',
+                          image: place.images?.[0] || place.image || 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&h=600&fit=crop',
                         }} 
                         onClick={() => handlePlaceClick(place)} 
                       />
